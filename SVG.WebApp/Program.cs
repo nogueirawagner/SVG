@@ -1,7 +1,18 @@
+using SVG.Infra.Context.SQLServer;
+using System;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+
+// Lê a connection string do appsettings.json
+var cs = builder.Configuration.GetConnectionString("ConnectionLocal");
+
+// Registra o DbContext EF6 como Scoped, passando a connection string
+builder.Services.AddScoped<SQLServerContext>(_ => new SQLServerContext(cs));
+
 
 var app = builder.Build();
 

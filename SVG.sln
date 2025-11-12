@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36623.8 d17.14
+VisualStudioVersion = 17.14.36623.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1- Web", "1- Web", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -18,8 +18,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SVG.Domain", "SVG.Domain\SVG.Domain.csproj", "{20425932-42C6-41C5-AFE2-9C8CD82BA3D1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SVG.Infra", "SVG.Infra\SVG.Infra.csproj", "{3F246E2B-4D32-4EF9-9CBB-53E086667BB3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SVG.Cross", "SVG.Cross\SVG.Cross.csproj", "{E9AC19D5-FBC1-4792-9599-F2E9D110B6CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,10 +41,6 @@ Global
 		{3F246E2B-4D32-4EF9-9CBB-53E086667BB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F246E2B-4D32-4EF9-9CBB-53E086667BB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F246E2B-4D32-4EF9-9CBB-53E086667BB3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E9AC19D5-FBC1-4792-9599-F2E9D110B6CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E9AC19D5-FBC1-4792-9599-F2E9D110B6CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E9AC19D5-FBC1-4792-9599-F2E9D110B6CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E9AC19D5-FBC1-4792-9599-F2E9D110B6CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -56,7 +50,6 @@ Global
 		{B06BBC96-1FEB-4378-8586-A3B42AC9F02D} = {05F758C6-4C19-4558-A097-F19EC0EA5204}
 		{20425932-42C6-41C5-AFE2-9C8CD82BA3D1} = {3A69E6FB-A72D-4D6C-9175-E4DA9A2BC73B}
 		{3F246E2B-4D32-4EF9-9CBB-53E086667BB3} = {E88A0E57-6FA0-4DF7-AD67-8FB25920DFBF}
-		{E9AC19D5-FBC1-4792-9599-F2E9D110B6CA} = {E88A0E57-6FA0-4DF7-AD67-8FB25920DFBF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4FDB0B66-5739-4D3E-9888-4067F94BF2B8}
