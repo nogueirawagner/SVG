@@ -9,6 +9,10 @@ namespace SVG.Infra.Context.SQLServer
 {
   public class SQLServerContext : DbContext, ISQLServerContext
   {
+    public SQLServerContext()
+    {
+    }
+
     public SQLServerContext(string cs)
       : base(cs)
     {
