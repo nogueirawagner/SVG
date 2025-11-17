@@ -13,7 +13,16 @@ namespace SVG.IoC
   {
     public static void RegisterServices(Container container)
     {
-      container.Register<ISQLServerContext, SQLServerContext>(Lifestyle.Scoped);
+      container.Register<SQLServerContext>(() =>
+      {
+        var cs = "Data Source=DESKTOP-3MKU8HI;Initial Catalog=SVG;Persist Security Info=True;User ID=sa;Password=_senhas_2012;MultipleActiveResultSets=True";
+
+        return new SQLServerContext(cs);
+      }, Lifestyle.Scoped);
+
+      container.Register<ISQLServerContext>(() =>
+        container.GetInstance<SQLServerContext>(),
+        Lifestyle.Scoped);
 
       container.Register<IOperadorRepository, OperadorRepository>(Lifestyle.Scoped);
       container.Register<IOperadorAppService, OperadorAppService>(Lifestyle.Scoped);

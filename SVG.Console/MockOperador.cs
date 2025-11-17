@@ -11,15 +11,13 @@ namespace SVG.Console
   public class MockOperador
   {
     private readonly IOperadorAppService _operadorAppService;
+    private List<Operador> _operadoresMock;
 
     public MockOperador(IOperadorAppService operadorAppService)
     {
       _operadorAppService = operadorAppService;
-    }
 
-    public void AdicionarOperador()
-    {
-      var operadores = new List<Operador>
+      _operadoresMock = new List<Operador>
       {
         #region 
         new Operador { Matricula = "1001", Nome = "Wagner Nogueira", Sessao = "SOE I" },
@@ -45,7 +43,16 @@ namespace SVG.Console
       #endregion
       };
 
-      _operadorAppService.AddRange(operadores);
+    }
+
+    public void AdicionarOperador()
+    {
+      _operadorAppService.AddRange(_operadoresMock);
+    }
+
+    public void LimparOperadores()
+    {
+      _operadorAppService.GetAll().ToList().ForEach(op => _operadorAppService.Remove(op));
     }
   }
 }

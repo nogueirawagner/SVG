@@ -28,14 +28,13 @@ public class Program
         container.GetInstance<IOperadorAppService>()
         );
     
-      program.RunOperadores();
+      program.Run();
     }
   }
 
-  public void RunOperadores()
+  public void Run()
   {
-    var mockOperador = new MockOperador(_operadorAppService);
-    mockOperador.AdicionarOperador();
+    var mockOperador = new MockBase(_operadorAppService);
   }
 }
 
