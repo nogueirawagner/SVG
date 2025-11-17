@@ -2,20 +2,20 @@
 
 namespace SVG.App.Interface
 {
-    public interface IAppServiceBase<TEntity> where TEntity : class
-    {
-        void SaveOrUpdate(TEntity obj);
+  public interface IAppServiceBase<TEntity> where TEntity : class
+  {
+    void SaveOrUpdate(TEntity obj);
 
-        void Add(TEntity obj);
+    void Add(TEntity obj);
 
-        TEntity GetById(int id);
+    TEntity GetById(int id);
 
-        void Update(TEntity obj);
+    void Update(TEntity obj);
 
-        IEnumerable<TEntity> GetAll();
+    IEnumerable<TEntity> GetAll();
 
-        void Remove(TEntity obj);
+    void Remove(TEntity obj);
 
-        void Dispose();
-    }
+    void Dispose();
+  }
 }
