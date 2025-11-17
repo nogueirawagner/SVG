@@ -10,11 +10,14 @@ namespace SVG.Infra.Context.SQLServer
   public class SQLServerContext : DbContext, ISQLServerContext
   {
     public SQLServerContext()
+      : base("name=ConnectionLocal")
     {
+      Configuration.ProxyCreationEnabled = false;
+      Configuration.LazyLoadingEnabled = true;
     }
-
+    
     public SQLServerContext(string cs)
-      : base(cs)
+      : base("name=ConnectionLocal")
     {
       Configuration.ProxyCreationEnabled = false;
       Configuration.LazyLoadingEnabled = true;
@@ -22,6 +25,11 @@ namespace SVG.Infra.Context.SQLServer
 
     #region objetos
     public DbSet<Operador> Operador { get; set; }
+    public DbSet<Operacao> Operacao { get; set; }
+    public DbSet<OperadorOperacao> OperadorOperacao { get; set; }
+    public DbSet<Equipe> Equipe { get; set; }
+    public DbSet<Viatura> Viatura { get; set; }
+    public DbSet<ViaturaOperacao> ViaturaOperacao { get; set; }
 
     #endregion
 

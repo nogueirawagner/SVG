@@ -3,7 +3,7 @@ using SVG.Domain.Entities;
 using System;
 using System.Collections.Generic;
 
-namespace SVG.Console
+namespace SVG.Console.Mocks
 {
   public class MockOperacao
   {

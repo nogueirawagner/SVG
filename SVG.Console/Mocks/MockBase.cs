@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SVG.Console
+namespace SVG.Console.Mocks
 {
   public class MockBase
   {
@@ -39,7 +39,7 @@ namespace SVG.Console
 
     public void IniciarBase()
     {
-      _mockOperadores.AdicionarOperador();
+      _mockOperadores.Seed();
     }
   }
 }

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SVG.Console
+namespace SVG.Console.Mocks
 {
   public class MockOperador
   {
@@ -45,7 +45,7 @@ namespace SVG.Console
 
     }
 
-    public void AdicionarOperador()
+    public void Seed()
     {
       _operadorAppService.AddRange(_operadoresMock);
     }

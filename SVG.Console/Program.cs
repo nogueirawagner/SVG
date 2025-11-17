@@ -2,6 +2,7 @@
 using SimpleInjector.Lifestyles;
 using SVG.App.Interface;
 using SVG.Console;
+using SVG.Console.Mocks;
 using SVG.IoC;
 
 public class Program
