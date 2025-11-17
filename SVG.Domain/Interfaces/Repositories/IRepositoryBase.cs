@@ -6,6 +6,8 @@ namespace SVG.Domain.Interfaces.Repositories
   {
     void SaveOrUpdate(TEntity obj);
 
+    void AddRange(IEnumerable<TEntity> objList);
+
     //adiciona no banco de dados o obj
     void Add(TEntity obj);
 

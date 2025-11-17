@@ -20,6 +20,11 @@ namespace SVG.Domain.Services
       _repository.SaveOrUpdate(obj);
     }
 
+    public void AddRange(IEnumerable<TEntity> objList)
+    {
+      _repository.AddRange(objList);
+    }
+
     public void Add(TEntity obj)
     {
       _repository.Add(obj);

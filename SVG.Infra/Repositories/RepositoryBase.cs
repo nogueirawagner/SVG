@@ -14,6 +14,12 @@ namespace SVG.Infra.Repositories
       _db = sqlContext;
     }
 
+    public void AddRange(IEnumerable<TEntity> objList)
+    {
+      _db.Set<TEntity>().AddRange(objList);
+      _db.SaveChanges();
+    }
+
     public void Add(TEntity obj)
     {
       _db.Set<TEntity>().Add(obj);

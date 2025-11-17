@@ -5,6 +5,7 @@ using SVG.App.Services;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.Interfaces.Services;
 using SVG.Domain.Services;
+using SVG.Infra.Context.SQLServer;
 
 namespace SVG.IoC
 {
@@ -12,6 +13,8 @@ namespace SVG.IoC
   {
     public static void RegisterServices(Container container)
     {
+      container.Register<ISQLServerContext, SQLServerContext>(Lifestyle.Scoped);
+
       container.Register<IOperadorRepository, OperadorRepository>(Lifestyle.Scoped);
       container.Register<IOperadorAppService, OperadorAppService>(Lifestyle.Scoped);
       container.Register<IOperadorService, OperadorService>(Lifestyle.Scoped);

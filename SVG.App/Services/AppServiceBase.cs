@@ -14,6 +14,11 @@ namespace SVG.App.Services
       _serviceBase = serviceBase;
     }
 
+    public void AddRange(IEnumerable<TEntity> objList)
+    {
+      _serviceBase.AddRange(objList);
+    }
+
     public void Add(TEntity obj)
     {
       _serviceBase.Add(obj);

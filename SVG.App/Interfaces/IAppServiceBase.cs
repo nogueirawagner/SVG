@@ -6,6 +6,8 @@ namespace SVG.App.Interface
   {
     void SaveOrUpdate(TEntity obj);
 
+    void AddRange(IEnumerable<TEntity> objList);
+
     void Add(TEntity obj);
 
     TEntity GetById(int id);

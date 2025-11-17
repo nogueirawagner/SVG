@@ -9,6 +9,9 @@ namespace SVG.Domain.Interfaces.Services
     //adiciona ou atualiza um objeto no banco de dados
     void SaveOrUpdate(TEntity obj);
     //adiciona no banco de dados o obj
+
+    void AddRange(IEnumerable<TEntity> obj);
+
     void Add(TEntity obj);
     //seleciona por ID
     TEntity GetById(int id);
