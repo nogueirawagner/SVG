@@ -1,0 +1,18 @@
+﻿using SVG.Domain.Entities;
+using SVG.Domain.Interfaces.Repositories;
+using SVG.Infra.Context.SQLServer;
+using SVG.Infra.Repositories;
+
+namespace GestaoDDD.Infra.Data.Repositories
+{
+  public class OperacaoRepository : RepositoryBase<Operacao>, IOperacaoRepository
+  {
+    private readonly SQLServerContext _db;
+
+    public OperacaoRepository(SQLServerContext dbContext)
+      : base(dbContext)
+    {
+      _db = dbContext;
+    }
+  }
+}

@@ -24,9 +24,35 @@ namespace SVG.IoC
         container.GetInstance<SQLServerContext>(),
         Lifestyle.Scoped);
 
+      // Operador
       container.Register<IOperadorRepository, OperadorRepository>(Lifestyle.Scoped);
       container.Register<IOperadorAppService, OperadorAppService>(Lifestyle.Scoped);
       container.Register<IOperadorService, OperadorService>(Lifestyle.Scoped);
+
+      // Operacao
+      container.Register<IOperacaoRepository, OperacaoRepository>(Lifestyle.Scoped);
+      container.Register<IOperacaoAppService, OperacaoAppService>(Lifestyle.Scoped);
+      container.Register<IOperacaoService, OperacaoService>(Lifestyle.Scoped);
+
+      // OperadorOperacao
+      container.Register<IOperadorOperacaoRepository, OperadorOperacaoRepository>(Lifestyle.Scoped);
+      container.Register<IOperadorOperacaoAppService, OperadorOperacaoAppService>(Lifestyle.Scoped);
+      container.Register<IOperadorOperacaoService, OperadorOperacaoService>(Lifestyle.Scoped);
+
+      // Equipe
+      container.Register<IEquipeRepository, EquipeRepository>(Lifestyle.Scoped);
+      container.Register<IEquipeAppService, EquipeAppService>(Lifestyle.Scoped);
+      container.Register<IEquipeService, EquipeService>(Lifestyle.Scoped);
+
+      // Viatura
+      container.Register<IViaturaRepository, ViaturaRepository>(Lifestyle.Scoped);
+      container.Register<IViaturaAppService, ViaturaAppService>(Lifestyle.Scoped);
+      container.Register<IViaturaService, ViaturaService>(Lifestyle.Scoped);
+
+      // ViaturaOperacao
+      container.Register<IViaturaOperacaoRepository, ViaturaOperacaoRepository>(Lifestyle.Scoped);
+      container.Register<IViaturaOperacaoAppService, ViaturaOperacaoAppService>(Lifestyle.Scoped);
+      container.Register<IViaturaOperacaoService, ViaturaOperacaoService>(Lifestyle.Scoped);
     }
   }
 }
