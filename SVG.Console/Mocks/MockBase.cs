@@ -34,7 +34,7 @@ namespace SVG.Console.Mocks
 
     public void LimparBase()
     {
-      _mockOperadores.LimparOperadores();
+      _mockOperadores.Kill();
     }
 
     public void IniciarBase()

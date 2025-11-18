@@ -8,6 +8,7 @@ namespace SVG.Domain.Entities
     public string Modelo { get; set; }
     public string Prefixo { get; set; }
     public string Placa { get; set; }
+    public string Equipe { get; set; }
 
     public virtual ICollection<ViaturaOperacao> ViaturasOperacao { get; set; }
 

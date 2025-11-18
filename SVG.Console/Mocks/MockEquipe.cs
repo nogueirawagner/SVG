@@ -18,9 +18,13 @@ namespace SVG.Console.Mocks
     {
       var equipes = new List<Equipe>
       {
-        new Equipe { Nome = "Equipe Alfa" },
-        new Equipe { Nome = "Equipe Bravo" },
-        new Equipe { Nome = "Equipe Charlie" }
+        new Equipe { Nome = "SOE I" },
+        new Equipe { Nome = "SOE II" },
+        new Equipe { Nome = "SOE III" },
+        new Equipe { Nome = "SOE IV" },
+        new Equipe { Nome = "SOR" },
+        new Equipe { Nome = "SOT" },
+        new Equipe { Nome = "SI" }
       };
 
       _equipeAppService.AddRange(equipes);

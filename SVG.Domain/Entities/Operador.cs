@@ -12,5 +12,6 @@ namespace SVG.Domain.Entities
     public string Matricula { get; set; }
     public string Nome { get; set; }
     public string Sessao { get; set; }
+    public string Telefone { get; set; }
   }
 }

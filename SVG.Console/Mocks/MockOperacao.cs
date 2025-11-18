@@ -22,7 +22,7 @@ namespace SVG.Console.Mocks
         new Operacao
         {
           DataHora = DateTime.Now.AddHours(-2),
-          Objeto = "Escolta de preso de alto risco",
+          Objeto = "Apoio",
           DP = "15ª DP",
           Coordenador = "Nogueira",
           QtdEquipe = 2
@@ -30,7 +30,7 @@ namespace SVG.Console.Mocks
         new Operacao
         {
           DataHora = DateTime.Now.AddHours(-1),
-          Objeto = "Operação de captura",
+          Objeto = "Delta",
           DP = "10ª DP",
           Coordenador = "Higor",
           QtdEquipe = 3
@@ -38,8 +38,16 @@ namespace SVG.Console.Mocks
         new Operacao
         {
           DataHora = DateTime.Now,
-          Objeto = "Cumprimento de mandado",
-          DP = "20ª DP",
+          Objeto = "Alvorada",
+          DP = "",
+          Coordenador = "Leandro",
+          QtdEquipe = 1
+        },
+        new Operacao
+        {
+          DataHora = DateTime.Now,
+          Objeto = "Segurança Orgânica",
+          DP = "",
           Coordenador = "Arana",
           QtdEquipe = 1
         }

@@ -50,7 +50,7 @@ namespace SVG.Console.Mocks
       _operadorAppService.AddRange(_operadoresMock);
     }
 
-    public void LimparOperadores()
+    public void Kill()
     {
       _operadorAppService.GetAll().ToList().ForEach(op => _operadorAppService.Remove(op));
     }
