@@ -4,14 +4,14 @@ using SVG.Domain.Interfaces.Services;
 
 namespace SVG.App.Services
 {
-  public class EquipeAppService : AppServiceBase<Equipe>, IEquipeAppService
+  public class SessaoAppService : AppServiceBase<Sessao>, ISessaoAppService
   {
-    private readonly IEquipeService _equipeService;
+    private readonly ISessaoService _SessaoService;
 
-    public EquipeAppService(IEquipeService equipeService)
-      : base(equipeService)
+    public SessaoAppService(ISessaoService SessaoService)
+      : base(SessaoService)
     {
-      _equipeService = equipeService;
+      _SessaoService = SessaoService;
     }
   }
 }

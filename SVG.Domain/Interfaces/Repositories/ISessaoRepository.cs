@@ -2,7 +2,7 @@
 
 namespace SVG.Domain.Interfaces.Repositories
 {
-  public interface IEquipeRepository : IRepositoryBase<Equipe>
+  public interface ISessaoRepository : IRepositoryBase<Sessao>
   {
   }
 }

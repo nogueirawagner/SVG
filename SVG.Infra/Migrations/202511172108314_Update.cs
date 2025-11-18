@@ -8,7 +8,7 @@
         public override void Up()
         {
             CreateTable(
-                "dbo.Equipe",
+                "dbo.Sessao",
                 c => new
                     {
                         ID = c.Int(nullable: false, identity: true),
@@ -86,7 +86,7 @@
             DropTable("dbo.ViaturaOperacao");
             DropTable("dbo.OperadorOperacao");
             DropTable("dbo.Operacao");
-            DropTable("dbo.Equipe");
+            DropTable("dbo.Sessao");
         }
     }
 }

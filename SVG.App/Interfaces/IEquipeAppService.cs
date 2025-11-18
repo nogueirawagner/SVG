@@ -2,7 +2,7 @@
 
 namespace SVG.App.Interface
 {
-  public interface IEquipeAppService : IAppServiceBase<Equipe>
+  public interface ISessaoAppService : IAppServiceBase<Sessao>
   {
   }
 }

@@ -9,6 +9,7 @@ namespace SVG.Infra.Context.SQLServer
 {
   public class SQLServerContext : DbContext, ISQLServerContext
   {
+    // ctor default para ser encontrado por reflexão
     public SQLServerContext()
       : base("name=ConnectionLocal")
     {
@@ -27,7 +28,7 @@ namespace SVG.Infra.Context.SQLServer
     public DbSet<Operador> Operador { get; set; }
     public DbSet<Operacao> Operacao { get; set; }
     public DbSet<OperadorOperacao> OperadorOperacao { get; set; }
-    public DbSet<Equipe> Equipe { get; set; }
+    public DbSet<Sessao> Sessao { get; set; }
     public DbSet<Viatura> Viatura { get; set; }
     public DbSet<ViaturaOperacao> ViaturaOperacao { get; set; }
 

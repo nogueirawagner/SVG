@@ -5,11 +5,11 @@ using SVG.Infra.Repositories;
 
 namespace GestaoDDD.Infra.Data.Repositories
 {
-  public class EquipeRepository : RepositoryBase<Equipe>, IEquipeRepository
+  public class SessaoRepository : RepositoryBase<Sessao>, ISessaoRepository
   {
     private readonly SQLServerContext _db;
 
-    public EquipeRepository(SQLServerContext dbContext)
+    public SessaoRepository(SQLServerContext dbContext)
       : base(dbContext)
     {
       _db = dbContext;

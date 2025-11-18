@@ -39,10 +39,10 @@ namespace SVG.IoC
       container.Register<IOperadorOperacaoAppService, OperadorOperacaoAppService>(Lifestyle.Scoped);
       container.Register<IOperadorOperacaoService, OperadorOperacaoService>(Lifestyle.Scoped);
 
-      // Equipe
-      container.Register<IEquipeRepository, EquipeRepository>(Lifestyle.Scoped);
-      container.Register<IEquipeAppService, EquipeAppService>(Lifestyle.Scoped);
-      container.Register<IEquipeService, EquipeService>(Lifestyle.Scoped);
+      // Sessao
+      container.Register<ISessaoRepository, SessaoRepository>(Lifestyle.Scoped);
+      container.Register<ISessaoAppService, SessaoAppService>(Lifestyle.Scoped);
+      container.Register<ISessaoService, SessaoService>(Lifestyle.Scoped);
 
       // Viatura
       container.Register<IViaturaRepository, ViaturaRepository>(Lifestyle.Scoped);
