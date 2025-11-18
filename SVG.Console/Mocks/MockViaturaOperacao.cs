@@ -11,10 +11,12 @@ namespace SVG.Console.Mocks
     public MockViaturaOperacao(IViaturaOperacaoAppService viaturaOperacaoAppService)
     {
       _viaturaOperacaoAppService = viaturaOperacaoAppService;
+      
+      Kill();
       Seed();
     }
 
-    private void Seed()
+    public void Seed()
     {
       var viaturasOperacoes = new List<ViaturaOperacao>
       {
@@ -24,6 +26,11 @@ namespace SVG.Console.Mocks
       };
 
       _viaturaOperacaoAppService.AddRange(viaturasOperacoes);
+    }
+
+    public void Kill()
+    {
+      _viaturaOperacaoAppService.GetAll().ToList().ForEach(op => _viaturaOperacaoAppService.Remove(op));
     }
   }
 }

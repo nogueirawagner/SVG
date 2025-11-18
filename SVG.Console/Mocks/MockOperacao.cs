@@ -15,7 +15,7 @@ namespace SVG.Console.Mocks
       Seed();
     }
 
-    private void Seed()
+    public void Seed()
     {
       var operacoes = new List<Operacao>
       {
@@ -54,6 +54,11 @@ namespace SVG.Console.Mocks
       };
 
       _operacaoAppService.AddRange(operacoes);
+    }
+
+    public void Kill()
+    {
+      _operacaoAppService.GetAll().ToList().ForEach(op => _operacaoAppService.Remove(op));
     }
   }
 }

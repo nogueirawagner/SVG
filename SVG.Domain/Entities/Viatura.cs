@@ -8,7 +8,10 @@ namespace SVG.Domain.Entities
     public string Modelo { get; set; }
     public string Prefixo { get; set; }
     public string Placa { get; set; }
-    public string Equipe { get; set; }
+
+    // FK da Sessão
+    public int SessaoID { get; set; }
+    public virtual Sessao Sessao { get; set; }
 
     public virtual ICollection<ViaturaOperacao> ViaturasOperacao { get; set; }
 
@@ -17,4 +20,5 @@ namespace SVG.Domain.Entities
       ViaturasOperacao = new List<ViaturaOperacao>();
     }
   }
+
 }

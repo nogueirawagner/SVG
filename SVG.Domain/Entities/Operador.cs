@@ -11,7 +11,10 @@ namespace SVG.Domain.Entities
     public int ID { get; set; }
     public string Matricula { get; set; }
     public string Nome { get; set; }
-    public string Sessao { get; set; }
     public string Telefone { get; set; }
+
+    // FK da Sessão
+    public int SessaoID { get; set; }
+    public virtual Sessao Sessao { get; set; }
   }
 }

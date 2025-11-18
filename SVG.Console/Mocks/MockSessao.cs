@@ -1,4 +1,5 @@
 ﻿using SVG.App.Interface;
+using SVG.App.Services;
 using SVG.Domain.Entities;
 using System.Collections.Generic;
 
@@ -6,28 +7,36 @@ namespace SVG.Console.Mocks
 {
   public class MockSessao
   {
-    private readonly ISessaoAppService _SessaoAppService;
+    private readonly ISessaoAppService _sessaoAppService;
 
     public MockSessao(ISessaoAppService SessaoAppService)
     {
-      _SessaoAppService = SessaoAppService;
+      _sessaoAppService = SessaoAppService;
+      Kill();
       Seed();
     }
 
-    private void Seed()
+    public void Seed()
     {
-      var Sessaos = new List<Sessao>
+      var sessao = new List<Sessao>
       {
-        new Sessao { Nome = "SOE I" },
-        new Sessao { Nome = "SOE II" },
-        new Sessao { Nome = "SOE III" },
-        new Sessao { Nome = "SOE IV" },
-        new Sessao { Nome = "SOR" },
-        new Sessao { Nome = "SOT" },
-        new Sessao { Nome = "SI" }
+        new Sessao { Nome = "SOE I" }, // ID = 1
+        new Sessao { Nome = "SOE II" }, // ID = 2
+        new Sessao { Nome = "SOE III" }, // ID = 3
+        new Sessao { Nome = "SOE IV" }, // ID = 4
+        new Sessao { Nome = "SOR" }, // ID = 5
+        new Sessao { Nome = "SOT" }, // ID = 6
+        new Sessao { Nome = "SI" }, // ID = 7
+        new Sessao { Nome = "SOC" }, // ID = 8
+        new Sessao { Nome = "GAB" }  // ID = 9
       };
 
-      _SessaoAppService.AddRange(Sessaos);
+      _sessaoAppService.AddRange(sessao);
+    }
+
+    public void Kill()
+    {
+      _sessaoAppService.GetAll().ToList().ForEach(op => _sessaoAppService.Remove(op));
     }
   }
 }

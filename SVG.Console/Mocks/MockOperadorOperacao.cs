@@ -11,10 +11,11 @@ namespace SVG.Console.Mocks
     public MockOperadorOperacao(IOperadorOperacaoAppService operadorOperacaoAppService)
     {
       _operadorOperacaoAppService = operadorOperacaoAppService;
+      Kill();
       Seed();
     }
 
-    private void Seed()
+    public void Seed()
     {
       var operadoresOperacoes = new List<OperadorOperacao>
       {
@@ -24,6 +25,11 @@ namespace SVG.Console.Mocks
       };
 
       _operadorOperacaoAppService.AddRange(operadoresOperacoes);
+    }
+
+    public void Kill()
+    {
+      _operadorOperacaoAppService.GetAll().ToList().ForEach(op => _operadorOperacaoAppService.Remove(op));
     }
   }
 }
