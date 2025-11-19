@@ -13,6 +13,7 @@ public class Program
   private readonly IViaturaAppService _viaturaAppService;
   private readonly IOperadorOperacaoAppService _operadorOperacaoAppService;
   private readonly IViaturaOperacaoAppService _viaturaOperacaoAppService;
+  private readonly ITipoOperacaoAppService _tipoOperacaoAppService;
 
   private Program(
       IOperadorAppService operadorAppService,
@@ -20,7 +21,8 @@ public class Program
       ISessaoAppService sessaoAppService,
       IViaturaAppService viaturaAppService,
       IOperadorOperacaoAppService operadorOperacaoAppService,
-      IViaturaOperacaoAppService viaturaOperacaoAppService
+      IViaturaOperacaoAppService viaturaOperacaoAppService,
+      ITipoOperacaoAppService tipoOperacaoAppService
   )
   {
     _operadorAppService = operadorAppService;
@@ -29,6 +31,7 @@ public class Program
     _viaturaAppService = viaturaAppService;
     _operadorOperacaoAppService = operadorOperacaoAppService;
     _viaturaOperacaoAppService = viaturaOperacaoAppService;
+    _tipoOperacaoAppService = tipoOperacaoAppService;
   }
   public static void Main()
   {
@@ -45,10 +48,11 @@ public class Program
           container.GetInstance<ISessaoAppService>(),
           container.GetInstance<IViaturaAppService>(),
           container.GetInstance<IOperadorOperacaoAppService>(),
-          container.GetInstance<IViaturaOperacaoAppService>()
+          container.GetInstance<IViaturaOperacaoAppService>(),
+          container.GetInstance<ITipoOperacaoAppService>()
       );
 
-      //program.Run();
+      program.Run();
     }
   }
   public void Run()
@@ -59,7 +63,8 @@ public class Program
          _viaturaAppService,
          _operacaoAppService,
          _operadorOperacaoAppService,
-         _viaturaOperacaoAppService
+         _viaturaOperacaoAppService,
+         _tipoOperacaoAppService
      );
     master.Run();
   }
@@ -72,7 +77,8 @@ public class Program
          _viaturaAppService,
          _operacaoAppService,
          _operadorOperacaoAppService,
-         _viaturaOperacaoAppService
+         _viaturaOperacaoAppService,
+         _tipoOperacaoAppService
      );
     master.Kill();
   }

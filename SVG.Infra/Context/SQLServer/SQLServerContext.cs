@@ -16,7 +16,7 @@ namespace SVG.Infra.Context.SQLServer
       Configuration.ProxyCreationEnabled = false;
       Configuration.LazyLoadingEnabled = true;
     }
-    
+
     public SQLServerContext(string cs)
       : base("name=ConnectionLocal")
     {
@@ -31,6 +31,7 @@ namespace SVG.Infra.Context.SQLServer
     public DbSet<Sessao> Sessao { get; set; }
     public DbSet<Viatura> Viatura { get; set; }
     public DbSet<ViaturaOperacao> ViaturaOperacao { get; set; }
+    public DbSet<TipoOperacao> TipoOperacoes { get; set; }
 
     #endregion
 

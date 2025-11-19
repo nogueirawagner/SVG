@@ -14,7 +14,9 @@ namespace SVG.Domain.Entities
     public string DP { get; set; }
     public string Coordenador { get; set; }
     public int QtdEquipe { get; set; }
-
+    public int TipoOperacaoID { get; set; }
+    
+    public virtual TipoOperacao TipoOperacao { get; set; }
     public virtual ICollection<OperadorOperacao> OperadoresOperacao { get; set; }
     public virtual ICollection<ViaturaOperacao> ViaturasOperacao { get; set; }
 

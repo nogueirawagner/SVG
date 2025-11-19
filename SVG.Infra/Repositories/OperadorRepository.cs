@@ -4,7 +4,7 @@ using SVG.Infra.Context.SQLServer;
 using SVG.Infra.FunctionsDB;
 using SVG.Infra.Repositories;
 
-namespace GestaoDDD.Infra.Data.Repositories
+namespace SVG.Infra.Repositories
 {
   public class OperadorRepository : RepositoryBase<Operador>, IOperadorRepository
   {

@@ -1,4 +1,5 @@
 ﻿using SVG.App.Interface;
+using SVG.App.Services;
 
 namespace SVG.Console.Mocks
 {
@@ -10,6 +11,7 @@ namespace SVG.Console.Mocks
     private readonly IOperacaoAppService _operacaoAppService;
     private readonly IOperadorOperacaoAppService _operadorOperacaoAppService;
     private readonly IViaturaOperacaoAppService _viaturaOperacaoAppService;
+    private readonly ITipoOperacaoAppService _tipoOperacaoAppService;
 
     public MasterKill(
         ISessaoAppService sessaoAppService,
@@ -17,7 +19,8 @@ namespace SVG.Console.Mocks
         IViaturaAppService viaturaAppService,
         IOperacaoAppService operacaoAppService,
         IOperadorOperacaoAppService operadorOperacaoAppService,
-        IViaturaOperacaoAppService viaturaOperacaoAppService
+        IViaturaOperacaoAppService viaturaOperacaoAppService,
+        ITipoOperacaoAppService tipoOperacaoAppService
     )
     {
       _sessaoAppService = sessaoAppService;
@@ -26,27 +29,24 @@ namespace SVG.Console.Mocks
       _operacaoAppService = operacaoAppService;
       _operadorOperacaoAppService = operadorOperacaoAppService;
       _viaturaOperacaoAppService = viaturaOperacaoAppService;
+      _tipoOperacaoAppService = tipoOperacaoAppService;
     }
 
     public void Kill()
     {
-      // 1. ViaturaOperacao
-      var killViaturaOperacao = new MockViaturaOperacao(_viaturaOperacaoAppService, kill: true, seed: false, run: false);
+      new MockViaturaOperacao(_viaturaOperacaoAppService, kill: true, seed: false, run: false);
 
-      // 2. OperadorOperacao
-      var killOperadorOperacao = new MockOperadorOperacao(_operadorOperacaoAppService, _operacaoAppService, _operadorAppService, kill: true, seed: false, run: false);
+      new MockOperadorOperacao(_operadorOperacaoAppService, _operacaoAppService, _operadorAppService, kill: true, seed: false, run: false);
 
-      // 3. Operacao
-      var killOperacao = new MockOperacao(_operacaoAppService, kill: true, seed: false, run: false);
+      new MockOperacao(_operacaoAppService, kill: true, seed: false, run: false);
 
-      // 4. Viatura
-      var killViatura = new MockViatura(_viaturaAppService, kill: true, seed: false, run: false);
+      new MockViatura(_viaturaAppService, kill: true, seed: false, run: false);
 
-      // 5. Operador
-      var killOperador = new MockOperador(_operadorAppService, kill: true, seed: false, run: false);
+      new MockOperador(_operadorAppService, kill: true, seed: false, run: false);
 
-      // 6. Sessao
-      var killSessao = new MockSessao(_sessaoAppService, kill: true, seed: false, run: false);
+      new MockTipoOperacao(_tipoOperacaoAppService, kill: true, seed: false, run: false);
+
+      new MockSessao(_sessaoAppService, kill: true, seed: false, run: false);
     }
 
   }

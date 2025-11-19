@@ -1,11 +1,11 @@
-﻿using GestaoDDD.Infra.Data.Repositories;
-using SimpleInjector;
+﻿using SimpleInjector;
 using SVG.App.Interface;
 using SVG.App.Services;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.Interfaces.Services;
 using SVG.Domain.Services;
 using SVG.Infra.Context.SQLServer;
+using SVG.Infra.Repositories;
 
 namespace SVG.IoC
 {
@@ -53,6 +53,11 @@ namespace SVG.IoC
       container.Register<IViaturaOperacaoRepository, ViaturaOperacaoRepository>(Lifestyle.Scoped);
       container.Register<IViaturaOperacaoAppService, ViaturaOperacaoAppService>(Lifestyle.Scoped);
       container.Register<IViaturaOperacaoService, ViaturaOperacaoService>(Lifestyle.Scoped);
+
+      container.Register<ITipoOperacaoRepository, TipoOperacaoRepository>(Lifestyle.Scoped);
+      container.Register<ITipoOperacaoService, TipoOperacaoService>(Lifestyle.Scoped);
+      container.Register<ITipoOperacaoAppService, TipoOperacaoAppService>(Lifestyle.Scoped);
+
     }
   }
 }

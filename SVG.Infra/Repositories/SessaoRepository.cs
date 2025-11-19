@@ -3,7 +3,7 @@ using SVG.Domain.Interfaces.Repositories;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.Repositories;
 
-namespace GestaoDDD.Infra.Data.Repositories
+namespace SVG.Infra.Repositories
 {
   public class SessaoRepository : RepositoryBase<Sessao>, ISessaoRepository
   {
