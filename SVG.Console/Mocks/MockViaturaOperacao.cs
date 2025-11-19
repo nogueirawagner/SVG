@@ -13,12 +13,13 @@ namespace SVG.Console.Mocks
         bool seed = false,
         bool kill = false,
         bool run = true
-      ) : base(seed, kill, run)
+      ) : base()
     {
       _viaturaOperacaoAppService = viaturaOperacaoAppService;
+      Execute(seed, kill, run);
     }
 
-    public override void Seed()
+    protected override void Seed()
     {
       var viaturasOperacoes = new List<ViaturaOperacao>
       {
@@ -30,7 +31,7 @@ namespace SVG.Console.Mocks
       _viaturaOperacaoAppService.AddRange(viaturasOperacoes);
     }
 
-    public override void Kill()
+    protected override void Kill()
     {
       _viaturaOperacaoAppService.GetAll().ToList().ForEach(op => _viaturaOperacaoAppService.Remove(op));
     }

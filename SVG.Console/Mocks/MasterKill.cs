@@ -30,31 +30,24 @@ namespace SVG.Console.Mocks
 
     public void Kill()
     {
-      // ORDEM INVERSA DA MASTERSEED — EVITA CONFLITO DE FK
+      // 1. ViaturaOperacao
+      var killViaturaOperacao = new MockViaturaOperacao(_viaturaOperacaoAppService, kill: true, seed: false, run: false);
 
-      // 1. ViaturaOperacao (depende de Viatura + Operacao)
-      var killViaturaOperacao = new MockViaturaOperacao(_viaturaOperacaoAppService);
-      killViaturaOperacao.Kill();
+      // 2. OperadorOperacao
+      var killOperadorOperacao = new MockOperadorOperacao(_operadorOperacaoAppService, kill: true, seed: false, run: false);
 
-      // 2. OperadorOperacao (depende de Operador + Operacao)
-      var killOperadorOperacao = new MockOperadorOperacao(_operadorOperacaoAppService);
-      killOperadorOperacao.Kill();
+      // 3. Operacao
+      var killOperacao = new MockOperacao(_operacaoAppService, kill: true, seed: false, run: false);
 
-      // 3. Operacao (independente)
-      var killOperacao = new MockOperacao(_operacaoAppService);
-      killOperacao.Kill();
+      // 4. Viatura
+      var killViatura = new MockViatura(_viaturaAppService, kill: true, seed: false, run: false);
 
-      // 4. Viatura (depende de Sessao)
-      var killViatura = new MockViatura(_viaturaAppService);
-      killViatura.Kill();
+      // 5. Operador
+      var killOperador = new MockOperador(_operadorAppService, kill: true, seed: false, run: false);
 
-      // 5. Operador (depende de Sessao)
-      var killOperador = new MockOperador(_operadorAppService);
-      killOperador.Kill();
-
-      // 6. Sessao (não depende de nada)
-      var killSessao = new MockSessao(_sessaoAppService);
-      killSessao.Kill();
+      // 6. Sessao
+      var killSessao = new MockSessao(_sessaoAppService, kill: true, seed: false, run: false);
     }
+
   }
 }

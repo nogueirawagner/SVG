@@ -14,12 +14,13 @@ namespace SVG.Console.Mocks
             bool seed = false,
             bool kill = false,
             bool run = true
-        ) : base(seed, kill, run)
+        ) : base()
     {
       _sessaoAppService = sessaoAppService;
+      Execute(seed, kill, run);
     }
 
-    public override void Seed()
+    protected override void Seed()
     {
       var sessao = new List<Sessao>
       {
@@ -37,7 +38,7 @@ namespace SVG.Console.Mocks
       _sessaoAppService.AddRange(sessao);
     }
 
-    public override void Kill()
+    protected override void Kill()
     {
       _sessaoAppService.GetAll().ToList().ForEach(op => _sessaoAppService.Remove(op));
     }

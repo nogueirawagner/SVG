@@ -21,25 +21,6 @@ namespace SVG.Console.Mocks
     {
       _operadorAppService = operadorAppService;
       _mockOperadores = new MockOperador(_operadorAppService);
-
-      if (limparBase)
-        LimparBase();
-
-      if (iniciarBase)
-      {
-        LimparBase();
-        IniciarBase();
-      }
-    }
-
-    public void LimparBase()
-    {
-      _mockOperadores.Kill();
-    }
-
-    public void IniciarBase()
-    {
-      _mockOperadores.Seed();
     }
   }
 }

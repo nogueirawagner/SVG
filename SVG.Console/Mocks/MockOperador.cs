@@ -18,18 +18,19 @@ namespace SVG.Console.Mocks
       bool seed = false,
       bool kill = false,
       bool run = true
-      ) : base(seed, kill, run)
+      ) : base()
     {
       _operadorAppService = operadorAppService;
+      Execute(seed, kill, run);
     }
 
-    public override void Seed()
+    protected override void Seed()
     {
       GerarOperadores();
       _operadorAppService.AddRange(_operadoresMock);
     }
 
-    public override void Kill()
+    protected override void Kill()
     {
       _operadorAppService.GetAll().ToList().ForEach(op => _operadorAppService.Remove(op));
     }

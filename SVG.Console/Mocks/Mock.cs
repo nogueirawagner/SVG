@@ -1,8 +1,15 @@
-﻿namespace SVG.Console.Mocks
+﻿using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+
+namespace SVG.Console.Mocks
 {
   public abstract class Mock
   {
-    public Mock(bool seed = false, bool kill = false, bool run = true)
+    protected Mock()
+    {
+
+    }
+
+    public void Execute(bool seed = false, bool kill = false, bool run = true)
     {
       // kill tem prioridade: se kill for true, sempre limpa
       if (kill)
@@ -42,10 +49,10 @@
       }
     }
     
-    public abstract void Kill();
-    
-    public abstract void Seed();
+    protected abstract void Kill();
 
-    public virtual void Run() { }
+    protected abstract void Seed();
+
+    protected virtual void Run() { }
   }
 }
