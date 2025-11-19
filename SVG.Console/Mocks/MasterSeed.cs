@@ -43,7 +43,7 @@ namespace SVG.Console.Mocks
       var operacaoSeed = new MockOperacao(_operacaoAppService, seed: true);
 
       // 5. Operador x Operação
-      var operadorOperacaoSeed = new MockOperadorOperacao(_operadorOperacaoAppService, seed: true);
+      var operadorOperacaoSeed = new MockOperadorOperacao(_operadorOperacaoAppService, _operacaoAppService, _operadorAppService, seed: true);
 
       // 6. Viatura x Operação
       var viaturaOperacaoSeed = new MockViaturaOperacao(_viaturaOperacaoAppService, seed: true);

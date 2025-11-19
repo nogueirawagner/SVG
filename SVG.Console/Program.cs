@@ -48,7 +48,7 @@ public class Program
           container.GetInstance<IViaturaOperacaoAppService>()
       );
 
-      program.Run();
+      //program.Run();
     }
   }
   public void Run()

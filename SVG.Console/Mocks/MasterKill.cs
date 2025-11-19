@@ -34,7 +34,7 @@ namespace SVG.Console.Mocks
       var killViaturaOperacao = new MockViaturaOperacao(_viaturaOperacaoAppService, kill: true, seed: false, run: false);
 
       // 2. OperadorOperacao
-      var killOperadorOperacao = new MockOperadorOperacao(_operadorOperacaoAppService, kill: true, seed: false, run: false);
+      var killOperadorOperacao = new MockOperadorOperacao(_operadorOperacaoAppService, _operacaoAppService, _operadorAppService, kill: true, seed: false, run: false);
 
       // 3. Operacao
       var killOperacao = new MockOperacao(_operacaoAppService, kill: true, seed: false, run: false);
