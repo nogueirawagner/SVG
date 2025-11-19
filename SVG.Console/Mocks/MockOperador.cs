@@ -8,26 +8,28 @@ using System.Threading.Tasks;
 
 namespace SVG.Console.Mocks
 {
-  public class MockOperador
+  public class MockOperador : Mock
   {
     private readonly IOperadorAppService _operadorAppService;
     private List<Operador> _operadoresMock;
 
-    public MockOperador(IOperadorAppService operadorAppService)
+    public MockOperador(
+      IOperadorAppService operadorAppService,
+      bool seed = false,
+      bool kill = false,
+      bool run = true
+      ) : base(seed, kill, run)
     {
       _operadorAppService = operadorAppService;
-
-      Kill();
-      Seed();
     }
 
-    public void Seed()
+    public override void Seed()
     {
       GerarOperadores();
       _operadorAppService.AddRange(_operadoresMock);
     }
 
-    public void Kill()
+    public override void Kill()
     {
       _operadorAppService.GetAll().ToList().ForEach(op => _operadorAppService.Remove(op));
     }

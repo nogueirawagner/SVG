@@ -4,18 +4,21 @@ using System.Collections.Generic;
 
 namespace SVG.Console.Mocks
 {
-  public class MockViatura
+  public class MockViatura : Mock
   {
     private readonly IViaturaAppService _viaturaAppService;
 
-    public MockViatura(IViaturaAppService viaturaAppService)
+    public MockViatura(
+        IViaturaAppService viaturaAppService,
+        bool seed = false,
+        bool kill = false,
+        bool run = true
+        ) : base(seed, kill, run)
     {
       _viaturaAppService = viaturaAppService;
-      Kill();
-      Seed();
     }
 
-    public void Seed()
+    public override void Seed()
     {
       var viaturas 
         = new List<Viatura>
@@ -37,7 +40,7 @@ namespace SVG.Console.Mocks
       _viaturaAppService.AddRange(viaturas);
     }
 
-    public void Kill()
+    public override void Kill()
     {
       _viaturaAppService.GetAll().ToList().ForEach(op => _viaturaAppService.Remove(op));
     }

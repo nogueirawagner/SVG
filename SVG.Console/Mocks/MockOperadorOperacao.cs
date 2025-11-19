@@ -4,18 +4,21 @@ using System.Collections.Generic;
 
 namespace SVG.Console.Mocks
 {
-  public class MockOperadorOperacao
+  public class MockOperadorOperacao : Mock
   {
     private readonly IOperadorOperacaoAppService _operadorOperacaoAppService;
 
-    public MockOperadorOperacao(IOperadorOperacaoAppService operadorOperacaoAppService)
+    public MockOperadorOperacao(
+        IOperadorOperacaoAppService operadorOperacaoAppService,
+        bool seed = false,
+        bool kill = false,
+        bool run = true
+      ) : base(seed, kill, run)
     {
       _operadorOperacaoAppService = operadorOperacaoAppService;
-      Kill();
-      Seed();
     }
 
-    public void Seed()
+    public override void Seed()
     {
       var operadoresOperacoes = new List<OperadorOperacao>
       {
@@ -27,7 +30,7 @@ namespace SVG.Console.Mocks
       _operadorOperacaoAppService.AddRange(operadoresOperacoes);
     }
 
-    public void Kill()
+    public override void Kill()
     {
       _operadorOperacaoAppService.GetAll().ToList().ForEach(op => _operadorOperacaoAppService.Remove(op));
     }

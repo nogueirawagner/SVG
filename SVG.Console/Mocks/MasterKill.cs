@@ -2,7 +2,7 @@
 
 namespace SVG.Console.Mocks
 {
-  public class MasterSeed
+  public class MasterKill
   {
     private readonly ISessaoAppService _sessaoAppService;
     private readonly IOperadorAppService _operadorAppService;
@@ -11,7 +11,7 @@ namespace SVG.Console.Mocks
     private readonly IOperadorOperacaoAppService _operadorOperacaoAppService;
     private readonly IViaturaOperacaoAppService _viaturaOperacaoAppService;
 
-    public MasterSeed(
+    public MasterKill(
         ISessaoAppService sessaoAppService,
         IOperadorAppService operadorAppService,
         IViaturaAppService viaturaAppService,
@@ -28,26 +28,33 @@ namespace SVG.Console.Mocks
       _viaturaOperacaoAppService = viaturaOperacaoAppService;
     }
 
-    public void Run()
+    public void Kill()
     {
-      // 1. Sessões
-      var sessaoSeed = new MockSessao(_sessaoAppService, seed: true);
+      // ORDEM INVERSA DA MASTERSEED — EVITA CONFLITO DE FK
 
-      // 2. Operadores
-      var operadorSeed = new MockOperador(_operadorAppService, seed: true);
+      // 1. ViaturaOperacao (depende de Viatura + Operacao)
+      var killViaturaOperacao = new MockViaturaOperacao(_viaturaOperacaoAppService);
+      killViaturaOperacao.Kill();
 
-      // 3. Viaturas
-      var viaturaSeed = new MockViatura(_viaturaAppService, seed: true);
+      // 2. OperadorOperacao (depende de Operador + Operacao)
+      var killOperadorOperacao = new MockOperadorOperacao(_operadorOperacaoAppService);
+      killOperadorOperacao.Kill();
 
-      // 4. Operações
-      var operacaoSeed = new MockOperacao(_operacaoAppService, seed: true);
+      // 3. Operacao (independente)
+      var killOperacao = new MockOperacao(_operacaoAppService);
+      killOperacao.Kill();
 
-      // 5. Operador x Operação
-      var operadorOperacaoSeed = new MockOperadorOperacao(_operadorOperacaoAppService, seed: true);
+      // 4. Viatura (depende de Sessao)
+      var killViatura = new MockViatura(_viaturaAppService);
+      killViatura.Kill();
 
-      // 6. Viatura x Operação
-      var viaturaOperacaoSeed = new MockViaturaOperacao(_viaturaOperacaoAppService, seed: true);
+      // 5. Operador (depende de Sessao)
+      var killOperador = new MockOperador(_operadorAppService);
+      killOperador.Kill();
+
+      // 6. Sessao (não depende de nada)
+      var killSessao = new MockSessao(_sessaoAppService);
+      killSessao.Kill();
     }
-
   }
 }

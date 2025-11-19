@@ -61,10 +61,21 @@ public class Program
          _operadorOperacaoAppService,
          _viaturaOperacaoAppService
      );
-
     master.Run();
   }
 
+  public void Kill()
+  {
+    var master = new MasterKill(
+         _sessaoAppService,
+         _operadorAppService,
+         _viaturaAppService,
+         _operacaoAppService,
+         _operadorOperacaoAppService,
+         _viaturaOperacaoAppService
+     );
+    master.Kill();
+  }
 }
 
 

@@ -5,18 +5,21 @@ using System.Collections.Generic;
 
 namespace SVG.Console.Mocks
 {
-  public class MockSessao
+  public class MockSessao : Mock
   {
     private readonly ISessaoAppService _sessaoAppService;
 
-    public MockSessao(ISessaoAppService SessaoAppService)
+    public MockSessao(
+            ISessaoAppService sessaoAppService,
+            bool seed = false,
+            bool kill = false,
+            bool run = true
+        ) : base(seed, kill, run)
     {
-      _sessaoAppService = SessaoAppService;
-      Kill();
-      Seed();
+      _sessaoAppService = sessaoAppService;
     }
 
-    public void Seed()
+    public override void Seed()
     {
       var sessao = new List<Sessao>
       {
@@ -34,7 +37,7 @@ namespace SVG.Console.Mocks
       _sessaoAppService.AddRange(sessao);
     }
 
-    public void Kill()
+    public override void Kill()
     {
       _sessaoAppService.GetAll().ToList().ForEach(op => _sessaoAppService.Remove(op));
     }
