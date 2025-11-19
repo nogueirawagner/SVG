@@ -16,6 +16,7 @@
     <ProjectReference Include="..\SVG.Cross\SVG.IoC.csproj" />
     <ProjectReference Include="..\SVG.Domain\SVG.Domain.csproj" />
     <ProjectReference Include="..\SVG.Infra\SVG.Infra.csproj" />
+    <ProjectReference Include="..\SVG.Utilities\SVG.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

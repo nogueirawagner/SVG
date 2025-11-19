@@ -71,7 +71,7 @@ namespace SVG.Console.Mocks
           {
             OperacaoID = operacao.ID,
             OperadorID = operador.ID,
-            SVG = true,   // ou false / alterna se quiser
+            SVG = rnd.NextBool(80),   // ou false / alterna se quiser
             // Preencha outros campos se existirem (ex.: Sessao, Equipe etc.)
           });
         }
