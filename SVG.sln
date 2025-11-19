@@ -26,6 +26,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SVG.Console", "SVG.Console\SVG.Console.csproj", "{D06A927A-5BA8-4F97-9136-C5CA6E1AEB1C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "6- Documentaion", "6- Documentaion", "{0B7496F1-B26C-4BB7-8136-26AFF386B269}"
+	ProjectSection(SolutionItems) = preProject
+		Readme.txt = Readme.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
