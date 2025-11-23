@@ -9,10 +9,15 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="15.1.0" />
     <PackageReference Include="EntityFramework" Version="6.5.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageReference Include="SimpleInjector" Version="5.5.0" />
+    <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="5.5.0" />
+    <PackageReference Include="SimpleInjector.Integration.ServiceCollection" Version="5.5.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SVG.App\SVG.App.csproj" />
+    <ProjectReference Include="..\SVG.Cross\SVG.IoC.csproj" />
     <ProjectReference Include="..\SVG.Domain\SVG.Domain.csproj" />
     <ProjectReference Include="..\SVG.Infra\SVG.Infra.csproj" />
   </ItemGroup>

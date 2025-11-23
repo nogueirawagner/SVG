@@ -9,6 +9,7 @@ namespace SVG.WebApp.AutoMapper
     public DomainToViewModelMappingProfile()
     {
       CreateMap<Operador, OperadorViewModel>();
+      CreateMap<Operacao, OperacaoViewModel>();
     }
   }
 }

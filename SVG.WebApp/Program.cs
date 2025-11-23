@@ -1,17 +1,27 @@
+using SimpleInjector;
+using SimpleInjector.Lifestyles;
 using SVG.Infra.Context.SQLServer;
-using System;
+using SVG.IoC;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 
+var container = new Container();
+container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
 
-// Lê a connection string do appsettings.json
+builder.Services.AddSimpleInjector(container, options =>
+{
+  options.AddAspNetCore();
+});
+
+BootStrapper.RegisterServices(container);
+builder.Services.AddControllersWithViews();
+
 var cs = builder.Configuration.GetConnectionString("ConnectionLocal");
-
-// Registra o DbContext EF6 como Scoped, passando a connection string
 builder.Services.AddScoped<SQLServerContext>(_ => new SQLServerContext(cs));
+
 
 
 var app = builder.Build();
@@ -23,6 +33,9 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.UseSimpleInjector(container);
+container.Verify();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -36,7 +49,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
+app.MapControllers();
 
 app.MapRazorPages();
 

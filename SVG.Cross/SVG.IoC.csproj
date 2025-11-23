@@ -14,7 +14,6 @@
     <ProjectReference Include="..\SVG.App\SVG.App.csproj" />
     <ProjectReference Include="..\SVG.Domain\SVG.Domain.csproj" />
     <ProjectReference Include="..\SVG.Infra\SVG.Infra.csproj" />
-    <ProjectReference Include="..\SVG.WebApp\SVG.WebApp.csproj" />
   </ItemGroup>
 
 </Project>
