@@ -15,9 +15,10 @@ namespace SVG.IoC
     {
       container.Register<SQLServerContext>(() =>
       {
-        var cs = "Data Source=DESKTOP-3MKU8HI;Initial Catalog=SVG;Persist Security Info=True;User ID=sa;Password=_senhas_2012;MultipleActiveResultSets=True";
+        //var cs = "Data Source=DESKTOP-3MKU8HI;Initial Catalog=SVG;Persist Security Info=True;User ID=sa;Password=_senhas_2012;MultipleActiveResultSets=True";
 
-        return new SQLServerContext(cs);
+        //return new SQLServerContext(cs);
+        return new SQLServerContext();
       }, Lifestyle.Scoped);
 
       container.Register<ISQLServerContext>(() =>

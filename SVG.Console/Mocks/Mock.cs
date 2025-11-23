@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-
-namespace SVG.Console.Mocks
+﻿namespace SVG.Console.Mocks
 {
   public abstract class Mock
   {

@@ -1,10 +1,8 @@
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
-using SimpleInjector.Integration.ServiceCollection;
-using SimpleInjector.Integration.AspNetCore;
-using SimpleInjector.Integration.AspNetCore.Mvc;
 using SVG.Infra.Context.SQLServer;
 using SVG.IoC;
+using SVG.WebApp.AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,22 +11,10 @@ builder.Services.AddRazorPages();
 
 var container = new Container();
 container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
-
-builder.Services.AddSimpleInjector(container, options =>
-{
-  options.AddAspNetCore()
-         .AddControllerActivation();
-
-  options.AddLogging();
-});
-
+builder.Services.AddSimpleInjector(container, options => options.AddAspNetCore().AddControllerActivation());
+var config = AutoMapperConfig.RegisterMappings();
+container.RegisterInstance(config.CreateMapper());
 BootStrapper.RegisterServices(container);
-builder.Services.AddControllersWithViews();
-
-var cs = builder.Configuration.GetConnectionString("ConnectionLocal");
-builder.Services.AddScoped<SQLServerContext>(_ => new SQLServerContext(cs));
-
-
 
 var app = builder.Build();
 
@@ -40,8 +26,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseSimpleInjector(container);
-container.Verify();
+app.Services.UseSimpleInjector(container);
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -50,7 +35,6 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-
 // Rotas MVC (controllers)
 app.MapControllerRoute(
     name: "default",
@@ -58,5 +42,7 @@ app.MapControllerRoute(
 app.MapControllers();
 
 app.MapRazorPages();
+
+container.Verify();
 
 app.Run();

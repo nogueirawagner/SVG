@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using SVG.App.Interface;
-using SVG.App.Services;
+﻿using SVG.App.Interface;
 using SVG.Domain.Entities;
-using System.Collections.Generic;
 
 namespace SVG.Console.Mocks
 {

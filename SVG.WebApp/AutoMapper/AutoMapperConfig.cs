@@ -9,7 +9,7 @@ namespace SVG.WebApp.AutoMapper
     private static MapperConfiguration _config;
     public static IMapper Mapper { get; private set; }
 
-    public static void RegisterMappings()
+    public static MapperConfiguration RegisterMappings()
     {
       ILoggerFactory loggerFactory = NullLoggerFactory.Instance;
 
@@ -20,6 +20,7 @@ namespace SVG.WebApp.AutoMapper
       }, loggerFactory);
 
       Mapper = _config.CreateMapper();
+      return _config;
     }
   }
 }

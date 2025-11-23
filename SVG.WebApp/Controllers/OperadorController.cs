@@ -1,10 +1,36 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SVG.App.Interface;
+using SVG.App.ViewModels;
+using SVG.Domain.Entities;
 
 namespace SVG.WebApp.Controllers
 {
   public class OperadorController : Controller
   {
+    private readonly IMapper _mapper;
+    private readonly IOperadorAppService _operadorAppService;
+
+    public OperadorController(
+      IOperadorAppService operadorAppService,
+      IMapper mapper
+      )
+    {
+      _mapper = mapper;
+      _operadorAppService = operadorAppService;
+    }
+   
+    // GET: OperadorController
+    public ActionResult List()
+    {
+      var operadores = _operadorAppService.GetAll().OrderBy(s => s.Nome);
+      var opVM = _mapper.Map<IEnumerable<Operador>, IEnumerable<OperadorViewModel>>(operadores);
+      return View(opVM);
+    }
+
+
+
     // GET: OperadorController
     public ActionResult Index()
     {

@@ -9,20 +9,22 @@ namespace SVG.Infra.Context.SQLServer
 {
   public class SQLServerContext : DbContext, ISQLServerContext
   {
+    static string cs = "Data Source=DESKTOP-3MKU8HI;Initial Catalog=SVG;Persist Security Info=True;User ID=sa;Password=_senhas_2012;MultipleActiveResultSets=True";
+
     // ctor default para ser encontrado por reflexão
     public SQLServerContext()
-      : base("name=ConnectionLocal")
+      : base(cs)
     {
       Configuration.ProxyCreationEnabled = false;
       Configuration.LazyLoadingEnabled = true;
     }
 
-    public SQLServerContext(string cs)
-      : base("name=ConnectionLocal")
-    {
-      Configuration.ProxyCreationEnabled = false;
-      Configuration.LazyLoadingEnabled = true;
-    }
+    //public SQLServerContext(string cs)
+    //  : base(cs)
+    //{
+    //  Configuration.ProxyCreationEnabled = false;
+    //  Configuration.LazyLoadingEnabled = true;
+    //}
 
     #region objetos
     public DbSet<Operador> Operador { get; set; }
@@ -56,49 +58,6 @@ namespace SVG.Infra.Context.SQLServer
       #region ArquivoConfiguracao
       modelBuilder.Configurations.Add(new OperadorConfiguration());
       #endregion
-    }
-  }
-
-  public class SQLServerContextFactory : IDbContextFactory<SQLServerContext>
-  {
-    public SQLServerContext Create()
-    {
-      // Ajuste este nome se seu projeto web tiver outro nome
-      var webProjectName = "SVG.WebApp";
-
-      // Sobe 3 níveis da pasta bin/Debug/net48/... até a pasta da solution
-      var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-
-      string[] candidatePaths =
-        {
-            Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", webProjectName)),
-            Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", webProjectName)),
-            Path.GetFullPath(Path.Combine(baseDir, "..", "..", webProjectName))
-        };
-
-      var webDir = candidatePaths.FirstOrDefault(Directory.Exists);
-      if (webDir == null)
-      {
-        throw new DirectoryNotFoundException(
-            "Não encontrei a pasta do projeto web. " +
-            "Tente ajustar o nome do projeto em 'webProjectName' ou revise o layout da solução.\n" +
-            string.Join("\nTentativas: ", candidatePaths)
-        );
-      }
-
-
-      var config = new ConfigurationBuilder()
-          .SetBasePath(webDir)
-          .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-          .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false)
-          .AddEnvironmentVariables()
-          .Build();
-
-      var cs = config.GetConnectionString("ConnectionLocal");
-      if (string.IsNullOrWhiteSpace(cs))
-        throw new InvalidOperationException("ConnectionStrings:ConnectionLocal não encontrada no appsettings.json do projeto web.");
-
-      return new SQLServerContext(cs);
     }
   }
 }
