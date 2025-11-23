@@ -1,5 +1,8 @@
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
+using SimpleInjector.Integration.ServiceCollection;
+using SimpleInjector.Integration.AspNetCore;
+using SimpleInjector.Integration.AspNetCore.Mvc;
 using SVG.Infra.Context.SQLServer;
 using SVG.IoC;
 
@@ -13,7 +16,10 @@ container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
 
 builder.Services.AddSimpleInjector(container, options =>
 {
-  options.AddAspNetCore();
+  options.AddAspNetCore()
+         .AddControllerActivation();
+
+  options.AddLogging();
 });
 
 BootStrapper.RegisterServices(container);
