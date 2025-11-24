@@ -30,11 +30,18 @@ namespace SVG.WebApp.Controllers
     }
 
 
-
     // GET: OperadorController
-    public ActionResult Index()
+    public ActionResult Index(string search)
     {
-      return View();
+      var operadores = _operadorAppService.GetAll().OrderBy(s => s.Nome).ToList();
+      
+      if (!string.IsNullOrWhiteSpace(search))
+        operadores = operadores.Where(o => o.Nome.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+
+      ViewData["search"] = search;
+
+      var opVM = _mapper.Map<IEnumerable<Operador>, IEnumerable<OperadorViewModel>>(operadores);
+      return View(opVM);
     }
 
     // GET: OperadorController/Details/5
