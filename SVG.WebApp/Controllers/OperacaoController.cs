@@ -1,91 +1,200 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json;
 using SVG.App.Interface;
+using SVG.App.Services;
+using SVG.App.ViewModels;
+using SVG.Domain.Entities;
 
 namespace SVG.WebApp.Controllers
 {
   public class OperacaoController : Controller
   {
     private readonly IOperacaoAppService _operacaoAppService;
+    private readonly IOperadorAppService _operadorAppService;
+    private readonly ISessaoAppService _sessaoAppService;
+    private readonly ITipoOperacaoAppService _tipoOperacaoAppService;
+    private readonly IMapper _mapper;
 
-    public OperacaoController(IOperacaoAppService operacaoAppService)
+    public OperacaoController(
+      IOperacaoAppService operacaoAppService,
+      IOperadorAppService operadorAppService,
+      ITipoOperacaoAppService tipoOperacaoAppService,
+      ISessaoAppService sessaoAppService,
+      IMapper mapper)
     {
       _operacaoAppService = operacaoAppService;
+      _operadorAppService = operadorAppService;
+      _tipoOperacaoAppService = tipoOperacaoAppService;
+      _sessaoAppService = sessaoAppService;
+      _mapper = mapper;
     }
 
-    // GET: OperacaoController
-    public ActionResult Index()
+    private void PopularCombos(int? tipoOperacaoId = null, int? coordenadorId = null)
     {
-      return View();
+      var operadores = _operadorAppService
+          .GetAll()
+          .OrderBy(o => o.Nome)
+          .ToList();
+
+      ViewBag.Coordenadores = operadores;
+
+      var operadoresDto = operadores.Select(o => new
+      {
+        o.ID,
+        o.Nome,
+        o.Matricula,
+        o.SessaoID
+      }).ToList();
+
+      ViewBag.OperadoresJson = JsonConvert.SerializeObject(operadoresDto);
+
+      // >>> SESSÕES
+      var sessoes = _sessaoAppService
+          .GetAll()
+          .OrderBy(s => s.Nome)
+          .ToList();
+      ViewBag.Sessoes = sessoes;
+
+      // >>> TIPOS
+      var tipos = _tipoOperacaoAppService
+          .GetAll()
+          .OrderBy(t => t.Nome)
+          .ToList();
+      ViewBag.TiposOperacao = tipos;
     }
 
-    // GET: OperacaoController/Details/5
-    public ActionResult Details(int id)
+
+    // GET: Operacao
+    public IActionResult Index(string search)
     {
-      return View();
+      var operacoes = _operacaoAppService.GetAll();
+
+      if (!string.IsNullOrWhiteSpace(search))
+      {
+        operacoes = operacoes
+          .Where(o => o.Objeto.Contains(search, StringComparison.OrdinalIgnoreCase)
+                   || o.Coordenador.Contains(search, StringComparison.OrdinalIgnoreCase));
+      }
+
+      var lista = operacoes
+        .OrderByDescending(o => o.DataHora)
+        .ToList();
+
+      var vm = _mapper.Map<IEnumerable<Operacao>, IEnumerable<OperacaoViewModel>>(lista);
+
+      ViewData["search"] = search;
+
+      return View(vm);
     }
 
-    // GET: OperacaoController/Create
-    public ActionResult Create()
+    // GET: Operacao/Details/5
+    public IActionResult Details(int id)
     {
-      return View();
+      var operacao = _operacaoAppService.GetById(id);
+      if (operacao == null) return NotFound();
+
+      var vm = _mapper.Map<OperacaoViewModel>(operacao);
+      return View(vm);
     }
 
-    // POST: OperacaoController/Create
+    // GET: Operacao/Create
+    public IActionResult Create()
+    {
+      PopularCombos();
+      return View(new OperacaoViewModel
+      {
+        DataHora = DateTime.Now
+      });
+    }
+
+    // POST: Operacao/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Create(IFormCollection collection)
+    public IActionResult Create(OperacaoViewModel model)
     {
-      try
+      if (!ModelState.IsValid)
       {
-        return RedirectToAction(nameof(Index));
+        PopularCombos(model.TipoOperacaoID, model.CoordenadorOperadorID);
+        return View(model);
       }
-      catch
-      {
-        return View();
-      }
+
+      // Exemplo: pegar o nome do coordenador a partir do ID selecionado
+      var coord = _operadorAppService.GetById(model.CoordenadorOperadorID);
+      if (coord != null)
+        model.Coordenador = coord.Nome;
+
+      var entidade = _mapper.Map<Operacao>(model);
+
+      // Aqui você ainda pode, depois, percorrer model.OperadoresSelecionados
+      // e criar os registros de OperadorOperacao.
+
+      _operacaoAppService.Add(entidade);
+
+      return RedirectToAction(nameof(Index));
     }
 
-    // GET: OperacaoController/Edit/5
-    public ActionResult Edit(int id)
+
+    // GET: Operacao/Edit/5
+    public IActionResult Edit(int id)
     {
-      return View();
+      var operacao = _operacaoAppService.GetById(id);
+      if (operacao == null) return NotFound();
+
+      var vm = _mapper.Map<OperacaoViewModel>(operacao);
+      PopularTiposOperacaoDropDown(vm.TipoOperacaoID);
+
+      return View(vm);
     }
 
-    // POST: OperacaoController/Edit/5
+    // POST: Operacao/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Edit(int id, IFormCollection collection)
+    public IActionResult Edit(OperacaoViewModel model)
     {
-      try
+      if (!ModelState.IsValid)
       {
-        return RedirectToAction(nameof(Index));
+        PopularTiposOperacaoDropDown(model.TipoOperacaoID);
+        return View(model);
       }
-      catch
-      {
-        return View();
-      }
+
+      var entidade = _mapper.Map<Operacao>(model);
+      _operacaoAppService.Update(entidade);
+
+      return RedirectToAction(nameof(Index));
     }
 
-    // GET: OperacaoController/Delete/5
-    public ActionResult Delete(int id)
+    // GET: Operacao/Delete/5
+    public IActionResult Delete(int id)
     {
-      return View();
+      var operacao = _operacaoAppService.GetById(id);
+      if (operacao == null) return NotFound();
+
+      var vm = _mapper.Map<OperacaoViewModel>(operacao);
+      return View(vm);
     }
 
-    // POST: OperacaoController/Delete/5
-    [HttpPost]
+    // POST: Operacao/Delete/5
+    [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
-    public ActionResult Delete(int id, IFormCollection collection)
+    public IActionResult DeleteConfirmed(int id)
     {
-      try
-      {
-        return RedirectToAction(nameof(Index));
-      }
-      catch
-      {
-        return View();
-      }
+      var operacao = _operacaoAppService.GetById(id);
+      if (operacao == null) return NotFound();
+
+      _operacaoAppService.Remove(operacao);
+      return RedirectToAction(nameof(Index));
+    }
+
+    private void PopularTiposOperacaoDropDown(int? selecionado = null)
+    {
+      var tipos = _tipoOperacaoAppService.GetAll()
+        .OrderBy(t => t.Nome)
+        .ToList();
+
+      ViewBag.TipoOperacaoID =
+        new SelectList(tipos, "ID", "Nome", selecionado);
     }
   }
 }

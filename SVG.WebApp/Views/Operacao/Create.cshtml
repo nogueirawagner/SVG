@@ -1,0 +1,274 @@
+﻿@model SVG.App.ViewModels.OperacaoViewModel
+
+@using SVG.Domain.Entities
+
+@{
+    ViewData["Title"] = "Nova Operação";
+
+    var coordenadores = (IEnumerable<Operador>)ViewBag.Coordenadores;
+    var operadoresJson = (string)ViewBag.OperadoresJson;
+    var sessoes = (IEnumerable<Sessao>)ViewBag.Sessoes;
+    var tipos = (IEnumerable<TipoOperacao>)ViewBag.TiposOperacao;
+}
+
+<div class="container mt-4">
+    <h2>Nova Operação</h2>
+    <hr />
+
+    <form asp-action="Create" method="post" class="mt-3">
+        <!-- LINHA SUPERIOR: DataHora, Objeto, DP, Coordenador, QtdEquipe, TipoOperacao -->
+        <div class="row mb-3">
+
+            <!-- Data / Hora -->
+            <div class="col-md-2">
+                <label asp-for="DataHora" class="form-label">Data / Hora</label>
+                <input asp-for="DataHora" type="datetime-local" class="form-control" />
+                <span asp-validation-for="DataHora" class="text-danger"></span>
+            </div>
+
+            <!-- Objeto -->
+            <div class="col-md-3">
+                <label asp-for="Objeto" class="form-label">Objeto</label>
+                <input asp-for="Objeto" class="form-control" />
+                <span asp-validation-for="Objeto" class="text-danger"></span>
+            </div>
+
+            <!-- DP -->
+            <div class="col-md-2">
+                <label asp-for="DP" class="form-label">DP Apoio</label>
+                <input asp-for="DP" class="form-control" />
+                <span asp-validation-for="DP" class="text-danger"></span>
+            </div>
+
+            <!-- Coordenador (combo com busca em memória) -->
+            <div class="col-md-3">
+                <label class="form-label">Coordenador</label>
+                <input type="text" id="coordenadorSearch" class="form-control mb-1"
+                       placeholder="Buscar coordenador..." />
+
+                <select asp-for="CoordenadorOperadorID" class="form-select" id="coordenadorSelect">
+                    <option value="">Selecione...</option>
+                    @foreach (var op in coordenadores)
+                    {
+                        <option value="@op.ID">@op.Nome (@op.Matricula)</option>
+                    }
+                </select>
+                <span asp-validation-for="CoordenadorOperadorID" class="text-danger"></span>
+            </div>
+
+            <!-- Qtd Equipes -->
+            <div class="col-md-1">
+                <label asp-for="QtdEquipe" class="form-label">Qtd</label>
+                <input asp-for="QtdEquipe" type="number" min="1" class="form-control" />
+                <span asp-validation-for="QtdEquipe" class="text-danger"></span>
+            </div>
+
+            <!-- Tipo Operação -->
+            <div class="col-md-1">
+                <label asp-for="TipoOperacaoID" class="form-label">Tipo</label>
+                <select asp-for="TipoOperacaoID" class="form-select">
+                    <option value="">...</option>
+                    @foreach (var t in tipos)
+                    {
+                        <option value="@t.ID">@t.Nome</option>
+                    }
+                </select>
+                <span asp-validation-for="TipoOperacaoID" class="text-danger"></span>
+
+                <span asp-validation-for="TipoOperacaoID" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- PAINEL DIVIDIDO EM DOIS LADOS -->
+        <div class="row mt-4">
+
+            <!-- LADO ESQUERDO: Sessões -> operadores automaticamente -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        Operadores por Sessão
+                    </div>
+                    <div class="card-body">
+
+                        <div class="row mb-3">
+                            <div class="col-8">
+                                <label class="form-label">Selecionar Sessão</label>
+                                <select id="sessaoSelect" class="form-select">
+                                    <option value="">Escolha a sessão...</option>
+                                    @foreach (var s in sessoes)
+                                    {
+                                        <option value="@s.ID">@s.Nome</option>
+                                    }
+                                </select>
+
+                            </div>
+                            <div class="col-4 d-flex align-items-end">
+                                <button type="button" id="btnAddSessao" class="btn btn-primary w-100">
+                                    Carregar sessão
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <strong>Operadores adicionados pela(s) sessão(ões):</strong>
+                        </div>
+
+                        <ul id="listaOperadoresSessao" class="list-group">
+                            <!-- JS vai preencher -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LADO DIREITO: Operadores voluntários (busca + seleção) -->
+            <div class="col-md-6 mt-3 mt-md-0">
+                <div class="card h-100">
+                    <div class="card-header">
+                        Operadores voluntários
+                    </div>
+                    <div class="card-body">
+
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Buscar Operador</label>
+                                <input type="text" id="operadorSearch" class="form-control mb-2"
+                                       placeholder="Digite o nome para filtrar..." />
+
+                                <select id="operadorSelect" class="form-select">
+                                    <option value="">Selecione um operador...</option>
+                                    @* As opções serão montadas via JS com base no JSON *@
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="button" id="btnAddOperador" class="btn btn-primary w-100">
+                                    Adicionar voluntário
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <strong>Operadores selecionados:</strong>
+                        </div>
+                        <ul id="listaOperadoresSelecionados" class="list-group">
+                            <!-- JS adiciona itens aqui (sessão + voluntários) -->
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
+            <button type="submit" class="btn btn-success">Salvar Operação</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Dados de operadores vindos do controller (ID, Nome, Matricula, SessaoID)
+        const operadoresData = @Html.Raw(operadoresJson);
+
+        // --- Coordenador: filtro em memória
+        const coordSearch = document.getElementById('coordenadorSearch');
+        const coordSelect = document.getElementById('coordenadorSelect');
+
+        coordSearch.addEventListener('keyup', function () {
+            const termo = this.value.toLowerCase();
+
+            for (let i = 0; i < coordSelect.options.length; i++) {
+                const opt = coordSelect.options[i];
+                if (!opt.value) continue;
+                opt.hidden = !opt.text.toLowerCase().includes(termo);
+            }
+        });
+
+        // --- Preencher combo de voluntários com todos operadores
+        const opSelect = document.getElementById('operadorSelect');
+        function preencherComboVoluntarios() {
+            operadoresData.forEach(op => {
+                const opt = document.createElement('option');
+                opt.value = op.ID;
+                opt.text = `${op.Nome} (${op.Matricula})`;
+                opSelect.appendChild(opt);
+            });
+        }
+        preencherComboVoluntarios();
+
+        // Função comum para adicionar operador na lista (sessão ou voluntário)
+        const listaSessao = document.getElementById('listaOperadoresSessao');
+        const listaSelecionados = document.getElementById('listaOperadoresSelecionados');
+
+        function adicionarOperador(op) {
+            const liId = 'op-' + op.ID;
+            if (document.getElementById(liId)) {
+                // já está em alguma lista, não duplica
+                return;
+            }
+
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.id = liId;
+
+            li.innerHTML = `
+                <span>${op.Nome} (${op.Matricula})</span>
+                <button type="button" class="btn btn-sm btn-outline-danger">X</button>
+                <input type="hidden" name="OperadoresSelecionados" value="${op.ID}" />
+            `;
+
+            li.querySelector('button').addEventListener('click', function () {
+                li.parentElement.removeChild(li);
+            });
+
+            listaSelecionados.appendChild(li);
+        }
+
+        // --- Sessão -> adiciona todos operadores daquela sessão
+        const sessaoSelect = document.getElementById('sessaoSelect');
+        const btnAddSessao = document.getElementById('btnAddSessao');
+
+        btnAddSessao.addEventListener('click', function () {
+            const sessaoId = parseInt(sessaoSelect.value);
+            if (!sessaoId) return;
+
+            const ops = operadoresData.filter(o => o.SessaoID === sessaoId);
+            ops.forEach(adicionarOperador);
+
+            // opcional: mostrar também numa lista dedicada à esquerda
+            listaSessao.innerHTML = '';
+            ops.forEach(op => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.textContent = `${op.Nome} (${op.Matricula})`;
+                listaSessao.appendChild(li);
+            });
+        });
+
+        // --- Voluntários: filtro + adicionar individual
+        const opSearch = document.getElementById('operadorSearch');
+        opSearch.addEventListener('keyup', function () {
+            const termo = this.value.toLowerCase();
+
+            for (let i = 0; i < opSelect.options.length; i++) {
+                const opt = opSelect.options[i];
+                if (!opt.value) continue;
+                opt.hidden = !opt.text.toLowerCase().includes(termo);
+            }
+        });
+
+        const btnAddOperador = document.getElementById('btnAddOperador');
+        btnAddOperador.addEventListener('click', function () {
+            const opt = opSelect.options[opSelect.selectedIndex];
+            if (!opt || !opt.value) return;
+
+            const id = parseInt(opt.value);
+            const op = operadoresData.find(o => o.ID === id);
+            if (op) {
+                adicionarOperador(op);
+            }
+        });
+    </script>
+}

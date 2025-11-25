@@ -15,5 +15,17 @@ namespace SVG.Infra.Repositories
     {
       _db = dbContext;
     }
+
+    public IEnumerable<Operador> PesquisarAlunosPorPalavras(string pTermo)
+    {
+      var pChaves = new List<string>();
+      var where = XFullText.MontarCondicao(pTermo, "Nome", out pChaves);
+
+      var sql = @"SELECT * FROM Aluno WHERE {0} and Concorrencia = '{1}' and Cargo = '{2}' ORDER BY Posicao";
+      //var sql = @"SELECT * FROM Aluno WHERE {0} and Concorrencia = '{1}' and Cargo = '{2}' ORDER BY PosicaoProvisoria";
+
+      sql = string.Format(sql, where);
+      return _db.Database.SqlQuery<Operador>(sql);
+    }
   }
 }

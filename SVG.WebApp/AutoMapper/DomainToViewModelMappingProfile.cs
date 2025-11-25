@@ -10,6 +10,11 @@ namespace SVG.WebApp.AutoMapper
     {
       CreateMap<Operador, OperadorViewModel>();
       CreateMap<Operacao, OperacaoViewModel>();
+
+      CreateMap<Operacao, OperacaoViewModel>()
+      .ForMember(dest => dest.TipoOperacaoNome,
+               opt => opt.MapFrom(src => src.TipoOperacao.Nome));
+
     }
   }
 }

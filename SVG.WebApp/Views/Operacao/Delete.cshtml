@@ -1,0 +1,42 @@
+﻿@model SVG.App.ViewModels.OperacaoViewModel
+
+@{
+    ViewData["Title"] = "Excluir Operação";
+}
+
+<div class="container mt-4">
+    <h2>Excluir Operação</h2>
+    <hr />
+
+    <div class="alert alert-warning">
+        Tem certeza que deseja excluir a operação abaixo?
+    </div>
+
+    <dl class="row">
+        <dt class="col-sm-3">Data/Hora</dt>
+        <dd class="col-sm-9">@Model.DataHora.ToString("dd/MM/yyyy HH:mm")</dd>
+
+        <dt class="col-sm-3">Objeto</dt>
+        <dd class="col-sm-9">@Model.Objeto</dd>
+
+        <dt class="col-sm-3">Tipo de Operação</dt>
+        <dd class="col-sm-9">@Model.TipoOperacaoNome</dd>
+
+        <dt class="col-sm-3">DP</dt>
+        <dd class="col-sm-9">@Model.DP</dd>
+
+        <dt class="col-sm-3">Coordenador</dt>
+        <dd class="col-sm-9">@Model.Coordenador</dd>
+
+        <dt class="col-sm-3">Qtd. Equipes</dt>
+        <dd class="col-sm-9">@Model.QtdEquipe</dd>
+    </dl>
+
+    <form asp-action="Delete" method="post" class="mt-3">
+        <input type="hidden" asp-for="ID" />
+        <div class="d-flex justify-content-between">
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-danger">Excluir</button>
+        </div>
+    </form>
+</div>

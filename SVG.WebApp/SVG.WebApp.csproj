@@ -23,8 +23,4 @@
     <ProjectReference Include="..\SVG.Infra\SVG.Infra.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Views\Operacao\" />
-  </ItemGroup>
-
 </Project>
