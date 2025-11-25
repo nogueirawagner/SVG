@@ -22,35 +22,40 @@
             <!-- Data / Hora -->
             <div class="col-md-2">
                 <label asp-for="DataHora" class="form-label">Data / Hora</label>
-                <input asp-for="DataHora" type="datetime-local" class="form-control" />
+                <input asp-for="DataHora" name="DataHora" type="datetime-local" class="form-control" />
                 <span asp-validation-for="DataHora" class="text-danger"></span>
             </div>
 
-            <!-- Objeto -->
-            <div class="col-md-3">
+            <!-- Objeto (reduzido) -->
+            <div class="col-md-2">
                 <label asp-for="Objeto" class="form-label">Objeto</label>
-                <input asp-for="Objeto" class="form-control" />
+                <input asp-for="Objeto" name="Objeto" class="form-control" />
                 <span asp-validation-for="Objeto" class="text-danger"></span>
             </div>
 
-            <!-- DP -->
-            <div class="col-md-2">
+            <!-- DP Apoio (reduzido) -->
+            <div class="col-md-1">
                 <label asp-for="DP" class="form-label">DP Apoio</label>
-                <input asp-for="DP" class="form-control" />
+                <input asp-for="DP" name="DP" class="form-control" />
                 <span asp-validation-for="DP" class="text-danger"></span>
             </div>
 
             <!-- Coordenador (combo com busca em memória) -->
             <div class="col-md-3">
                 <label class="form-label">Coordenador</label>
-                <input type="text" id="coordenadorSearch" class="form-control mb-1"
+                <input type="text" id="coordenadorSearch" class="form-control mb-2"
                        placeholder="Buscar coordenador..." />
 
-                <select asp-for="CoordenadorOperadorID" class="form-select" id="coordenadorSelect">
+                <select id="coordenadorSelect"
+                        name="CoordenadorOperadorID"
+                        class="form-select">
                     <option value="">Selecione...</option>
                     @foreach (var op in coordenadores)
                     {
-                        <option value="@op.ID">@op.Nome (@op.Matricula)</option>
+                        <option value="@op.ID"
+                                @(Model.CoordenadorOperadorID == op.ID ? "selected" : "")>
+                            @op.Nome (@op.Matricula)
+                        </option>
                     }
                 </select>
                 <span asp-validation-for="CoordenadorOperadorID" class="text-danger"></span>
@@ -59,24 +64,28 @@
             <!-- Qtd Equipes -->
             <div class="col-md-1">
                 <label asp-for="QtdEquipe" class="form-label">Qtd</label>
-                <input asp-for="QtdEquipe" type="number" min="1" class="form-control" />
+                <input asp-for="QtdEquipe" name="QtdEquipe" type="number" min="1" class="form-control" />
                 <span asp-validation-for="QtdEquipe" class="text-danger"></span>
             </div>
 
             <!-- Tipo Operação -->
-            <div class="col-md-1">
+            <div class="col-md-3">
                 <label asp-for="TipoOperacaoID" class="form-label">Tipo</label>
-                <select asp-for="TipoOperacaoID" class="form-select">
+                <select id="tipoOperacaoSelect"
+                        name="TipoOperacaoID"
+                        class="form-select">
                     <option value="">...</option>
                     @foreach (var t in tipos)
                     {
-                        <option value="@t.ID">@t.Nome</option>
+                        <option value="@t.ID"
+                                @(Model.TipoOperacaoID == t.ID ? "selected" : "")>
+                            @t.Nome
+                        </option>
                     }
                 </select>
                 <span asp-validation-for="TipoOperacaoID" class="text-danger"></span>
-
-                <span asp-validation-for="TipoOperacaoID" class="text-danger"></span>
             </div>
+
         </div>
 
         <!-- PAINEL DIVIDIDO EM DOIS LADOS -->
@@ -100,7 +109,6 @@
                                         <option value="@s.ID">@s.Nome</option>
                                     }
                                 </select>
-
                             </div>
                             <div class="col-4 d-flex align-items-end">
                                 <button type="button" id="btnAddSessao" class="btn btn-primary w-100">
@@ -110,11 +118,11 @@
                         </div>
 
                         <div class="mb-2">
-                            <strong>Operadores adicionados pela(s) sessão(ões):</strong>
+                            <strong>Operadores da sessão selecionada:</strong>
                         </div>
 
                         <ul id="listaOperadoresSessao" class="list-group">
-                            <!-- JS vai preencher -->
+                            <!-- JS mostra operadores da sessão atual aqui (visual) -->
                         </ul>
                     </div>
                 </div>
@@ -134,23 +142,37 @@
                                 <input type="text" id="operadorSearch" class="form-control mb-2"
                                        placeholder="Digite o nome para filtrar..." />
 
-                                <select id="operadorSelect" class="form-select">
-                                    <option value="">Selecione um operador...</option>
-                                    @* As opções serão montadas via JS com base no JSON *@
-                                </select>
+                                <div class="d-flex gap-2">
+                                    <select id="operadorSelect" class="form-select form-select-sm flex-grow-1">
+                                        <option value="">Selecione um operador...</option>
+                                        @* opções serão preenchidas via JS usando operadoresData *@
+                                    </select>
+
+                                    <button type="button"
+                                            id="btnAddOperador"
+                                            class="btn btn-primary btn-sm align-self-center"
+                                            style="white-space: nowrap;">
+                                        Adicionar
+                                    </button>
+                                </div>
                             </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button type="button" id="btnAddOperador" class="btn btn-primary w-100">
-                                    Adicionar voluntário
-                                </button>
+
+                            <!-- Qtd Vagas SVG -->
+                            <div class="col-md-4">
+                                <label asp-for="QtdVagasVoluntarios" class="form-label">Qtd Vagas SVG</label>
+                                <input asp-for="QtdVagasVoluntarios"
+                                       name="QtdVagasVoluntarios"
+                                       type="number" min="0"
+                                       class="form-control" />
+                                <span asp-validation-for="QtdVagasVoluntarios" class="text-danger"></span>
                             </div>
                         </div>
 
                         <div class="mb-2">
-                            <strong>Operadores selecionados:</strong>
+                            <strong>Operadores selecionados (sessão + voluntários):</strong>
                         </div>
                         <ul id="listaOperadoresSelecionados" class="list-group">
-                            <!-- JS adiciona itens aqui (sessão + voluntários) -->
+                            <!-- JS adiciona itens aqui -->
                         </ul>
 
                     </div>
@@ -172,18 +194,57 @@
         // Dados de operadores vindos do controller (ID, Nome, Matricula, SessaoID)
         const operadoresData = @Html.Raw(operadoresJson);
 
-        // --- Coordenador: filtro em memória
+        // --- Coordenador: filtro inteligente em memória (busca + seleção automática)
         const coordSearch = document.getElementById('coordenadorSearch');
         const coordSelect = document.getElementById('coordenadorSelect');
 
-        coordSearch.addEventListener('keyup', function () {
-            const termo = this.value.toLowerCase();
+        coordSearch.addEventListener('input', function () {
+            const termo = this.value.trim().toLowerCase();
+
+            let firstMatchIndex = -1;
+            let matchCount = 0;
 
             for (let i = 0; i < coordSelect.options.length; i++) {
                 const opt = coordSelect.options[i];
-                if (!opt.value) continue;
-                opt.hidden = !opt.text.toLowerCase().includes(termo);
+
+                if (!opt.value) {
+                    opt.hidden = false;
+                    continue;
+                }
+
+                const texto = opt.text.toLowerCase();
+                const match = termo === "" || texto.includes(termo);
+
+                opt.hidden = !match;
+
+                if (match) {
+                    matchCount++;
+                    if (firstMatchIndex === -1) {
+                        firstMatchIndex = i;
+                    }
+                }
             }
+
+            if (termo === "") {
+                coordSelect.selectedIndex = 0;
+                coordSelect.size = 1;
+                return;
+            }
+
+            if (matchCount === 1 && firstMatchIndex !== -1) {
+                coordSelect.selectedIndex = firstMatchIndex;
+                coordSelect.size = 1;
+            } else if (matchCount > 1) {
+                coordSelect.selectedIndex = firstMatchIndex;
+                coordSelect.size = Math.min(matchCount + 1, 8);
+            } else {
+                coordSelect.selectedIndex = 0;
+                coordSelect.size = 1;
+            }
+        });
+
+        coordSearch.addEventListener('blur', function () {
+            coordSelect.size = 1;
         });
 
         // --- Preencher combo de voluntários com todos operadores
@@ -198,14 +259,17 @@
         }
         preencherComboVoluntarios();
 
-        // Função comum para adicionar operador na lista (sessão ou voluntário)
         const listaSessao = document.getElementById('listaOperadoresSessao');
         const listaSelecionados = document.getElementById('listaOperadoresSelecionados');
 
-        function adicionarOperador(op) {
+        // índice para OperadoresSelecionados[i]
+        let operadorIndex = 0;
+
+        // Função comum para adicionar operador na lista final (sessão ou voluntário)
+        function adicionarOperador(op, svgFlag) {
             const liId = 'op-' + op.ID;
             if (document.getElementById(liId)) {
-                // já está em alguma lista, não duplica
+                // já está na lista, não duplica
                 return;
             }
 
@@ -213,20 +277,32 @@
             li.className = 'list-group-item d-flex justify-content-between align-items-center';
             li.id = liId;
 
+            const tipo = svgFlag ? 'Voluntário' : 'Sessão';
+
             li.innerHTML = `
-                <span>${op.Nome} (${op.Matricula})</span>
+                <div>
+                    <strong>${op.Nome}</strong> (${op.Matricula})
+                    <span class="badge bg-secondary ms-2">${tipo}</span>
+                </div>
                 <button type="button" class="btn btn-sm btn-outline-danger">X</button>
-                <input type="hidden" name="OperadoresSelecionados" value="${op.ID}" />
+
+                <input type="hidden" name="OperacoesSelecionadasDummy" value="keep-array-structure" />
+
+                <input type="hidden" name="OperadoresSelecionados[${operadorIndex}].OperadorID" value="${op.ID}" />
+                <input type="hidden" name="OperadoresSelecionados[${operadorIndex}].SVG" value="${svgFlag}" />
             `;
 
+            operadorIndex++;
+
             li.querySelector('button').addEventListener('click', function () {
-                li.parentElement.removeChild(li);
+                li.remove();
+                // não vou reindexar; o binder aceita buracos na numeração
             });
 
             listaSelecionados.appendChild(li);
         }
 
-        // --- Sessão -> adiciona todos operadores daquela sessão
+        // --- Sessão -> adiciona todos operadores daquela sessão (SVG = false)
         const sessaoSelect = document.getElementById('sessaoSelect');
         const btnAddSessao = document.getElementById('btnAddSessao');
 
@@ -235,9 +311,8 @@
             if (!sessaoId) return;
 
             const ops = operadoresData.filter(o => o.SessaoID === sessaoId);
-            ops.forEach(adicionarOperador);
 
-            // opcional: mostrar também numa lista dedicada à esquerda
+            // mostra apenas para visualização à esquerda
             listaSessao.innerHTML = '';
             ops.forEach(op => {
                 const li = document.createElement('li');
@@ -245,18 +320,61 @@
                 li.textContent = `${op.Nome} (${op.Matricula})`;
                 listaSessao.appendChild(li);
             });
+
+            // adiciona na lista final (sessão)
+            ops.forEach(op => adicionarOperador(op, false));
         });
 
-        // --- Voluntários: filtro + adicionar individual
+        // --- Voluntários: filtro inteligente + adicionar individual (SVG = true)
         const opSearch = document.getElementById('operadorSearch');
-        opSearch.addEventListener('keyup', function () {
-            const termo = this.value.toLowerCase();
+
+        opSearch.addEventListener('input', function () {
+            const termo = this.value.trim().toLowerCase();
+
+            let firstMatchIndex = -1;
+            let matchCount = 0;
 
             for (let i = 0; i < opSelect.options.length; i++) {
                 const opt = opSelect.options[i];
-                if (!opt.value) continue;
-                opt.hidden = !opt.text.toLowerCase().includes(termo);
+
+                if (!opt.value) {
+                    opt.hidden = false;
+                    continue;
+                }
+
+                const texto = opt.text.toLowerCase();
+                const match = termo === "" || texto.includes(termo);
+
+                opt.hidden = !match;
+
+                if (match) {
+                    matchCount++;
+                    if (firstMatchIndex === -1) {
+                        firstMatchIndex = i;
+                    }
+                }
             }
+
+            if (termo === "") {
+                opSelect.selectedIndex = 0;
+                opSelect.size = 1;
+                return;
+            }
+
+            if (matchCount === 1 && firstMatchIndex !== -1) {
+                opSelect.selectedIndex = firstMatchIndex;
+                opSelect.size = 1;
+            } else if (matchCount > 1) {
+                opSelect.selectedIndex = firstMatchIndex;
+                opSelect.size = Math.min(matchCount + 1, 8);
+            } else {
+                opSelect.selectedIndex = 0;
+                opSelect.size = 1;
+            }
+        });
+
+        opSearch.addEventListener('blur', function () {
+            opSelect.size = 1;
         });
 
         const btnAddOperador = document.getElementById('btnAddOperador');
@@ -267,7 +385,7 @@
             const id = parseInt(opt.value);
             const op = operadoresData.find(o => o.ID === id);
             if (op) {
-                adicionarOperador(op);
+                adicionarOperador(op, true); // voluntário
             }
         });
     </script>

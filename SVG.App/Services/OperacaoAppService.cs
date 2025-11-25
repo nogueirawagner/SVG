@@ -13,5 +13,10 @@ namespace SVG.App.Services
     {
       _operacaoService = operacaoService;
     }
+
+    public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)
+    {
+      return _operacaoService.PegarOperadoresSVG(pOperadorIDs, pDataLimite, pQtdVagas);
+    }
   }
 }

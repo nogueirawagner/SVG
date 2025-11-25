@@ -6,6 +6,7 @@ using SVG.App.Interface;
 using SVG.App.Services;
 using SVG.App.ViewModels;
 using SVG.Domain.Entities;
+using SVG.Domain.TiposEstruturados.Operador;
 
 namespace SVG.WebApp.Controllers
 {
@@ -103,17 +104,25 @@ namespace SVG.WebApp.Controllers
     public IActionResult Create()
     {
       PopularCombos();
+
+      var now = DateTime.Now;
+      var date = new DateTime(now.Year, now.Month, now.Day, 03, 00, 00);
+
       return View(new OperacaoViewModel
       {
-        DataHora = DateTime.Now
+        DataHora = date
       });
     }
 
     // POST: Operacao/Create
     [HttpPost]
-    [ValidateAntiForgeryToken]
+    //[ValidateAntiForgeryToken]
     public IActionResult Create(OperacaoViewModel model)
     {
+      ModelState.Remove("Coordenador");
+      ModelState.Remove("TipoOperacaoNome");
+
+
       if (!ModelState.IsValid)
       {
         PopularCombos(model.TipoOperacaoID, model.CoordenadorOperadorID);
@@ -129,7 +138,22 @@ namespace SVG.WebApp.Controllers
 
       // Aqui você ainda pode, depois, percorrer model.OperadoresSelecionados
       // e criar os registros de OperadorOperacao.
+      var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
 
+      var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
+
+      var operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios.Value);
+      var operadoresSessao = model.OperadoresSelecionados.Where(s => !s.SVG).ToList();
+
+      var operadoresSVG = opSvg.Where(id => operadoresContemplados.Contains(id)).ToList();
+
+      operadoresSessao.AddRange(operadoresSVG.Select(id => new OperadorSelecionadoVM
+      {
+        OperadorID = id,
+        SVG = true
+      }));
+
+      // gravar
       _operacaoAppService.Add(entidade);
 
       return RedirectToAction(nameof(Index));
