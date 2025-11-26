@@ -1,4 +1,5 @@
 ﻿using SVG.Domain.Entities;
+using SVG.Domain.TiposEstruturados.Operador;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,5 +10,6 @@ namespace SVG.Domain.Interfaces.Repositories
 {
   public interface IOperadorRepository : IRepositoryBase<Operador>
   {
+    public IEnumerable<ResumoOperadorOperacao> PegarResumoOperador();
   }
 }

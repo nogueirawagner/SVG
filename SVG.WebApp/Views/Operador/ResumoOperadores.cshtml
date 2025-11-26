@@ -1,0 +1,158 @@
+﻿@using SVG.Domain.TiposEstruturados.Operador
+@model IEnumerable<ResumoOperadorOperacao>
+
+@{
+    ViewData["Title"] = "Resumo de Operações por Operador";
+}
+
+<div class="container mt-4">
+    <h2>Resumo de Operações por Operador</h2>
+    <hr />
+
+    <!-- Barra de busca -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="buscarNome" class="form-label">Buscar por nome</label>
+            <input type="text"
+                   id="buscarNome"
+                   class="form-control"
+                   placeholder="Digite parte do nome do operador..." />
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover" id="tabelaResumo">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 90px;">Ações</th>
+
+                    <th>
+                        Nome
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary ms-1"
+                                onclick="ordenarTabela(1, false)">
+                            ⇅
+                        </button>
+                    </th>
+                    <th>Matrícula</th>
+                    <th>Telefone</th>
+                    <th>Sessão</th>
+
+                    <th class="text-end">
+                        Qtd Operações
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary ms-1"
+                                onclick="ordenarTabela(5, true)">
+                            ⇅
+                        </button>
+                    </th>
+
+                    <th class="text-end">
+                        Qtd Operações SVG
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary ms-1"
+                                onclick="ordenarTabela(6, true)">
+                            ⇅
+                        </button>
+                    </th>
+
+                    <th class="text-end">
+                        Média Ponderada
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary ms-1"
+                                onclick="ordenarTabela(7, true)">
+                            ⇅
+                        </button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <a asp-action="DetalharOperador"
+                               asp-route-id="@item.OperadorID"
+                               class="btn btn-sm btn-primary">
+                                Detalhes
+                            </a>
+                        </td>
+                        <td>@item.OperadorNome</td>
+                        <td>@item.Matricula</td>
+                        <td>@item.Telefone</td>
+                        <td>@item.Sessao</td>
+                        <td class="text-end">@item.QtdOperacoes</td>
+                        <td class="text-end">@item.QtdOperacoesSVG</td>
+                        <td class="text-end">@item.MediaPonderada.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // --- FILTRO POR NOME ---
+        const inputBusca = document.getElementById('buscarNome');
+        const tabela = document.getElementById('tabelaResumo');
+        const tbody = tabela.querySelector('tbody');
+
+        inputBusca.addEventListener('input', function () {
+            const termo = this.value.trim().toLowerCase();
+
+            for (let i = 0; i < tbody.rows.length; i++) {
+                const row = tbody.rows[i];
+                const nomeCell = row.cells[1]; // coluna Nome
+                const nome = nomeCell.textContent.toLowerCase();
+
+                if (nome.includes(termo)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+
+        // --- ORDENAÇÃO ---
+        let estadoOrdenacao = {
+            coluna: null,
+            asc: true
+        };
+
+        // colIndex: índice da coluna (0-based)
+        // isNumeric: true para números, false para texto
+        function ordenarTabela(colIndex, isNumeric) {
+            const rowsArray = Array.from(tbody.querySelectorAll('tr'));
+            const mesmaColuna = estadoOrdenacao.coluna === colIndex;
+
+            // Se clicar na mesma coluna, inverte a direção
+            if (mesmaColuna) {
+                estadoOrdenacao.asc = !estadoOrdenacao.asc;
+            } else {
+                estadoOrdenacao.coluna = colIndex;
+                estadoOrdenacao.asc = true; // começa crescente
+            }
+
+            rowsArray.sort((a, b) => {
+                const aText = a.cells[colIndex].textContent.trim();
+                const bText = b.cells[colIndex].textContent.trim();
+
+                let comp = 0;
+
+                if (isNumeric) {
+                    const aVal = parseFloat(aText.replace(',', '.')) || 0;
+                    const bVal = parseFloat(bText.replace(',', '.')) || 0;
+                    comp = aVal - bVal;
+                } else {
+                    comp = aText.localeCompare(bText, 'pt-BR');
+                }
+
+                return estadoOrdenacao.asc ? comp : -comp;
+            });
+
+            // Reanexa as linhas na nova ordem
+            rowsArray.forEach(row => tbody.appendChild(row));
+        }
+    </script>
+}
