@@ -22,7 +22,10 @@
             <!-- Data / Hora -->
             <div class="col-md-2">
                 <label asp-for="DataHora" class="form-label">Data / Hora</label>
-                <input asp-for="DataHora" name="DataHora" type="datetime-local" class="form-control" />
+                <input asp-for="DataHora"
+                       type="datetime-local"
+                       class="form-control"
+                       value="@Model.DataHora.ToString("yyyy-MM-ddTHH:mm")" />
                 <span asp-validation-for="DataHora" class="text-danger"></span>
             </div>
 
@@ -64,7 +67,7 @@
             <!-- Qtd Equipes -->
             <div class="col-md-1">
                 <label asp-for="QtdEquipe" class="form-label">Qtd</label>
-                <input asp-for="QtdEquipe" name="QtdEquipe" type="number" min="1" class="form-control" />
+                <input asp-for="QtdEquipe" type="number" min="1" class="form-control" />
                 <span asp-validation-for="QtdEquipe" class="text-danger"></span>
             </div>
 
@@ -145,7 +148,7 @@
                                 <div class="d-flex gap-2">
                                     <select id="operadorSelect" class="form-select form-select-sm flex-grow-1">
                                         <option value="">Selecione um operador...</option>
-                                        @* opções serão preenchidas via JS usando operadoresData *@
+                                        @* opções serão preenchidas via JS usando operadoresJson *@
                                     </select>
 
                                     <button type="button"
@@ -161,15 +164,15 @@
                             <div class="col-md-4">
                                 <label asp-for="QtdVagasVoluntarios" class="form-label">Qtd Vagas SVG</label>
                                 <input asp-for="QtdVagasVoluntarios"
-                                       name="QtdVagasVoluntarios"
                                        type="number" min="0"
                                        class="form-control" />
                                 <span asp-validation-for="QtdVagasVoluntarios" class="text-danger"></span>
                             </div>
                         </div>
 
-                        <div class="mb-2">
+                        <div class="mb-2 d-flex align-items-center">
                             <strong>Operadores selecionados (sessão + voluntários):</strong>
+                            <span id="contadorOperadores" class="badge bg-primary ms-2">0</span>
                         </div>
                         <ul id="listaOperadoresSelecionados" class="list-group">
                             <!-- JS adiciona itens aqui -->
@@ -261,6 +264,12 @@
 
         const listaSessao = document.getElementById('listaOperadoresSessao');
         const listaSelecionados = document.getElementById('listaOperadoresSelecionados');
+        const contadorOperadores = document.getElementById('contadorOperadores');
+
+        function atualizarContadorOperadores() {
+            const qtd = listaSelecionados.children.length;
+            contadorOperadores.textContent = qtd;
+        }
 
         // índice para OperadoresSelecionados[i]
         let operadorIndex = 0;
@@ -286,8 +295,6 @@
                 </div>
                 <button type="button" class="btn btn-sm btn-outline-danger">X</button>
 
-                <input type="hidden" name="OperacoesSelecionadasDummy" value="keep-array-structure" />
-
                 <input type="hidden" name="OperadoresSelecionados[${operadorIndex}].OperadorID" value="${op.ID}" />
                 <input type="hidden" name="OperadoresSelecionados[${operadorIndex}].SVG" value="${svgFlag}" />
             `;
@@ -296,10 +303,11 @@
 
             li.querySelector('button').addEventListener('click', function () {
                 li.remove();
-                // não vou reindexar; o binder aceita buracos na numeração
+                atualizarContadorOperadores();
             });
 
             listaSelecionados.appendChild(li);
+            atualizarContadorOperadores();
         }
 
         // --- Sessão -> adiciona todos operadores daquela sessão (SVG = false)

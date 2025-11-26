@@ -13,6 +13,7 @@ namespace SVG.WebApp.Controllers
   public class OperacaoController : Controller
   {
     private readonly IOperacaoAppService _operacaoAppService;
+    private readonly IOperadorOperacaoAppService _operadorOperacaoAppService;
     private readonly IOperadorAppService _operadorAppService;
     private readonly ISessaoAppService _sessaoAppService;
     private readonly ITipoOperacaoAppService _tipoOperacaoAppService;
@@ -23,12 +24,14 @@ namespace SVG.WebApp.Controllers
       IOperadorAppService operadorAppService,
       ITipoOperacaoAppService tipoOperacaoAppService,
       ISessaoAppService sessaoAppService,
+      IOperadorOperacaoAppService operadorOperacaoAppService,
       IMapper mapper)
     {
       _operacaoAppService = operacaoAppService;
       _operadorAppService = operadorAppService;
       _tipoOperacaoAppService = tipoOperacaoAppService;
       _sessaoAppService = sessaoAppService;
+      _operadorOperacaoAppService = operadorOperacaoAppService;
       _mapper = mapper;
     }
 
@@ -105,7 +108,7 @@ namespace SVG.WebApp.Controllers
     {
       PopularCombos();
 
-      var now = DateTime.Now;
+      var now = DateTime.Now.AddDays(2);
       var date = new DateTime(now.Year, now.Month, now.Day, 03, 00, 00);
 
       return View(new OperacaoViewModel
@@ -142,23 +145,33 @@ namespace SVG.WebApp.Controllers
 
       var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
 
-      var operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios.Value);
-      var operadoresSessao = model.OperadoresSelecionados.Where(s => !s.SVG).ToList();
+      var operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios);
+
+      var operadoresOperacao = model.OperadoresSelecionados.Where(s => !s.SVG).ToList();
 
       var operadoresSVG = opSvg.Where(id => operadoresContemplados.Contains(id)).ToList();
 
-      operadoresSessao.AddRange(operadoresSVG.Select(id => new OperadorSelecionadoVM
+      operadoresOperacao.AddRange(operadoresSVG.Select(id => new OperadorSelecionadoVM
       {
         OperadorID = id,
         SVG = true
       }));
 
-      // gravar
       _operacaoAppService.Add(entidade);
+
+      foreach (var op in operadoresOperacao)
+      {
+        var operadorOperacao = new OperadorOperacao
+        {
+          OperacaoID = entidade.ID,
+          OperadorID = op.OperadorID,
+          SVG = op.SVG
+        };
+        _operadorOperacaoAppService.Add(operadorOperacao);
+      }
 
       return RedirectToAction(nameof(Index));
     }
-
 
     // GET: Operacao/Edit/5
     public IActionResult Edit(int id)

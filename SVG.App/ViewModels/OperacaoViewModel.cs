@@ -32,7 +32,7 @@ namespace SVG.App.ViewModels
     public int QtdEquipe { get; set; }
 
     // Se puder ser vazio, deixe nullable; se quiser obrigatório, coloque [Required].
-    public int? QtdVagasVoluntarios { get; set; }
+    public int QtdVagasVoluntarios { get; set; }
 
     [Required(ErrorMessage = "Selecione o tipo de operação.")]
     public int TipoOperacaoID { get; set; }
