@@ -139,16 +139,13 @@ namespace SVG.WebApp.Controllers
 
       var entidade = _mapper.Map<Operacao>(model);
       
-      entidade.DataHora = DateTime.Now;
-      model.QtdVagasVoluntarios = 5;
-
       // Aqui você ainda pode, depois, percorrer model.OperadoresSelecionados
       // e criar os registros de OperadorOperacao.
       var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
 
       var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
 
-      var operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios);
+      var operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios).ToList();
 
       var operadoresOperacao = model.OperadoresSelecionados.Where(s => !s.SVG).ToList();
 

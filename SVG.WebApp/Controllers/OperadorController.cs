@@ -46,7 +46,7 @@ namespace SVG.WebApp.Controllers
 
     public ActionResult ResumoOperadores()
     {
-      var operadores = _operadorAppService.PegarResumoOperador();
+      var operadores = _operadorAppService.PegarResumoOperador().ToList();
       
       return View(operadores);
     }
