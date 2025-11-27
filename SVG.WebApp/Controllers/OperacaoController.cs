@@ -138,6 +138,9 @@ namespace SVG.WebApp.Controllers
         model.Coordenador = coord.Nome;
 
       var entidade = _mapper.Map<Operacao>(model);
+      
+      entidade.DataHora = DateTime.Now;
+      model.QtdVagasVoluntarios = 5;
 
       // Aqui você ainda pode, depois, percorrer model.OperadoresSelecionados
       // e criar os registros de OperadorOperacao.

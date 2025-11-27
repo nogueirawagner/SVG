@@ -69,13 +69,15 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    <tr>
+                    <tr data-operador-id="@item.OperadorID">
                         <td>
-                            <a asp-action="DetalharOperador"
-                               asp-route-id="@item.OperadorID"
-                               class="btn btn-sm btn-primary">
+                            <button type="button"
+                                    class="btn btn-sm btn-primary"
+                                    onclick="toggleDetalhes(this)"
+                                    data-loaded="false"
+                                    data-expanded="false">
                                 Detalhes
-                            </a>
+                            </button>
                         </td>
                         <td>@item.OperadorNome</td>
                         <td>@item.Matricula</td>
@@ -153,6 +155,63 @@
 
             // Reanexa as linhas na nova ordem
             rowsArray.forEach(row => tbody.appendChild(row));
+        }
+
+            const urlDetalhesOperador = '@Url.Action("DetalhesOperador", "Operador")';
+
+        async function toggleDetalhes(button) {
+            const tr = button.closest('tr');
+            const operadorId = tr.getAttribute('data-operador-id');
+
+            const expanded = button.getAttribute('data-expanded') === 'true';
+
+            // Se já expandido → retrai
+            if (expanded) {
+                const nextRow = tr.nextElementSibling;
+                if (nextRow && nextRow.classList.contains('detalhes-operador-row')) {
+                    nextRow.remove();
+                }
+                button.setAttribute('data-expanded', 'false');
+                button.textContent = "Detalhes";
+                return;
+            }
+
+            // Não expandido ainda → buscar detalhamento via AJAX
+            button.disabled = true;
+            button.textContent = "Carregando...";
+
+            try {
+                const response = await fetch(`${urlDetalhesOperador}?pOperadorId=${operadorId}`);
+                if (!response.ok) throw new Error("Erro ao carregar detalhes");
+
+                const html = await response.text();
+
+                // Cria nova linha abaixo
+                const detalhesRow = document.createElement('tr');
+                detalhesRow.classList.add('detalhes-operador-row');
+
+                const colCount = tr.cells.length;
+
+                detalhesRow.innerHTML = `
+                    <td colspan="${colCount}">
+                        <div class="mt-2">
+                            ${html}
+                        </div>
+                    </td>
+                `;
+
+                tr.parentNode.insertBefore(detalhesRow, tr.nextSibling);
+
+                button.setAttribute('data-expanded', 'true');
+                button.textContent = "Recolher";
+
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao carregar detalhamento.");
+                button.textContent = "Detalhes";
+            } finally {
+                button.disabled = false;
+            }
         }
     </script>
 }

@@ -51,6 +51,13 @@ namespace SVG.WebApp.Controllers
       return View(operadores);
     }
 
+    public ActionResult DetalhesOperador(int pOperadorId)
+    {
+      var operadores = _operadorAppService.PegarDetalhamentoOperador(pOperadorId).ToList();
+
+      return PartialView("_DetalhesOperador", operadores);
+    }
+
     // GET: OperadorController/Details/5
     public ActionResult Details(int id)
     {

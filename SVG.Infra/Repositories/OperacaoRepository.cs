@@ -81,12 +81,11 @@ namespace SVG.Infra.Repositories
       var ids = string.Join(", ", pOperadorIDs);
       sql = string.Format(sql, ids);
 
-
       return _db.Database.
          SqlQuery<int>(sql,
            new SqlParameter("@pDataLimite", pDataLimite),
            new SqlParameter("@pQtdVagas", pQtdVagas)
-         ).ToList();
+         );
     }
   }
 }

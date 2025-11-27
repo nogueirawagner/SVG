@@ -4,6 +4,8 @@ using SVG.Domain.TiposEstruturados.Operador;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.FunctionsDB;
 using SVG.Infra.Repositories;
+using System.CodeDom;
+using System.Data.SqlClient;
 
 namespace SVG.Infra.Repositories
 {
@@ -17,17 +19,61 @@ namespace SVG.Infra.Repositories
       _db = dbContext;
     }
 
-    public IEnumerable<Operador> PesquisarAlunosPorPalavras(string pTermo)
-    {
-      var pChaves = new List<string>();
-      var where = XFullText.MontarCondicao(pTermo, "Nome", out pChaves);
+		public IEnumerable<DetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId)
+		{
+			var sql = @"
+			WITH CTE_Operacao AS (
+				select 
+					op.ID,
+					op.TipoOperacaoID
+				from Operacao op 
+				)
 
-      var sql = @"SELECT * FROM Aluno WHERE {0} and Concorrencia = '{1}' and Cargo = '{2}' ORDER BY Posicao";
-      //var sql = @"SELECT * FROM Aluno WHERE {0} and Concorrencia = '{1}' and Cargo = '{2}' ORDER BY PosicaoProvisoria";
+				, CTE_QtdOperacoesOperadores AS (
+				select 
+					oo.OperadorID,
+					COUNT(*) QtdOperacoes,
+					op.TipoOperacaoID,
+					tp.Peso,
+					tp.Nome,
+					oo.SVG
+				from CTE_Operacao op
+					join OperadorOperacao oo 
+						on oo.OperacaoID = op.ID 
+					join TipoOperacao tp on tp.ID = op.TipoOperacaoID
+				where oo.OperadorID = @pOperadorId
+				group by 
+					oo.OperadorID,
+					op.TipoOperacaoID,
+					tp.Peso,
+					tp.Nome,
+					oo.SVG
+				)
 
-      sql = string.Format(sql, where);
-      return _db.Database.SqlQuery<Operador>(sql);
+				, CTE_Resultado AS (
+				select 
+					op.ID, 
+					op.Matricula,
+					op.Nome,
+					op.Telefone,
+					s.Nome Sessao,
+					t.Nome TipoOperacao,
+					t.Peso,
+					qtd.QtdOperacoes,
+					qtd.SVG
+				from CTE_QtdOperacoesOperadores qtd
+					join Operador op on op.ID = qtd.OperadorID
+					join Sessao s on s.ID = op.SessaoID
+					join TipoOperacao t on t.ID = qtd.TipoOperacaoID
+				)
+
+				select * from CTE_Resultado
+				order by TipoOperacao";
+
+			return _db.Database.SqlQuery<DetalhamentoOperadorOperacao>(sql,
+        new SqlParameter("@pOperadorId", pOperadorId));
     }
+
 
     public IEnumerable<ResumoOperadorOperacao> PegarResumoOperador()
     {
@@ -62,12 +108,8 @@ namespace SVG.Infra.Repositories
 				, CTE_MediaOperadores AS (
 
 				SELECT 
-						OperadorID,
-					SUM((
-						CASE 
-							WHEN qtd.SVG = 1 THEN 1 ELSE 0
-						END
-					)) QtdOperacoesSVG,
+					OperadorID,
+					SUM(CASE WHEN qtd.SVG = 1 THEN QtdOperacoes ELSE 0 END) AS QtdOperacoesSVG,
 					SUM(QtdOperacoes) QtdOperacoes,
 					CEILING(
 								(CAST(SUM(QtdOperacoes * Peso) AS FLOAT) / NULLIF(SUM(Peso), 0)) * 100
@@ -96,7 +138,7 @@ namespace SVG.Infra.Repositories
 				order by OperadorNome 
           ";
 
-      return _db.Database.SqlQuery<ResumoOperadorOperacao>(sql).ToList();
+			return _db.Database.SqlQuery<ResumoOperadorOperacao>(sql);
     }
   }
 }

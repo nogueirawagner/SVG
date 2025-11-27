@@ -1,0 +1,36 @@
+﻿@using SVG.Domain.TiposEstruturados.Operador
+@model IEnumerable<DetalhamentoOperadorOperacao>
+
+@{
+    var primeiro = Model?.FirstOrDefault();
+}
+
+@if (primeiro != null)
+{
+    <div class="mb-2">
+        <strong>Operador:</strong> @primeiro.Nome (@primeiro.Matricula) - @primeiro.Sessao<br />
+        <strong>Telefone:</strong> @primeiro.Telefone
+    </div>
+}
+
+<table class="table table-bordered table-sm mb-0">
+    <thead class="table-light">
+        <tr>
+            <th class="text-center">Tipo Operação</th>
+            <th class="text-center">Qtd Operações</th>
+            <th class="text-center">SVG</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var op in Model)
+        {
+            <tr>
+                <td class="text-center">@op.TipoOperacao</td>
+                <td class="text-center">@op.QtdOperacoes</td>
+                <td class="text-center">
+                    @(op.SVG ? "Sim" : "Não")
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
