@@ -18,6 +18,14 @@
                    class="form-control"
                    placeholder="Digite parte do nome do operador..." />
         </div>
+
+        <div class="col-md-6">
+            <label for="buscarSessao" class="form-label">Buscar por sessão</label>
+            <input type="text"
+                   id="buscarSessao"
+                   class="form-control"
+                   placeholder="Digite parte do nome da sessão..." />
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -95,26 +103,39 @@
 
 @section Scripts {
     <script>
-        // --- FILTRO POR NOME ---
-        const inputBusca = document.getElementById('buscarNome');
+        // --- FILTROS (Nome + Sessão) ---
+        const inputBuscaNome = document.getElementById('buscarNome');
+        const inputBuscaSessao = document.getElementById('buscarSessao');
         const tabela = document.getElementById('tabelaResumo');
         const tbody = tabela.querySelector('tbody');
 
-        inputBusca.addEventListener('input', function () {
-            const termo = this.value.trim().toLowerCase();
+        function aplicarFiltros() {
+            const termoNome = inputBuscaNome.value.trim().toLowerCase();
+            const termoSessao = inputBuscaSessao.value.trim().toLowerCase();
 
             for (let i = 0; i < tbody.rows.length; i++) {
                 const row = tbody.rows[i];
-                const nomeCell = row.cells[1]; // coluna Nome
-                const nome = nomeCell.textContent.toLowerCase();
 
-                if (nome.includes(termo)) {
+                const nomeCell = row.cells[1];   // coluna Nome
+                const sessaoCell = row.cells[4]; // coluna Sessão
+
+                const nome = nomeCell.textContent.toLowerCase();
+                const sessao = sessaoCell.textContent.toLowerCase();
+
+                const matchNome = termoNome === "" || nome.includes(termoNome);
+                const matchSessao = termoSessao === "" || sessao.includes(termoSessao);
+
+                // Exibe só se passar nos dois filtros
+                if (matchNome && matchSessao) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
                 }
             }
-        });
+        }
+
+        inputBuscaNome.addEventListener('input', aplicarFiltros);
+        inputBuscaSessao.addEventListener('input', aplicarFiltros);
 
         // --- ORDENAÇÃO ---
         let estadoOrdenacao = {
@@ -157,7 +178,7 @@
             rowsArray.forEach(row => tbody.appendChild(row));
         }
 
-            const urlDetalhesOperador = '@Url.Action("DetalhesOperador", "Operador")';
+        const urlDetalhesOperador = '@Url.Action("DetalhesOperador", "Operador")';
 
         async function toggleDetalhes(button) {
             const tr = button.closest('tr');
