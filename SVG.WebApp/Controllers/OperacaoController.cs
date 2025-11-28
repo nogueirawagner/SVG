@@ -93,14 +93,20 @@ namespace SVG.WebApp.Controllers
       return View(vm);
     }
 
-    // GET: Operacao/Details/5
-    public IActionResult Details(int id)
+    [HttpPost]
+    public IActionResult AlterarSVGOperador(int pOperadorID, bool pSVG)
     {
-      var operacao = _operacaoAppService.GetById(id);
-      if (operacao == null) return NotFound();
+      _operacaoAppService.AlterarSVGOperador(pOperadorID, pSVG);
+      return Ok();
+    }
 
-      var vm = _mapper.Map<OperacaoViewModel>(operacao);
-      return View(vm);
+
+    // GET: Operacao/Details/5
+    public IActionResult DetalhesOperacao(int pOperacaoID)
+    {
+     var detalhes = _operacaoAppService.PegarDetalhesOperacao(pOperacaoID).ToList();
+
+      return View(detalhes);
     }
 
     // GET: Operacao/Create
@@ -138,11 +144,9 @@ namespace SVG.WebApp.Controllers
         model.Coordenador = coord.Nome;
 
       var entidade = _mapper.Map<Operacao>(model);
-      
-      // Aqui você ainda pode, depois, percorrer model.OperadoresSelecionados
-      // e criar os registros de OperadorOperacao.
-      var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
+      entidade.DataHoraCriacao = DateTime.Now;
 
+      var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
       var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
 
       var operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios).ToList();

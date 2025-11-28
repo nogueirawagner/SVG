@@ -1,6 +1,7 @@
 ﻿using SVG.App.Interface;
 using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Services;
+using SVG.Domain.TiposEstruturados.Operacao;
 
 namespace SVG.App.Services
 {
@@ -14,9 +15,20 @@ namespace SVG.App.Services
       _operacaoService = operacaoService;
     }
 
+    public void AlterarSVGOperador(int pOperadorId, bool pSvg)
+    {
+      _operacaoService.AlterarSVGOperador(pOperadorId, pSvg);
+    }
+
+    public IEnumerable<DetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
+    {
+      return _operacaoService.PegarDetalhesOperacao(pOperacaoID); 
+    }
+
     public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)
     {
       return _operacaoService.PegarOperadoresSVG(pOperadorIDs, pDataLimite, pQtdVagas);
     }
+
   }
 }

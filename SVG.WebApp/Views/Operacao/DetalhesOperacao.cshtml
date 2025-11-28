@@ -1,0 +1,173 @@
+﻿@using SVG.Domain.TiposEstruturados.Operacao
+@model IEnumerable<DetalhesOperacao>
+
+@{
+    ViewData["Title"] = "Detalhes da Operação";
+
+    // Pega o primeiro item da lista para exibir o cabeçalho da operação
+    var op = Model.FirstOrDefault();
+}
+
+<div class="container mt-4">
+
+    <h2 class="mb-3">Detalhes da Operação</h2>
+    <hr />
+
+    @if (op == null)
+    {
+        <div class="alert alert-warning">Nenhum registro encontrado.</div>
+        return;
+    }
+
+    <!-- =======================
+         DADOS GERAIS DA OPERAÇÃO
+         ======================= -->
+    <div class="card mb-4">
+        <div class="card-header fw-bold">
+            Informações da Operação
+        </div>
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label class="fw-bold">Criada em:</label>
+                    <div>@op.DataHoraCriacao.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="fw-bold">Data da Operação:</label>
+                    <div>@op.DataHora.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="fw-bold">Coordenador:</label>
+                    <div>@op.Coordenador</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="fw-bold">Tipo de Operação:</label>
+                    <div>@op.TipoOperacao</div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label class="fw-bold">Objeto:</label>
+                    <div>@op.Objeto</div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="fw-bold">DP:</label>
+                    <div>@op.DP</div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="fw-bold">Qtd Equipe:</label>
+                    <div>@op.QtdEquipe</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- =======================
+         TABELA DE OPERADORES
+         ======================= -->
+    <h4 class="mb-3">Operadores da Operação</h4>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped" id="tabelaOperadores">
+            <thead class="table-light">
+                <tr>
+                    <th>Nome</th>
+                    <th>Matrícula</th>
+                    <th>Telefone</th>
+                    <th>Sessão</th>
+                    <th class="text-center">SVG</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr data-operador-id="@item.OperadorID">
+                        <td>@item.NomeOperador</td>
+                        <td>@item.Matricula</td>
+                        <td>@item.Telefone</td>
+                        <td>@item.Sessao</td>
+
+                        <td class="text-center">
+                            <button type="button"
+                                    class="btn btn-sm toggle-svg-btn @(item.SVG ? "btn-success" : "btn-danger")"
+                                    data-svg="@item.SVG.ToString().ToLower()">
+                                @(item.SVG ? "ON" : "OFF")
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="mt-4">
+        <a href="@Url.Action("Index", "Operacao")"
+           class="btn btn-sm btn-outline-secondary me-1">
+            Voltar
+        </a>
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const urlAlterar = '@Url.Action("AlterarSVGOperador", "Operacao")';
+
+            // evento para todos os botões ON/OFF
+            document.querySelectorAll(".toggle-svg-btn").forEach(btn => {
+
+                btn.addEventListener("click", async function () {
+
+                    const tr = this.closest("tr");
+                    const operadorId = tr.getAttribute("data-operador-id");
+
+                    let estadoAtual = this.getAttribute("data-svg") === "true";
+                    let novoEstado = !estadoAtual;
+
+                    // chama o serviço no controller
+                    try {
+                        const resp = await fetch(`${urlAlterar}?pOperadorID=${operadorId}&pSVG=${novoEstado}`, {
+                            method: "POST"
+                        });
+
+                        if (!resp.ok) {
+                            alert("Erro ao alterar SVG");
+                            return;
+                        }
+
+                        // atualiza visualmente
+                        this.setAttribute("data-svg", novoEstado.toString());
+
+                        if (novoEstado) {
+                            this.classList.remove("btn-danger");
+                            this.classList.add("btn-success");
+                            this.textContent = "ON";
+                        } else {
+                            this.classList.remove("btn-success");
+                            this.classList.add("btn-danger");
+                            this.textContent = "OFF";
+                        }
+
+                    } catch (e) {
+                        console.error(e);
+                        alert("Falha ao conectar com o servidor.");
+                    }
+                });
+            });
+
+        });
+    </script>
+}

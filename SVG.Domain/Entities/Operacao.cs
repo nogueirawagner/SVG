@@ -10,6 +10,7 @@ namespace SVG.Domain.Entities
   {
     public int ID { get; set; }
     public DateTime DataHora { get; set; }
+    public DateTime DataHoraCriacao { get; set; }
     public string Objeto { get; set; }
     public string DP { get; set; }
     public string Coordenador { get; set; }

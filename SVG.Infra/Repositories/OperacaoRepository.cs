@@ -1,5 +1,6 @@
 ﻿using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
+using SVG.Domain.TiposEstruturados.Operacao;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.Repositories;
 using System.Data.SqlClient;
@@ -14,6 +15,49 @@ namespace SVG.Infra.Repositories
       : base(dbContext)
     {
       _db = dbContext;
+    }
+
+    public IEnumerable<DetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
+    {
+      var sql = @"
+        select 
+	        o.ID,
+	        o.DataHoraCriacao,
+	        o.DataHora,
+	        o.Objeto,
+	        o.DP,
+	        o.QtdEquipe,
+	        o.Coordenador,
+	        t.Nome TipoOperacao,
+	        op.ID OperadorID,
+	        op.Nome NomeOperador,
+	        op.Matricula,
+	        op.Telefone,
+	        oo.SVG,
+	        s.Nome Sessao
+        from Operacao o
+	        join TipoOperacao t on t.ID = o.TipoOperacaoID
+	        join OperadorOperacao oo on oo.OperacaoID = o.ID
+	        join Operador op on op.ID = oo.OperadorID
+	        join Sessao s on s.ID = op.SessaoID
+        where o.ID = @pOperacaoID
+        ";
+
+      return _db.Database.
+         SqlQuery<DetalhesOperacao>(sql,
+           new SqlParameter("@pOperacaoID", pOperacaoID)
+         );
+    }
+
+    public void AlterarSVGOperador(int pOperadorId, bool pSvg)
+    {
+      var op = _db.OperadorOperacao.FirstOrDefault(x => x.OperadorID == pOperadorId);
+
+      if (op != null)
+      {
+        op.SVG = pSvg;
+        _db.SaveChanges();
+      }
     }
 
     public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)
