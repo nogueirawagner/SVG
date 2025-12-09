@@ -50,8 +50,10 @@
                                    class="btn btn-sm btn-outline-secondary me-1">
                                     Detalhes
                                 </a>
-                                <a asp-action="Edit" asp-route-id="@item.ID"
-                                   class="btn btn-sm btn-outline-primary me-1">Editar</a>
+                                <a href="@Url.Action("Edit", "Operacao", new { id = item.ID })"
+                                   class="btn btn-sm btn-outline-secondary me-1">
+                                    Editar
+                                </a>
                                 <a asp-action="Delete" asp-route-id="@item.ID"
                                    class="btn btn-sm btn-outline-danger">Excluir</a>
                             </td>

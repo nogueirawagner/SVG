@@ -37,6 +37,9 @@ namespace SVG.WebApp.Controllers
 
     private void PopularCombos(int? tipoOperacaoId = null, int? coordenadorId = null)
     {
+      // =====================
+      // OPERADORES / COORDENADORES
+      // =====================
       var operadores = _operadorAppService
           .GetAll()
           .OrderBy(o => o.Nome)
@@ -44,6 +47,10 @@ namespace SVG.WebApp.Controllers
 
       ViewBag.Coordenadores = operadores;
 
+      // Valor selecionado (coordenador)
+      ViewBag.CoordenadorID = coordenadorId;
+
+      // JSON usado nos selects dinâmicos (operadores voluntários etc)
       var operadoresDto = operadores.Select(o => new
       {
         o.ID,
@@ -54,21 +61,31 @@ namespace SVG.WebApp.Controllers
 
       ViewBag.OperadoresJson = JsonConvert.SerializeObject(operadoresDto);
 
-      // >>> SESSÕES
+
+      // =====================
+      // SESSÕES (lado esquerdo do Create)
+      // =====================
       var sessoes = _sessaoAppService
           .GetAll()
           .OrderBy(s => s.Nome)
           .ToList();
+
       ViewBag.Sessoes = sessoes;
 
-      // >>> TIPOS
+
+      // =====================
+      // TIPOS DE OPERAÇÃO
+      // =====================
       var tipos = _tipoOperacaoAppService
           .GetAll()
           .OrderBy(t => t.Nome)
           .ToList();
-      ViewBag.TiposOperacao = tipos;
-    }
 
+      ViewBag.TiposOperacao = tipos;
+
+      // Valor selecionado (tipo da operação)
+      ViewBag.TipoOperacaoID = tipoOperacaoId;
+    }
 
     // GET: Operacao
     public IActionResult Index(string search)
@@ -181,27 +198,110 @@ namespace SVG.WebApp.Controllers
     public IActionResult Edit(int id)
     {
       var operacao = _operacaoAppService.GetById(id);
-      if (operacao == null) return NotFound();
+      if (operacao == null)
+        return NotFound();
 
       var vm = _mapper.Map<OperacaoViewModel>(operacao);
-      PopularTiposOperacaoDropDown(vm.TipoOperacaoID);
+
+      // coordenador → achar por nome
+      var coord = _operadorAppService
+          .GetAll()
+          .FirstOrDefault(o => o.Nome == operacao.Coordenador);
+
+      if (coord != null)
+        vm.CoordenadorOperadorID = coord.ID;
+
+      // vamos precisar dos operadores completos (VM) pra montar Nome/Matricula/etc
+      var operadoresVM = _operadorAppService
+          .GetAll()
+          .ToList();
+
+      // vínculos OperadorOperacao dessa operação
+      var vinculos = _operadorOperacaoAppService
+          .GetAll()
+          .Where(oo => oo.OperacaoID == id)
+          .ToList();
+
+      vm.OperadoresSelecionados = (
+          from oo in vinculos
+          join op in operadoresVM on oo.OperadorID equals op.ID
+          select new OperadorSelecionadoVM
+          {
+            OperadorID = op.ID,
+            SVG = oo.SVG,
+            Nome = op.Nome,
+            Matricula = op.Matricula,
+            Telefone = op.Telefone,
+            //Sessao = op.Sessao.Nome 
+          }
+      ).ToList();
+
+      PopularCombos(vm.TipoOperacaoID, vm.CoordenadorOperadorID);
 
       return View(vm);
     }
+
 
     // POST: Operacao/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Edit(OperacaoViewModel model)
     {
+      // Campos que vamos preencher manualmente (igual ao Create)
+      ModelState.Remove("Coordenador");
+      ModelState.Remove("TipoOperacaoNome");
+
       if (!ModelState.IsValid)
       {
-        PopularTiposOperacaoDropDown(model.TipoOperacaoID);
+        // Recarregar combos se der erro de validação
+        PopularCombos(model.TipoOperacaoID, model.CoordenadorOperadorID);
         return View(model);
       }
 
+      // Buscar operação original para preservar DataHoraCriacao
+      var original = _operacaoAppService.GetById(model.ID);
+      if (original == null)
+        return NotFound();
+
+      // Preencher nome do coordenador a partir do ID
+      var coord = _operadorAppService.GetById(model.CoordenadorOperadorID);
+      if (coord != null)
+        model.Coordenador = coord.Nome;
+
+      // Mapear VM -> entidade
       var entidade = _mapper.Map<Operacao>(model);
+      entidade.DataHoraCriacao = original.DataHoraCriacao; // preserva
+
+      // Atualiza a operação
       _operacaoAppService.Update(entidade);
+
+      // Atualizar vínculos OperadorOperacao:
+      // 1) remover todos os antigos dessa operação
+      var atuais = _operadorOperacaoAppService
+          .GetAll()
+          .Where(oo => oo.OperacaoID == entidade.ID)
+          .ToList();
+
+      foreach (var vinculo in atuais)
+      {
+        _operadorOperacaoAppService.Remove(vinculo);
+      }
+
+      // 2) adicionar os que vieram da tela (sessão + voluntários)
+      if (model.OperadoresSelecionados != null)
+      {
+        foreach (var opSel in model.OperadoresSelecionados)
+        {
+          var novo = new OperadorOperacao
+          {
+            OperacaoID = entidade.ID,
+            OperadorID = opSel.OperadorID,
+            SVG = opSel.SVG
+          };
+
+          _operadorOperacaoAppService.Add(novo);
+        }
+      }
 
       return RedirectToAction(nameof(Index));
     }
