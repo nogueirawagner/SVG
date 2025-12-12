@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SVG.Domain.Entities
+﻿namespace SVG.Domain.Entities
 {
   public class Operacao
   {
@@ -16,7 +10,8 @@ namespace SVG.Domain.Entities
     public string Coordenador { get; set; }
     public int QtdEquipe { get; set; }
     public int TipoOperacaoID { get; set; }
-    
+    public bool SvgAberto { get; set; }
+
     public virtual TipoOperacao TipoOperacao { get; set; }
     public virtual ICollection<OperadorOperacao> OperadoresOperacao { get; set; }
     public virtual ICollection<ViaturaOperacao> ViaturasOperacao { get; set; }

@@ -34,6 +34,8 @@ namespace SVG.App.ViewModels
 
     public string TipoOperacaoNome { get; set; }
 
+    public bool SvgAberto { get; set; }
+
     // lista de operadores selecionados (IDs)
 #warning trocar esse objeto por OperadorViewModel.
     public List<OperadorSelecionadoVM> OperadoresSelecionados { get; set; }

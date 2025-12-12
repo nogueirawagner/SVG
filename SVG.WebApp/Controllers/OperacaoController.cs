@@ -121,7 +121,7 @@ namespace SVG.WebApp.Controllers
     // GET: Operacao/Details/5
     public IActionResult DetalhesOperacao(int pOperacaoID)
     {
-     var detalhes = _operacaoAppService.PegarDetalhesOperacao(pOperacaoID).ToList();
+      var detalhes = _operacaoAppService.PegarDetalhesOperacao(pOperacaoID).ToList();
 
       return View(detalhes);
     }
@@ -241,6 +241,12 @@ namespace SVG.WebApp.Controllers
       return View(vm);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult PegarOperacoesSvgAbertas()
+    {
+      return View();
+    }
 
     // POST: Operacao/Edit/5
     [HttpPost]
