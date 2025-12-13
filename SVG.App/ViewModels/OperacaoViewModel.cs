@@ -16,8 +16,8 @@ namespace SVG.App.ViewModels
     [Required(ErrorMessage = "Informe o objeto da operação.")]
     public string Objeto { get; set; }
 
-    [Required(ErrorMessage = "Informe a DP de apoio.")]
-    public string DP { get; set; }
+    [Required(ErrorMessage = "Informe a Ordem de Serviço.")]
+    public string OrdemServico { get; set; }
 
     public string Coordenador { get; set; }
 

@@ -6,7 +6,7 @@
     public DateTime DataHora { get; set; }
     public DateTime DataHoraCriacao { get; set; }
     public string Objeto { get; set; }
-    public string DP { get; set; }
+    public string OrdemServico { get; set; }
     public string Coordenador { get; set; }
     public int QtdEquipe { get; set; }
     public int TipoOperacaoID { get; set; }
