@@ -24,9 +24,6 @@ namespace SVG.App.ViewModels
     [Required(ErrorMessage = "Selecione o coordenador.")]
     public int CoordenadorOperadorID { get; set; }
 
-    [Required(ErrorMessage = "Informe a quantidade de equipes.")]
-    public int QtdEquipe { get; set; }
-
     public int QtdVagasVoluntarios { get; set; }
 
     [Required(ErrorMessage = "Selecione o tipo de operação.")]

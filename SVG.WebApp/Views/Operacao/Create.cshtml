@@ -33,15 +33,15 @@
 
             <!-- Objeto (reduzido) -->
             <div class="col-md-2">
-                <label asp-for="Objeto" class="form-label">Objeto</label>
+                <label asp-for="Objeto" class="form-label">Local</label>
                 <input asp-for="Objeto" name="Objeto" class="form-control" />
                 <span asp-validation-for="Objeto" class="text-danger"></span>
             </div>
 
             <!-- DP Apoio (reduzido) -->
             <div class="col-md-1">
-                <label asp-for="DP" class="form-label">DP Apoio</label>
-                <input asp-for="DP" name="DP" class="form-control" />
+                <label asp-for="OrdemServico" class="form-label">Ordem Serviço</label>
+                <input asp-for="OrdemServico" name="OrdemServico" class="form-control" />
                 <span asp-validation-for="DP" class="text-danger"></span>
             </div>
 
@@ -64,13 +64,6 @@
                     }
                 </select>
                 <span asp-validation-for="CoordenadorOperadorID" class="text-danger"></span>
-            </div>
-
-            <!-- Qtd (reduzido) -->
-            <div class="col-md-1">
-                <label asp-for="QtdEquipe" class="form-label">Qtd</label>
-                <input asp-for="QtdEquipe" name="QtdEquipe" class="form-control" />
-                <span asp-validation-for="QtdEquipe" class="text-danger"></span>
             </div>
 
             <!-- Tipo -->
