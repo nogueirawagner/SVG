@@ -9,7 +9,15 @@ namespace SVG.Infra.Context.SQLServer
 {
   public class SQLServerContext : DbContext, ISQLServerContext
   {
+    static string cs = "Data Source=doepcdf.database.windows.net;Initial Catalog=DOE;Persist Security Info=True;User ID=doe_app;Password=_senhas_2012;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
+
+    /*
+#if DEBUG
     static string cs = "Data Source=DESKTOP-3MKU8HI;Initial Catalog=SVG;Persist Security Info=True;User ID=sa;Password=_senhas_2012;MultipleActiveResultSets=True";
+# else
+   static string cs = "Data Source=doepcdf.database.windows.net;Initial Catalog=DOE;Persist Security Info=True;User ID=doe_app;Password=_senhas_2012;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
+#endif 
+    */
 
     // ctor default para ser encontrado por reflexão
     public SQLServerContext()
@@ -18,13 +26,6 @@ namespace SVG.Infra.Context.SQLServer
       Configuration.ProxyCreationEnabled = false;
       Configuration.LazyLoadingEnabled = true;
     }
-
-    //public SQLServerContext(string cs)
-    //  : base(cs)
-    //{
-    //  Configuration.ProxyCreationEnabled = false;
-    //  Configuration.LazyLoadingEnabled = true;
-    //}
 
     #region objetos
     public DbSet<Operador> Operador { get; set; }

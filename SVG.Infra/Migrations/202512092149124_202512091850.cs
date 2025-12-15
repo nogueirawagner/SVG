@@ -8,6 +8,20 @@
     public override void Up()
     {
       Sql(@"
+          SET IDENTITY_INSERT [dbo].[Sessao] ON 
+          INSERT [dbo].[Sessao] ([ID], [Nome]) VALUES (1, N'SOE I')
+          INSERT [dbo].[Sessao] ([ID], [Nome]) VALUES (2, N'SOE II')
+          INSERT [dbo].[Sessao] ([ID], [Nome]) VALUES (3, N'SOE III')
+          INSERT [dbo].[Sessao] ([ID], [Nome]) VALUES (4, N'SOE IV')
+          INSERT [dbo].[Sessao] ([ID], [Nome]) VALUES (5, N'SOR')
+          INSERT [dbo].[Sessao] ([ID], [Nome]) VALUES (6, N'SOT')
+          INSERT [dbo].[Sessao] ([ID], [Nome]) VALUES (7, N'SI')
+          INSERT [dbo].[Sessao] ([ID], [Nome]) VALUES (8, N'SOC')
+          INSERT [dbo].[Sessao] ([ID], [Nome]) VALUES (9, N'GAB')
+          SET IDENTITY_INSERT [dbo].[Sessao] OFF
+      ");
+
+      Sql(@"
         -- =========================
         -- GABINETE (SessaoID = 9)
         -- =========================
