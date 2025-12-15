@@ -31,7 +31,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "15ª DP",
           Coordenador = "Nogueira",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -41,7 +41,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "10ª DP",
           Coordenador = "Higor",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -51,7 +51,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "",
           Coordenador = "Leandro",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -61,7 +61,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "",
           Coordenador = "Arana",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -71,7 +71,7 @@ namespace SVG.Console.Mocks
           Objeto = "Escolta de preso de alta periculosidade",
           // DP = "15ª DP",
           Coordenador = "Nogueira",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -81,7 +81,7 @@ namespace SVG.Console.Mocks
           Objeto = "Audiência no Fórum Criminal",
           // DP = "5ª DP",
           Coordenador = "Higor",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -91,7 +91,7 @@ namespace SVG.Console.Mocks
           Objeto = "Transferência interestadual de custodiado",
           // DP = "CORP",
           Coordenador = "Arana",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -101,7 +101,7 @@ namespace SVG.Console.Mocks
           Objeto = "Cumprimento de mandado de prisão",
           // DP = "20ª DP",
           Coordenador = "Wanderson",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -111,7 +111,7 @@ namespace SVG.Console.Mocks
           Objeto = "Operação conjunta com Polícia Civil",
           // DP = "2ª DP",
           Coordenador = "Medina",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -121,7 +121,7 @@ namespace SVG.Console.Mocks
           Objeto = "Escolta para unidade hospitalar",
           // DP = "19ª DP",
           Coordenador = "Benevides",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -131,7 +131,7 @@ namespace SVG.Console.Mocks
           Objeto = "Recolhimento de preso em unidade prisional",
           // DP = "DFP",
           Coordenador = "Sidney",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -141,7 +141,7 @@ namespace SVG.Console.Mocks
           Objeto = "Patrulhamento tático em área de risco",
           // DP = "Ceilândia",
           Coordenador = "Wanderson",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -151,7 +151,7 @@ namespace SVG.Console.Mocks
           Objeto = "Operação de captura de foragido",
           // DP = "Taguatinga",
           Coordenador = "Nogueira",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -161,7 +161,7 @@ namespace SVG.Console.Mocks
           Objeto = "Escolta para julgamento no Tribunal do Júri",
           // DP = "TJDFT",
           Coordenador = "Chiarelli",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -171,7 +171,7 @@ namespace SVG.Console.Mocks
           Objeto = "Transferência de liderança de facção",
           // DP = "DCCP",
           Coordenador = "Cassis",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -181,7 +181,7 @@ namespace SVG.Console.Mocks
           Objeto = "Operação de varredura em cela de segurança máxima",
           // DP = "Presídio Federal",
           Coordenador = "Lebrão",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -191,7 +191,7 @@ namespace SVG.Console.Mocks
           Objeto = "Escolta para audiência em Vara de Execuções Penais",
           // DP = "VEP",
           Coordenador = "Rayssa",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -201,7 +201,7 @@ namespace SVG.Console.Mocks
           Objeto = "Remanejamento de presos entre unidades",
           // DP = "SEAPE",
           Coordenador = "Medina",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -211,7 +211,7 @@ namespace SVG.Console.Mocks
           Objeto = "Escolta preventiva em deslocamento de autoridade",
           // DP = "GAB",
           Coordenador = "Nogueira",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -221,7 +221,7 @@ namespace SVG.Console.Mocks
           Objeto = "Escolta preventiva em deslocamento de autoridade",
           // DP = "GAB",
           Coordenador = "Nogueira",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -231,7 +231,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "10ª DP",
           Coordenador = "Higor",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -241,7 +241,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "1ª DP",
           Coordenador = "Arana",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -251,7 +251,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "12ª DP",
           Coordenador = "Nogueira",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -261,7 +261,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "6ª DP",
           Coordenador = "Wanderson",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -271,7 +271,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "9ª DP",
           Coordenador = "Medina",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -281,7 +281,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "7ª DP",
           Coordenador = "Sidartha",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -291,7 +291,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "Ceilândia",
           Coordenador = "Cassis",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -301,7 +301,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "Taguatinga",
           Coordenador = "Chiarelli",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -311,7 +311,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "Planaltina",
           Coordenador = "Sidney",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -321,7 +321,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "TJDFT",
           Coordenador = "Rayssa",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -331,7 +331,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "10ª DP",
           Coordenador = "Higor",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -341,7 +341,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "5ª DP",
           Coordenador = "Nogueira",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -351,7 +351,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "8ª DP",
           Coordenador = "Medina",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -361,7 +361,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "12ª DP",
           Coordenador = "Arana",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -371,7 +371,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "2ª DP",
           Coordenador = "Wanderson",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -381,7 +381,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "15ª DP",
           Coordenador = "Cassis",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -391,7 +391,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "20ª DP",
           Coordenador = "Sidartha",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -401,7 +401,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "Ceilândia",
           Coordenador = "Chiarelli",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -411,7 +411,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "Taguatinga",
           Coordenador = "Rayssa",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -421,7 +421,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "DFP",
           Coordenador = "Benevides",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -431,7 +431,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "10ª DP",
           Coordenador = "Higor",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -441,7 +441,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "1ª DP",
           Coordenador = "Arana",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -451,7 +451,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "6ª DP",
           Coordenador = "Medina",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -461,7 +461,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "12ª DP",
           Coordenador = "Wanderson",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -471,7 +471,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "8ª DP",
           Coordenador = "Nogueira",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -481,7 +481,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "14ª DP",
           Coordenador = "Cassis",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -491,7 +491,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "Ceilândia",
           Coordenador = "Sidney",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -501,7 +501,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "Planaltina",
           Coordenador = "Chiarelli",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -511,7 +511,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "Taguatinga",
           Coordenador = "Rayssa",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -521,7 +521,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "DFP",
           Coordenador = "Lebrão",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -531,7 +531,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "2ª DP",
           Coordenador = "Higor",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -541,7 +541,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "5ª DP",
           Coordenador = "Arana",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -551,7 +551,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "10ª DP",
           Coordenador = "Medina",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -561,7 +561,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "12ª DP",
           Coordenador = "Sidney",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -571,7 +571,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "6ª DP",
           Coordenador = "Rayssa",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -581,7 +581,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "Ceilândia",
           Coordenador = "Wanderson",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -591,7 +591,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "TJDFT",
           Coordenador = "Nogueira",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -601,7 +601,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "Planaltina",
           Coordenador = "Cassis",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -611,7 +611,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "Taguatinga",
           Coordenador = "Sidartha",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -621,7 +621,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "DFP",
           Coordenador = "Lebrão",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -631,7 +631,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "20ª DP",
           Coordenador = "Medina",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -641,7 +641,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "1ª DP",
           Coordenador = "Chiarelli",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -651,7 +651,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "14ª DP",
           Coordenador = "Rayssa",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -661,7 +661,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "19ª DP",
           Coordenador = "Higor",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -671,7 +671,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "5ª DP",
           Coordenador = "Arana",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -681,7 +681,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "10ª DP",
           Coordenador = "Nogueira",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -691,7 +691,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "8ª DP",
           Coordenador = "Higor",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -701,7 +701,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "14ª DP",
           Coordenador = "Medina",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -711,7 +711,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "TJDFT",
           Coordenador = "Cassis",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -721,7 +721,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "Ceilândia",
           Coordenador = "Wanderson",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -731,7 +731,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "Taguatinga",
           Coordenador = "Rayssa",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -741,7 +741,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "1ª DP",
           Coordenador = "Sidney",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -751,7 +751,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "Planaltina",
           Coordenador = "Lebrão",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 2
         },
         new Operacao
@@ -761,7 +761,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "5ª DP",
           Coordenador = "Nogueira",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -771,7 +771,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "DFP",
           Coordenador = "Arana",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -781,7 +781,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "20ª DP",
           Coordenador = "Medina",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 4
         },
         new Operacao
@@ -791,7 +791,7 @@ namespace SVG.Console.Mocks
           Objeto = "Apoio",
           // DP = "12ª DP",
           Coordenador = "Wanderson",
-          QtdEquipe = 1,
+          // QtdEquipe = 1,
           TipoOperacaoID = 1
         },
         new Operacao
@@ -801,7 +801,7 @@ namespace SVG.Console.Mocks
           Objeto = "Alvorada",
           // DP = "19ª DP",
           Coordenador = "Cassis",
-          QtdEquipe = 2,
+          // QtdEquipe = 2,
           TipoOperacaoID = 2
         },
         // Estes dois já tinham DataHoraCriacao — mantidos
@@ -812,7 +812,7 @@ namespace SVG.Console.Mocks
           Objeto = "Delta",
           // DP = "8ª DP",
           Coordenador = "Sidney",
-          QtdEquipe = 3,
+          // QtdEquipe = 3,
           TipoOperacaoID = 3
         },
         new Operacao
@@ -822,7 +822,7 @@ namespace SVG.Console.Mocks
           Objeto = "Segurança Orgânica",
           // DP = "10ª DP",
           Coordenador = "Chiarelli",
-          QtdEquipe = 4,
+          // QtdEquipe = 4,
           TipoOperacaoID = 4
         },
       };

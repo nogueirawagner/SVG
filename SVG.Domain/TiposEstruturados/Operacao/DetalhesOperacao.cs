@@ -12,8 +12,7 @@ namespace SVG.Domain.TiposEstruturados.Operacao
     public DateTime DataHoraCriacao { get; set; }
     public DateTime DataHora { get; set; }
     public string Objeto { get; set; }
-    public string DP { get; set; }
-    public int QtdEquipe { get; set; }
+    public int OrdemServico { get; set; }
     public string Coordenador { get; set; }
     public string TipoOperacao { get; set; }
     public int OperadorID { get; set; }
