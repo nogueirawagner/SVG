@@ -11,11 +11,11 @@ namespace SVG.IoC
 {
   public class BootStrapper
   {
-    public static void RegisterServices(Container container, string cs)
+    public static void RegisterServices(Container container)
     {
       container.Register<SQLServerContext>(() =>
       {
-        return new SQLServerContext(cs);
+        return new SQLServerContext();
       }, Lifestyle.Scoped);
 
       container.Register<ISQLServerContext>(() =>

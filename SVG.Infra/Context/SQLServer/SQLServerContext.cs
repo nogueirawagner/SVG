@@ -9,14 +9,7 @@ namespace SVG.Infra.Context.SQLServer
 {
   public class SQLServerContext : DbContext, ISQLServerContext
   {
-    // ctor default para ser encontrado por reflexão
-    public SQLServerContext(string cs)
-      : base(cs)
-    {
-      Configuration.ProxyCreationEnabled = false;
-      Configuration.LazyLoadingEnabled = true;
-    }
-
+    
 #if DEBUG
     static string connectionName = "ConnectionLocal";
 #else
@@ -31,6 +24,7 @@ namespace SVG.Infra.Context.SQLServer
     }
 
     // Add-Migration 202512161200 -Project SVG.Infra -StartupProject SVG.WebApp
+    // Update-Database -v -Project SVG.Infra -StartupProject SVG.WebApp
 
     #region objetos
     public DbSet<Operador> Operador { get; set; }

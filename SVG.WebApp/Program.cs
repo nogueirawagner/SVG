@@ -16,16 +16,16 @@ builder.Services.AddSimpleInjector(container, options => options.AddAspNetCore()
 var config = AutoMapperConfig.RegisterMappings();
 container.RegisterInstance(config.CreateMapper());
 
-var connectionString =
-    builder.Configuration.GetConnectionString("ConnectionLocal");
+//var connectionString =
+//    builder.Configuration.GetConnectionString("ConnectionLocal");
 
-#if DEBUG
-var cs = builder.Configuration.GetConnectionString("ConnectionLocal");
-# else
-var cs =  builder.Configuration.GetConnectionString("ConnectionProduction_Az");
-#endif
+//#if DEBUG
+//var cs = builder.Configuration.GetConnectionString("ConnectionLocal");
+//# else
+//var cs =  builder.Configuration.GetConnectionString("ConnectionProduction_Az");
+//#endif
 
-BootStrapper.RegisterServices(container, cs);
+BootStrapper.RegisterServices(container);
 
 var app = builder.Build();
 app.Services.UseSimpleInjector(container);
