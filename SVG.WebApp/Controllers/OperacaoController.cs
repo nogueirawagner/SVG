@@ -220,11 +220,16 @@ namespace SVG.WebApp.Controllers
           .GetAll()
           .ToList();
 
-      // vínculos OperadorOperacao dessa operação
-      var vinculos = _operadorOperacaoAppService
-          .GetAll()
-          .Where(oo => oo.OperacaoID == id)
-          .ToList();
+      //// vamos precisar dos operadores completos (VM) pra montar Nome/Matricula/etc
+      //var operadoresVM = _operadorAppService
+      //    .GetAll()
+      //    .ToList();
+
+      //// vínculos OperadorOperacao dessa operação
+      //var vinculos = _operadorOperacaoAppService
+      //    .GetAll()
+      //    .Where(oo => oo.OperacaoID == id)
+      //    .ToList();
 
       //vm.OperadoresSelecionados = (
       //    from oo in vinculos

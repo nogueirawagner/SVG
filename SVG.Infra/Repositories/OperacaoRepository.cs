@@ -42,10 +42,30 @@ namespace SVG.Infra.Repositories
         where o.ID = @pOperacaoID
         ";
 
-      return _db.Database.
+      var raw = _db.Database.
          SqlQuery<DetalhesOperacao>(sql,
            new SqlParameter("@pOperacaoID", pOperacaoID)
          );
+
+      foreach (var item in raw)
+      {
+        yield return new DetalhesOperacao
+        {
+          ID = item.ID,
+          DataHoraCriacao = item.DataHoraCriacao,
+          DataHora = item.DataHora,
+          Objeto = item.Objeto,
+          OrdemServico = item.OrdemServico,
+          Coordenador = item.Coordenador,
+          TipoOperacao = item.TipoOperacao,
+          OperadorID = item.OperadorID,
+          NomeOperador = item.NomeOperador,
+          Matricula = item.Matricula,
+          Telefone = item.Telefone,
+          SVG = item.SVG,
+          Sessao = item.Sessao
+        };
+      }
     }
 
     public void AlterarSVGOperador(int pOperadorId, bool pSvg)
