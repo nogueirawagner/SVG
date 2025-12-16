@@ -91,22 +91,6 @@ namespace SVG.WebApp.Controllers
     public IActionResult Index(string search)
     {
       var operacoes = _operacaoAppService.PegarOperacoesRealizadas().ToList();
-
-      //if (!string.IsNullOrWhiteSpace(search))
-      //{
-      //  operacoes = operacoes
-      //    .Where(o => o.Objeto.Contains(search, StringComparison.OrdinalIgnoreCase)
-      //             || o.Coordenador.Contains(search, StringComparison.OrdinalIgnoreCase));
-      //}
-
-      //var lista = operacoes
-      //  .OrderByDescending(o => o.DataHora)
-      //  .ToList();
-
-      //var vm = _mapper.Map<IEnumerable<Operacao>, IEnumerable<OperacaoViewModel>>(lista);
-
-      //ViewData["search"] = search;
-
       return View(operacoes);
     }
 
@@ -129,15 +113,16 @@ namespace SVG.WebApp.Controllers
     // GET: Operacao/Create
     public IActionResult Create()
     {
+      var model = new OperacaoViewModel();
       PopularCombos();
 
       var now = DateTime.Now.AddDays(2);
       var date = new DateTime(now.Year, now.Month, now.Day, 03, 00, 00);
 
-      return View(new OperacaoViewModel
-      {
-        DataHora = date
-      });
+      model.DataHora = date;
+      model.TipoOperacaoID = 1;
+
+      return View(model);
     }
 
     // POST: Operacao/Create
@@ -327,9 +312,12 @@ namespace SVG.WebApp.Controllers
     public IActionResult Delete(int id)
     {
       var operacao = _operacaoAppService.GetById(id);
+      var tipoOperacao = _tipoOperacaoAppService.GetById(operacao.TipoOperacaoID);
+
       if (operacao == null) return NotFound();
 
       var vm = _mapper.Map<OperacaoViewModel>(operacao);
+      vm.TipoOperacaoNome = tipoOperacao.Nome;
       return View(vm);
     }
 
@@ -339,7 +327,16 @@ namespace SVG.WebApp.Controllers
     public IActionResult DeleteConfirmed(int id)
     {
       var operacao = _operacaoAppService.GetById(id);
-      if (operacao == null) return NotFound();
+      var operadores = _operadorAppService.PegarOperadoresOperacao(id).ToList(); 
+
+      foreach (var operadorId in operadores)
+      {
+        var operadorOperacao = _operadorOperacaoAppService.GetById(operadorId);
+        if (operadorOperacao != null)
+        {
+          _operadorOperacaoAppService.Remove(operadorOperacao);
+        }
+      }
 
       _operacaoAppService.Remove(operacao);
       return RedirectToAction(nameof(Index));

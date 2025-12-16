@@ -1,4 +1,5 @@
 ﻿@*
+
   Layout base para as Views MVC
   Coloque aqui o HTML comum (head, navbar, scripts, etc.)
 *@
@@ -20,12 +21,46 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
-                    DOE 
+
+                <!-- Brand ou logo (opcional) -->
+                <a class="navbar-brand" asp-controller="Operacao" asp-action="Index">
+                    SVG
                 </a>
+
+                <!-- Botão hamburguer (mobile) -->
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarMenu"
+                        aria-controls="navbarMenu"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Links -->
+                <div class="collapse navbar-collapse" id="navbarMenu">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Operacao"
+                               asp-action="Index">
+                                Operação
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Operador"
+                               asp-action="Index">
+                                Operador
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
             </div>
         </nav>
     </header>
+
 
     <main role="main" class="pb-3">
         @RenderBody()
@@ -39,6 +74,10 @@
 
     <!-- Bootstrap JS (opcional, mas bom ter) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
 
     @RenderSection("Scripts", required: false)
 </body>

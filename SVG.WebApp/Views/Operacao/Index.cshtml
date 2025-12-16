@@ -27,7 +27,7 @@
             <input type="text"
                    id="filtroOperacoes"
                    class="form-control"
-                   placeholder="Buscar por objeto, coordenador, tipo ou OS..." />
+                   placeholder="Buscar por local, coordenador, tipo ou OS..." />
         </div>
 
         <div class="col-md-3">
@@ -101,19 +101,37 @@
                             <td>@item.OrdemServico</td>
                             <td>@item.Coordenador</td>
                             <td class="text-end">
-                                <a href="@Url.Action("DetalhesOperacao", "Operacao", new { pOperacaoID = item.ID })"
-                                   class="btn btn-sm btn-outline-secondary me-1">
-                                    Detalhes
-                                </a>
-                                <a href="@Url.Action("Edit", "Operacao", new { id = item.ID })"
-                                   class="btn btn-sm btn-outline-secondary me-1">
-                                    Editar
-                                </a>
-                                <a href="@Url.Action("Delete", "Operacao", new { id = item.ID })"
-                                   class="btn btn-sm btn-outline-danger">
-                                    Excluir
-                                </a>
+                                <div class="row g-1">
+                                    <div class="col-6">
+                                        <a href="@Url.Action("DetalhesOperacao", "Operacao", new { pOperacaoID = item.ID })"
+                                           class="btn btn-sm btn-outline-primary w-100">
+                                            Detalhes
+                                        </a>
+                                    </div>
+
+                                    <div class="col-6">
+                                        <a href="@Url.Action("Edit", "Operacao", new { id = item.ID })"
+                                           class="btn btn-sm btn-outline-primary w-100">
+                                            Editar
+                                        </a>
+                                    </div>
+
+                                    <div class="col-6">
+                                        <a href="@Url.Action("Index", "Operacao", new { id = item.ID })"
+                                           class="btn btn-sm btn-outline-primary w-100">
+                                            Escala
+                                        </a>
+                                    </div>
+
+                                    <div class="col-6">
+                                        <a href="@Url.Action("Delete", "Operacao", new { id = item.ID })"
+                                           class="btn btn-sm btn-outline-danger w-100">
+                                            Excluir
+                                        </a>
+                                    </div>
+                                </div>
                             </td>
+
                         </tr>
                     }
                 </tbody>

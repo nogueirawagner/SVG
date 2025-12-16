@@ -13,10 +13,10 @@ namespace SVG.App.ViewModels
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
     public DateTime DataHora { get; set; }
 
-    [Required(ErrorMessage = "Informe o objeto da operação.")]
+    [Required(ErrorMessage = "Informe o local da operação.")]
     public string Objeto { get; set; }
 
-    [Required(ErrorMessage = "Informe a Ordem de Serviço.")]
+    [Required(ErrorMessage = "Informe apenas o número da OS.")]
     public string OrdemServico { get; set; }
 
     public string Coordenador { get; set; }
@@ -24,6 +24,7 @@ namespace SVG.App.ViewModels
     [Required(ErrorMessage = "Selecione o coordenador.")]
     public int CoordenadorOperadorID { get; set; }
 
+    [Required(ErrorMessage = "Informe a quantidade de vagas SVG.")]
     public int QtdVagasVoluntarios { get; set; }
 
     [Required(ErrorMessage = "Selecione o tipo de operação.")]

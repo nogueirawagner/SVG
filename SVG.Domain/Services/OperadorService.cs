@@ -24,5 +24,10 @@ namespace SVG.Domain.Services
     {
       return _operadorRepository.PegarResumoOperador();
     }
+
+    public IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId)
+    {
+      return _operadorRepository.PegarOperadoresOperacao(pOperacaoId);
+    }
   }
 }

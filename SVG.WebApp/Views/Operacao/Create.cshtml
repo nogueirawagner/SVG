@@ -22,6 +22,7 @@
     <hr />
 
     <form asp-action="Create" method="post" class="mt-3">
+        <div asp-validation-summary="All" class="text-danger"></div>
 
         <div class="row g-3 align-items-end">
             <!-- Data / Hora -->
@@ -36,17 +37,17 @@
             </div>
 
             <!-- Objeto (reduzido) -->
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label asp-for="Objeto" class="form-label">Local</label>
-                <input asp-for="Objeto" name="Objeto" class="form-control" />
-                <span asp-validation-for="Objeto" class="text-danger"></span>
+                <input asp-for="Objeto" name="Objeto" placeholder="Ex.: Apoio à DCOR" class="form-control" />
+                @* <span asp-validation-for="Objeto" class="text-danger"></span> *@
             </div>
 
             <!-- DP Apoio (reduzido) -->
             <div class="col-md-1">
                 <label asp-for="OrdemServico" class="form-label">Ordem Serviço</label>
-                <input asp-for="OrdemServico" name="OrdemServico" class="form-control" />
-                <span asp-validation-for="DP" class="text-danger"></span>
+                <input asp-for="OrdemServico" type="number" min="0" name="OrdemServico" placeholder="Ex.: 055" class="form-control" />
+                @* <span asp-validation-for="OrdemServico" class="text-danger"></span> *@
             </div>
 
             <!-- Coordenador (combo com busca em memória) -->
@@ -55,7 +56,7 @@
                 <input type="text" id="coordenadorSearch" class="form-control mb-2"
                        placeholder="Buscar coordenador..." />
 
-                <select id="coordenadorSelect"
+              @*   <select id="coordenadorSelect"
                         name="CoordenadorOperadorID"
                         class="form-select">
                     <option value="">Selecione...</option>
@@ -66,15 +67,23 @@
                             @op.Nome (@op.Matricula)
                         </option>
                     }
+                </select> *@
+
+                <select asp-for="CoordenadorOperadorID" class="form-select">
+                    <option value="">Selecione...</option>
+                    @foreach (var op in ViewBag.Coordenadores as IEnumerable<dynamic>)
+                    {
+                        <option value="@op.ID">@op.Nome</option>
+                    }
                 </select>
-                <span asp-validation-for="CoordenadorOperadorID" class="text-danger"></span>
+                @* <span asp-validation-for="CoordenadorOperadorID" class="text-danger"></span> *@
             </div>
 
 
             <!-- Tipo Operação -->
             <div class="col-md-3">
                 <label asp-for="TipoOperacaoID" class="form-label">Tipo</label>
-                <select id="tipoOperacaoSelect"
+                @* <select id="tipoOperacaoSelect"
                         name="TipoOperacaoID"
                         class="form-select">
                     <option value="">...</option>
@@ -86,7 +95,16 @@
                         </option>
                     }
                 </select>
-                <span asp-validation-for="TipoOperacaoID" class="text-danger"></span>
+                <span asp-validation-for="TipoOperacaoID" class="text-danger"></span> *@
+                <select asp-for="TipoOperacaoID" class="form-select">
+                    <option value="">Selecione...</option>
+                    @foreach (var t in ViewBag.TiposOperacao as IEnumerable<dynamic>)
+                    {
+                        <option value="@t.ID">@t.Nome</option>
+                    }
+                </select>
+                @* <span asp-validation-for="TipoOperacaoID" class="text-danger"></span> *@
+
             </div>
         </div>
 
@@ -183,7 +201,8 @@
 
         <div class="d-flex justify-content-between mt-4">
             <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
-            <button type="submit" class="btn btn-success">Salvar Operação</button>
+            @* <button type="submit" class="btn btn-success">Salvar Operação</button> *@
+            <button type="submit" id="btnSalvar" class="btn btn-primary" disabled>Salvar</button>
         </div>
     </form>
 </div>
@@ -192,6 +211,49 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
+
+                document.addEventListener("DOMContentLoaded", function () {
+          const form = document.querySelector("form");
+          const btnSalvar = document.getElementById("btnSalvar");
+
+          // 1) Recria as regras unobtrusive
+          $.validator.unobtrusive.parse(form);
+
+          // 2) Pega o validator do form
+          const validator = $(form).data("validator");
+          console.log("Validator:", validator);
+
+          function atualizarBotao() {
+            const valido = $(form).valid();
+
+            // DEBUG: quais campos estão errando
+            if (!valido) {
+              const v = $(form).validate();
+              console.log("Campos com erro:", v.errorMap);
+              console.log("Lista de erros:", v.errorList);
+            }
+
+            btnSalvar.disabled = !valido;
+          }
+
+          // Para aparecer erro quando o usuário mexer
+          form.addEventListener("input", atualizarBotao);
+          form.addEventListener("change", atualizarBotao);
+
+          // Força mostrar mensagens ao tentar enviar
+          form.addEventListener("submit", function (e) {
+            if (!$(form).valid()) {
+              e.preventDefault();
+              $(form).validate().focusInvalid();
+            }
+          });
+
+          // inicial
+          atualizarBotao();
+        });
+
+
+
         // Dados de operadores vindos do controller (ID, Nome, Matricula, SessaoID)
         const operadoresData = @Html.Raw(operadoresJson);
 
@@ -273,6 +335,7 @@
         let operadorIndex = 0;
 
         // Função comum para adicionar operador na lista final (sessão ou voluntário)
+                // Função comum para adicionar operador na lista final (sessão ou voluntário)
         function adicionarOperador(op, svgFlag) {
             const liId = 'op-' + op.ID;
             if (document.getElementById(liId)) {
@@ -284,29 +347,53 @@
             li.className = 'list-group-item d-flex justify-content-between align-items-center';
             li.id = liId;
 
+            // IMPORTANTE: o "tipo" (Sessão/Voluntário) fica fixo conforme o estado inicial
+            // (não deve mudar quando alternar o SVG)
             const tipo = svgFlag ? 'Voluntário' : 'Sessão';
+
+            const svgText = svgFlag ? 'SVG: Sim' : 'SVG: Não';
+            const svgBtnClass = svgFlag ? 'btn-outline-success' : 'btn-outline-secondary';
 
             li.innerHTML = `
                 <div>
                     <strong>${op.Nome}</strong> (${op.Matricula})
                     <span class="badge bg-secondary ms-2">${tipo}</span>
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-danger">X</button>
+
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn ${svgBtnClass} btnToggleSvg">${svgText}</button>
+                    <button type="button" class="btn btn-outline-danger btnRemoverOperador">Remover</button>
+                </div>
 
                 <input type="hidden" name="OperadoresSelecionados[${operadorIndex}].OperadorID" value="${op.ID}" />
-                <input type="hidden" name="OperadoresSelecionados[${operadorIndex}].SVG" value="${svgFlag}" />
+                <input type="hidden" name="OperadoresSelecionados[${operadorIndex}].SVG" value="${svgFlag}" class="inputSvgFlag" />
             `;
 
             operadorIndex++;
 
-            li.querySelector('button').addEventListener('click', function () {
+            // Remover
+            li.querySelector('.btnRemoverOperador').addEventListener('click', function () {
                 li.remove();
                 atualizarContadorOperadores();
+            });
+
+            // Toggle SVG (altera somente o hidden OperadoresSelecionados[i].SVG)
+            li.querySelector('.btnToggleSvg').addEventListener('click', function () {
+                const inputSvg = li.querySelector('.inputSvgFlag');
+                const atual = (inputSvg.value === "true");
+                const novo = !atual;
+
+                inputSvg.value = novo ? "true" : "false";
+
+                this.textContent = novo ? "SVG: Sim" : "SVG: Não";
+                this.classList.toggle("btn-outline-success", novo);
+                this.classList.toggle("btn-outline-secondary", !novo);
             });
 
             listaSelecionados.appendChild(li);
             atualizarContadorOperadores();
         }
+
 
         // --- Sessão -> adiciona todos operadores daquela sessão (SVG = false)
         const sessaoSelect = document.getElementById('sessaoSelect');

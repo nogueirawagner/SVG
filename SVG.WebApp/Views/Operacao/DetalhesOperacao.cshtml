@@ -16,6 +16,12 @@
     @if (op == null)
     {
         <div class="alert alert-warning">Nenhum registro encontrado.</div>
+        <div class="mt-4">
+            <a href="@Url.Action("Index", "Operacao")"
+               class="btn btn-sm btn-outline-secondary me-1">
+                Voltar
+            </a>
+        </div>
         return;
     }
 
@@ -90,7 +96,7 @@
                             <button type="button"
                                     class="btn btn-sm toggle-svg-btn @(item.SVG ? "btn-success" : "btn-danger")"
                                     data-svg="@item.SVG.ToString().ToLower()">
-                                @(item.SVG ? "ON" : "OFF")
+                                @(item.SVG ? "Sim" : "Não")
                             </button>
                         </td>
                     </tr>
@@ -99,13 +105,20 @@
         </table>
     </div>
 
-
     <div class="mt-4">
         <a href="@Url.Action("Index", "Operacao")"
            class="btn btn-sm btn-outline-secondary me-1">
             Voltar
         </a>
+        <a href="@Url.Action("Delete", "Operacao", new { id = op.ID })"
+           class="btn btn-sm btn-outline-danger">
+            Excluir
+        </a>
     </div>
+
+    
+
+
 
 </div>
 
@@ -144,11 +157,11 @@
                         if (novoEstado) {
                             this.classList.remove("btn-danger");
                             this.classList.add("btn-success");
-                            this.textContent = "ON";
+                            this.textContent = "Sim";
                         } else {
                             this.classList.remove("btn-success");
                             this.classList.add("btn-danger");
-                            this.textContent = "OFF";
+                            this.textContent = "Não";
                         }
 
                     } catch (e) {

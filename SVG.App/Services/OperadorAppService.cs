@@ -22,6 +22,11 @@ namespace SVG.App.Services
       return _operadorService.PegarDetalhamentoOperador(pOperadorId);
     }
 
+    public IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId)
+    {
+      return _operadorService.PegarOperadoresOperacao(pOperacaoId);
+    }
+
     public IEnumerable<ResumoOperadorOperacao> PegarResumoOperador()
     {
       return _operadorService.PegarResumoOperador();  

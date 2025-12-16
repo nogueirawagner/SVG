@@ -12,5 +12,6 @@ namespace SVG.Domain.Interfaces.Services
   {
     public IEnumerable<ResumoOperadorOperacao> PegarResumoOperador();
     IEnumerable<DetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId);
+    IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId);
   }
 }

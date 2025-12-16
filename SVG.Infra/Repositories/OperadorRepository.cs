@@ -19,9 +19,9 @@ namespace SVG.Infra.Repositories
       _db = dbContext;
     }
 
-		public IEnumerable<DetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId)
-		{
-			var sql = @"
+    public IEnumerable<DetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId)
+    {
+      var sql = @"
 			WITH CTE_Operacao AS (
 				select 
 					op.ID,
@@ -70,10 +70,9 @@ namespace SVG.Infra.Repositories
 				select * from CTE_Resultado
 				order by TipoOperacao";
 
-			return _db.Database.SqlQuery<DetalhamentoOperadorOperacao>(sql,
+      return _db.Database.SqlQuery<DetalhamentoOperadorOperacao>(sql,
         new SqlParameter("@pOperadorId", pOperadorId));
     }
-
 
     public IEnumerable<ResumoOperadorOperacao> PegarResumoOperador()
     {
@@ -138,49 +137,15 @@ namespace SVG.Infra.Repositories
 				order by OperadorNome 
           ";
 
-			return _db.Database.SqlQuery<ResumoOperadorOperacao>(sql);
+      return _db.Database.SqlQuery<ResumoOperadorOperacao>(sql);
+    }
+
+    public IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId)
+    {
+			var sql = @"select ID from OperadorOperacao where OperacaoID = @pOperacaoID";
+
+      return _db.Database.SqlQuery<int>(sql, 
+				new SqlParameter("@pOperacaoID", pOperacaoId));
     }
   }
 }
-
-/*
- 
- public IEnumerable<ResumoOperadorOperacao> ObterResumoOperacoes()
-{
-    var sql = @"
-        SELECT * 
-        FROM CTE_Resultado
-        ORDER BY Nome
-    ";
-
-    using (var conn = _db.Database.Connection)
-    {
-        if (conn.State != ConnectionState.Open)
-            conn.Open();
-
-        using (var cmd = conn.CreateCommand())
-        {
-            cmd.CommandText = sql;
-
-            using (var reader = cmd.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    yield return new ResumoOperadorOperacao
-                    {
-                        OperadorID = reader.GetInt32(reader.GetOrdinal("OperadorID")),
-                        Nome = reader.GetString(reader.GetOrdinal("Nome")),
-                        Matricula = reader.GetString(reader.GetOrdinal("Matricula")),
-                        Telefone = reader.GetString(reader.GetOrdinal("Telefone")),
-                        Sessao = reader.GetString(reader.GetOrdinal("Sessao")),
-                        QtdOperacoes = reader.GetInt32(reader.GetOrdinal("QtdOperacoes")),
-                        QtdOperacaoSVG = reader.GetInt32(reader.GetOrdinal("QtdOperacaoSVG")),
-                        Media = reader.GetDecimal(reader.GetOrdinal("Media"))
-                    };
-                }
-            }
-        }
-    }
-}
-
- */
