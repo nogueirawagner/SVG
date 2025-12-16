@@ -2,7 +2,7 @@
 using SVG.App.ViewModels;
 using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Services;
-using SVG.Domain.TiposEstruturados.Operador;
+using SVG.Domain.TiposEstruturados.TiposOperador;
 using System.Collections.Generic;
 
 namespace SVG.App.Services

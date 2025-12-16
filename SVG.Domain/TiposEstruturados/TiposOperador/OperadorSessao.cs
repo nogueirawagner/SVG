@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using SVG.Domain.Entities;
 
-namespace SVG.Domain.TiposEstruturados.Operador
+namespace SVG.Domain.TiposEstruturados.TiposOperador
 {
   public class OperadorSessao
   {
     public int SessaoID { get; set; }
     public int NomeSessao { get; set; }
-    public List<OperadorSelecionadoVM> OperadoresSelecionados { get; set; }
-        = new List<OperadorSelecionadoVM>();
+    public List<Operador> OperadoresSelecionados { get; set; }
+        = new List<Operador>();
   }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using SVG.Domain.TiposEstruturados.Operador;
+using SVG.Domain.TiposEstruturados.TiposOperador;
 
 namespace SVG.App.ViewModels
 {

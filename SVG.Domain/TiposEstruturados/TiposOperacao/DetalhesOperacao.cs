@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SVG.Domain.TiposEstruturados.Operacao
+namespace SVG.Domain.TiposEstruturados.TiposOperacao
 {
   public class DetalhesOperacao
   {

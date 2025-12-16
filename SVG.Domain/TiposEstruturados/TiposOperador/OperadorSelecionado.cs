@@ -4,14 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SVG.Domain.TiposEstruturados.Operador
+namespace SVG.Domain.TiposEstruturados.TiposOperador
 {
-  public class OperadorSelecionadoVM
+  public class OperadorSelecionado
   {
     public int OperadorID { get; set; }
     public bool SVG { get; set; }
-
-    // Propriedades para exibir na tela
     public string Nome { get; set; }
     public string Matricula { get; set; }
     public string Telefone { get; set; }

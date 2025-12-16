@@ -6,7 +6,7 @@ using SVG.App.Interface;
 using SVG.App.Services;
 using SVG.App.ViewModels;
 using SVG.Domain.Entities;
-using SVG.Domain.TiposEstruturados.Operador;
+using SVG.Domain.TiposEstruturados.TiposOperador;
 
 namespace SVG.WebApp.Controllers
 {
@@ -147,7 +147,10 @@ namespace SVG.WebApp.Controllers
     {
       ModelState.Remove("Coordenador");
       ModelState.Remove("TipoOperacaoNome");
-
+      ModelState.Remove("OperadoresSelecionados.Nome");
+      ModelState.Remove("OperadoresSelecionados.Matricula");
+      ModelState.Remove("OperadoresSelecionados.Telefone");
+      ModelState.Remove("OperadoresSelecionados.Sessao");
 
       if (!ModelState.IsValid)
       {
@@ -162,6 +165,7 @@ namespace SVG.WebApp.Controllers
 
       var entidade = _mapper.Map<Operacao>(model);
       entidade.DataHoraCriacao = DateTime.Now;
+      entidade.OrdemServico = string.Concat("OS ", model.OrdemServico);
 
       var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
       var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
@@ -222,19 +226,19 @@ namespace SVG.WebApp.Controllers
           .Where(oo => oo.OperacaoID == id)
           .ToList();
 
-      vm.OperadoresSelecionados = (
-          from oo in vinculos
-          join op in operadoresVM on oo.OperadorID equals op.ID
-          select new OperadorSelecionadoVM
-          {
-            OperadorID = op.ID,
-            SVG = oo.SVG,
-            Nome = op.Nome,
-            Matricula = op.Matricula,
-            Telefone = op.Telefone,
-            //Sessao = op.Sessao.Nome 
-          }
-      ).ToList();
+      //vm.OperadoresSelecionados = (
+      //    from oo in vinculos
+      //    join op in operadoresVM on oo.OperadorID equals op.ID
+      //    select new OperadorSelecionado
+      //    {
+      //      OperadorID = op.ID,
+      //      SVG = oo.SVG,
+      //      Nome = op.Nome,
+      //      Matricula = op.Matricula,
+      //      Telefone = op.Telefone,
+      //      //Sessao = op.Sessao.Nome 
+      //    }
+      //).ToList();
 
       PopularCombos(vm.TipoOperacaoID, vm.CoordenadorOperadorID);
 

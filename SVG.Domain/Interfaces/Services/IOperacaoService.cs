@@ -1,5 +1,5 @@
 ﻿using SVG.Domain.Entities;
-using SVG.Domain.TiposEstruturados.Operacao;
+using SVG.Domain.TiposEstruturados.TiposOperacao;
 
 namespace SVG.Domain.Interfaces.Services
 {

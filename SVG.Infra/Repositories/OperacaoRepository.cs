@@ -1,6 +1,6 @@
 ﻿using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
-using SVG.Domain.TiposEstruturados.Operacao;
+using SVG.Domain.TiposEstruturados.TiposOperacao;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.Repositories;
 using System.Data.SqlClient;

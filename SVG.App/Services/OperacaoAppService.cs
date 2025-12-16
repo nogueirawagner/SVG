@@ -1,7 +1,7 @@
 ﻿using SVG.App.Interface;
 using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Services;
-using SVG.Domain.TiposEstruturados.Operacao;
+using SVG.Domain.TiposEstruturados.TiposOperacao;
 
 namespace SVG.App.Services
 {

@@ -1,5 +1,5 @@
 ﻿using SVG.Domain.Entities;
-using SVG.Domain.TiposEstruturados.Operador;
+using SVG.Domain.TiposEstruturados.TiposOperador;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,6 +1,6 @@
 ﻿using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
-using SVG.Domain.TiposEstruturados.Operador;
+using SVG.Domain.TiposEstruturados.TiposOperador;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.FunctionsDB;
 using SVG.Infra.Repositories;

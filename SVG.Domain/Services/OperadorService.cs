@@ -1,7 +1,7 @@
 ﻿using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.Interfaces.Services;
-using SVG.Domain.TiposEstruturados.Operador;
+using SVG.Domain.TiposEstruturados.TiposOperador;
 
 namespace SVG.Domain.Services
 {
