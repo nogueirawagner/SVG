@@ -17,6 +17,21 @@ namespace SVG.Infra.Context.SQLServer
       Configuration.LazyLoadingEnabled = true;
     }
 
+#if DEBUG
+    static string connectionName = "ConnectionLocal";
+#else
+        static string connectionName = "ConnectionProduction_Az";
+#endif
+
+    public SQLServerContext()
+      : base("name=" + connectionName)
+    {
+      Configuration.ProxyCreationEnabled = false;
+      Configuration.LazyLoadingEnabled = true;
+    }
+
+    // Add-Migration 202512161200 -Project SVG.Infra -StartupProject SVG.WebApp
+
     #region objetos
     public DbSet<Operador> Operador { get; set; }
     public DbSet<Operacao> Operacao { get; set; }

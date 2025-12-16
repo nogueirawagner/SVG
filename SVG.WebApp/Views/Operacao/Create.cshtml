@@ -81,7 +81,7 @@
                     @foreach (var t in tipos)
                     {
                         <option value="@t.ID"
-                                @(Model.TipoOperacaoID == t.ID ? "selected" : "")>
+                                @(Model.TipoOperacaoID == t.ID || t.Nome == "Apoio" ? "selected" : "")>
                             @t.Nome
                         </option>
                     }
