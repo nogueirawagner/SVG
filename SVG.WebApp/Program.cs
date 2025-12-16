@@ -14,17 +14,20 @@ container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
 builder.Services.AddSimpleInjector(container, options => options.AddAspNetCore().AddControllerActivation());
 var config = AutoMapperConfig.RegisterMappings();
 container.RegisterInstance(config.CreateMapper());
-BootStrapper.RegisterServices(container);
 
 var app = builder.Build();
 
-//// Configure the HTTP request pipeline.
-//if (!app.Environment.IsDevelopment())
-//{
-//    app.UseExceptionHandler("/Error");
-//    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-//    app.UseHsts();
-//}
+var connectionString =
+    builder.Configuration.GetConnectionString("ConnectionLocal");
+
+#if DEBUG
+var cs = builder.Configuration.GetConnectionString("ConnectionLocal");
+# else
+var cs =  builder.Configuration.GetConnectionString("ConnectionProduction_Az");
+#endif
+
+BootStrapper.RegisterServices(container, cs);
+
 
 app.Services.UseSimpleInjector(container);
 

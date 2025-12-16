@@ -37,7 +37,7 @@ public class Program
   {
     var container = new Container();
     container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
-    BootStrapper.RegisterServices(container);
+    BootStrapper.RegisterServices(container, "");
     container.Verify();
 
     using (AsyncScopedLifestyle.BeginScope(container))
