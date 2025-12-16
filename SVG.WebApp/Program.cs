@@ -6,16 +6,15 @@ using SVG.WebApp.AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorPages();
+//// Add services to the container.
+//builder.Services.AddRazorPages();
+builder.Services.AddControllersWithViews();
 
 var container = new Container();
 container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
 builder.Services.AddSimpleInjector(container, options => options.AddAspNetCore().AddControllerActivation());
 var config = AutoMapperConfig.RegisterMappings();
 container.RegisterInstance(config.CreateMapper());
-
-var app = builder.Build();
 
 var connectionString =
     builder.Configuration.GetConnectionString("ConnectionLocal");
@@ -28,7 +27,7 @@ var cs =  builder.Configuration.GetConnectionString("ConnectionProduction_Az");
 
 BootStrapper.RegisterServices(container, cs);
 
-
+var app = builder.Build();
 app.Services.UseSimpleInjector(container);
 
 app.UseHttpsRedirection();
@@ -41,10 +40,10 @@ app.UseAuthorization();
 // Rotas MVC (controllers)
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Operacao}/{action=Create}/{id?}");
+    pattern: "{controller=Operacao}/{action=Index}/{id?}");
 app.MapControllers();
 
-app.MapRazorPages();
+//app.MapRazorPages();
 
 container.Verify();
 

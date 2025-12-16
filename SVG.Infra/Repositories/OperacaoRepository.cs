@@ -17,6 +17,26 @@ namespace SVG.Infra.Repositories
       _db = dbContext;
     }
 
+    public IEnumerable<OperacoesRealizadas> PegarOperacoesRealizadas()
+    {
+      var sql = @"
+        select 
+          o.ID,
+          o.DataHoraCriacao,
+          o.DataHora,
+          o.Objeto,
+          o.OrdemServico,
+          o.Coordenador,
+          t.Nome TipoOperacao
+        from Operacao o
+          join TipoOperacao t on t.ID = o.TipoOperacaoID
+        order by DataHoraCriacao desc
+        ";
+
+     return _db.Database.
+        SqlQuery<OperacoesRealizadas>(sql);
+    }
+
     public IEnumerable<DetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
     {
       var sql = @"

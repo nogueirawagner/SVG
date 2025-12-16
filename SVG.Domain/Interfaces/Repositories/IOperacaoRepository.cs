@@ -8,5 +8,6 @@ namespace SVG.Domain.Interfaces.Repositories
     IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas);
     void AlterarSVGOperador(int pOperadorId, bool pSvg);
     IEnumerable<DetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID);
+    IEnumerable<OperacoesRealizadas> PegarOperacoesRealizadas();
   }
 }

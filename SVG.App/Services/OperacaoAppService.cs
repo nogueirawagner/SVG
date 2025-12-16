@@ -25,6 +25,11 @@ namespace SVG.App.Services
       return _operacaoService.PegarDetalhesOperacao(pOperacaoID); 
     }
 
+    public IEnumerable<OperacoesRealizadas> PegarOperacoesRealizadas()
+    {
+      return _operacaoService.PegarOperacoesRealizadas();
+    }
+
     public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)
     {
       return _operacaoService.PegarOperadoresSVG(pOperadorIDs, pDataLimite, pQtdVagas);

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<SVG.App.ViewModels.OperacaoViewModel>
+﻿@model IEnumerable<SVG.Domain.TiposEstruturados.TiposOperacao.OperacoesRealizadas>
 
 @{
     ViewData["Title"] = "Operações";
@@ -7,18 +7,21 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">Operações</h2>
-        <a href="@Url.Action("Create", "Operacao", new { })" class="btn btn-primary">Nova Operação</a>
+        <a href="@Url.Action("Create", "Operacao")"
+           class="btn btn-primary">
+            Nova Operação
+        </a>
     </div>
 
-    <form asp-action="Index" method="get" class="row g-2 mb-3">
+    <!-- BUSCA CLIENT-SIDE -->
+    <div class="row g-2 mb-3">
         <div class="col-md-4">
-            <input type="text" name="search" value="@ViewData["search"]"
-                   class="form-control" placeholder="Buscar por objeto ou coordenador..." />
+            <input type="text"
+                   id="filtroOperacoes"
+                   class="form-control"
+                   placeholder="Buscar por objeto, coordenador, tipo ou OS..." />
         </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-outline-secondary w-100">Buscar</button>
-        </div>
-    </form>
+    </div>
 
     @if (Model != null && Model.Any())
     {
@@ -26,22 +29,23 @@
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-light">
                     <tr>
+                        <th>Data/Hora Criação</th>
                         <th>Data/Hora</th>
-                        <th>Objeto</th>
+                        <th>Local</th>
                         <th>Tipo</th>
-                        <th>DP</th>
+                        <th>OS</th>
                         <th>Coordenador</th>
-                        <th class="text-center">Qtd. Equipes</th>
                         <th class="text-end" style="width: 180px;">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model)
                     {
-                        <tr>
+                        <tr data-text="@($"{item.Objeto} {item.Coordenador} {item.TipoOperacao} {item.OrdemServico}".ToLower())">
+                            <td>@item.DataHoraCriacao.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>@item.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>@item.Objeto</td>
-                            <td>@item.TipoOperacaoNome</td>
+                            <td>@item.TipoOperacao</td>
                             <td>@item.OrdemServico</td>
                             <td>@item.Coordenador</td>
                             <td class="text-end">
@@ -53,8 +57,10 @@
                                    class="btn btn-sm btn-outline-secondary me-1">
                                     Editar
                                 </a>
-                                <a asp-action="Delete" asp-route-id="@item.ID"
-                                   class="btn btn-sm btn-outline-danger">Excluir</a>
+                                <a href="@Url.Action("Delete", "Operacao", new { id = item.ID })"
+                                   class="btn btn-sm btn-outline-danger">
+                                    Excluir
+                                </a>
                             </td>
                         </tr>
                     }
@@ -64,6 +70,24 @@
     }
     else
     {
-        <div class="alert alert-info">Nenhuma operação encontrada.</div>
+        <div class="alert alert-info">
+            Nenhuma operação encontrada.
+        </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        document.getElementById('filtroOperacoes')
+            .addEventListener('input', function () {
+
+                const filtro = this.value.toLowerCase();
+                const linhas = document.querySelectorAll('tbody tr');
+
+                linhas.forEach(tr => {
+                    const texto = tr.dataset.text;
+                    tr.style.display = texto.includes(filtro) ? '' : 'none';
+                });
+            });
+    </script>
+}

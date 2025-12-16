@@ -90,24 +90,24 @@ namespace SVG.WebApp.Controllers
     // GET: Operacao
     public IActionResult Index(string search)
     {
-      var operacoes = _operacaoAppService.GetAll();
+      var operacoes = _operacaoAppService.PegarOperacoesRealizadas().ToList();
 
-      if (!string.IsNullOrWhiteSpace(search))
-      {
-        operacoes = operacoes
-          .Where(o => o.Objeto.Contains(search, StringComparison.OrdinalIgnoreCase)
-                   || o.Coordenador.Contains(search, StringComparison.OrdinalIgnoreCase));
-      }
+      //if (!string.IsNullOrWhiteSpace(search))
+      //{
+      //  operacoes = operacoes
+      //    .Where(o => o.Objeto.Contains(search, StringComparison.OrdinalIgnoreCase)
+      //             || o.Coordenador.Contains(search, StringComparison.OrdinalIgnoreCase));
+      //}
 
-      var lista = operacoes
-        .OrderByDescending(o => o.DataHora)
-        .ToList();
+      //var lista = operacoes
+      //  .OrderByDescending(o => o.DataHora)
+      //  .ToList();
 
-      var vm = _mapper.Map<IEnumerable<Operacao>, IEnumerable<OperacaoViewModel>>(lista);
+      //var vm = _mapper.Map<IEnumerable<Operacao>, IEnumerable<OperacaoViewModel>>(lista);
 
-      ViewData["search"] = search;
+      //ViewData["search"] = search;
 
-      return View(vm);
+      return View(operacoes);
     }
 
     [HttpPost]
