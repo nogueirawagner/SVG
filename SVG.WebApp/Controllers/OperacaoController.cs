@@ -170,7 +170,9 @@ namespace SVG.WebApp.Controllers
       var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
       var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
 
-      var operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios).ToList();
+      var operadoresContemplados = new List<int>();
+      if (opSvg.Count > 0)
+        operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios).ToList();
 
       var operadoresOperacao = model.OperadoresSelecionados.Where(s => !s.SVG).ToList();
 
