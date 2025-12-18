@@ -28,7 +28,8 @@ namespace SVG.Infra.Repositories
           o.OrdemServico,
           o.Coordenador,
           t.Nome TipoOperacao, 
-          o.SvgAberto
+          o.SvgAberto,
+          o.QtdVagasRestantes
         from Operacao o
           join TipoOperacao t on t.ID = o.TipoOperacaoID
         order by DataHoraCriacao desc
