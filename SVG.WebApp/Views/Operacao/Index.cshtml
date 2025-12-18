@@ -65,7 +65,7 @@
                 <option value="1">Sim</option>
                 <option value="0">Não</option>
             </select>
-        </div> 
+        </div>
     </div>
 
     <!-- CONTADOR -->
@@ -103,82 +103,82 @@
                     @foreach (var item in Model)
                     {
                         <tr class="@(item.SvgAberto ? "table-primary" : "")"
-                          data-text="@($"{item.Objeto} {item.Coordenador} {item.TipoOperacao} {item.OrdemServico}".ToLower())"
-                          data-mes="@item.DataHoraCriacao.Month"
-                          data-ano="@item.DataHoraCriacao.Year"
-                          data-svgaberto="@(item.SvgAberto ? "1" : "0")">
+                            data-text="@($"{item.Objeto} {item.Coordenador} {item.TipoOperacao} {item.OrdemServico}".ToLower())"
+                            data-mes="@item.DataHoraCriacao.Month"
+                            data-ano="@item.DataHoraCriacao.Year"
+                            data-svgaberto="@(item.SvgAberto ? "1" : "0")">
 
-                          <td>@item.DataHoraCriacao.ToString("dd/MM/yyyy HH:mm")</td>
-                          <td>@item.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
-                          <td>@item.Objeto</td>
-                          <td>@item.TipoOperacao</td>
-                          <td>@item.OrdemServico</td>
-                          <td>@item.Coordenador</td>
-                          <td>@item.QtdVagasRestantes</td>
-                         @*  <td>@(item.SvgAberto ? "Sim" : "Não")</td> *@
+                            <td>@item.DataHoraCriacao.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.Objeto</td>
+                            <td>@item.TipoOperacao</td>
+                            <td>@item.OrdemServico</td>
+                            <td>@item.Coordenador</td>
+                            <td>@item.QtdVagasRestantes</td>
+                            @*  <td>@(item.SvgAberto ? "Sim" : "Não")</td> *@
 
-                          <td class="text-end">
-                              <div class="dropdown">
-                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                          type="button"
-                                          data-bs-toggle="dropdown"
-                                          aria-expanded="false">
-                                      Ações
-                                  </button>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                            type="button"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false">
+                                        Ações
+                                    </button>
 
-                                  <ul class="dropdown-menu dropdown-menu-end">
+                                    <ul class="dropdown-menu dropdown-menu-end">
                                         <li>
-                                          @if (item.SvgAberto)
-                                          {
-                                              <a class="dropdown-item text-success fw-semibold"
-                                                 href="#"
-                                                 data-bs-toggle="modal"
-                                                 data-bs-target="#encerrarSvgModal"
-                                                 data-id="@item.ID">
-                                                  Encerrar SVG
-                                              </a>
-                                          }
-                                          else
-                                          {
-                                              <span class="dropdown-item disabled text-muted">
-                                                  Encerrar SVG
-                                              </span>
-                                          }
-                                      </li>
-                                      <li>
-                                          <a class="dropdown-item"
-                                             href="@Url.Action("DetalhesOperacao", "Operacao", new { pOperacaoID = item.ID })">
-                                              Detalhes
-                                          </a>
-                                      </li>
+                                            @if (item.SvgAberto)
+                                            {
+                                                <a class="dropdown-item text-success fw-semibold"
+                                                   href="#"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#encerrarSvgModal"
+                                                   data-id="@item.ID">
+                                                    Encerrar SVG
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="dropdown-item disabled text-muted">
+                                                    Encerrar SVG
+                                                </span>
+                                            }
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                               href="@Url.Action("DetalhesOperacao", "Operacao", new { pOperacaoID = item.ID })">
+                                                Detalhes
+                                            </a>
+                                        </li>
 
-                                      <li>
-                                          <a class="dropdown-item"
-                                             href="@Url.Action("Edit", "Operacao", new { id = item.ID })">
-                                              Editar
-                                          </a>
-                                      </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                               href="@Url.Action("Edit", "Operacao", new { id = item.ID })">
+                                                Editar
+                                            </a>
+                                        </li>
 
-                                      <li>
-                                          <a class="dropdown-item"
-                                             href="@Url.Action("Index", "Operacao", new { id = item.ID })">
-                                              Escala
-                                          </a>
-                                      </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                               href="@Url.Action("Index", "Operacao", new { id = item.ID })">
+                                                Escala
+                                            </a>
+                                        </li>
 
-                                      <li><hr class="dropdown-divider"></li>
+                                        <li><hr class="dropdown-divider"></li>
 
-                                      <li>
-                                          <a class="dropdown-item text-danger"
-                                             href="@Url.Action("Delete", "Operacao", new { id = item.ID })"
-                                             onclick="return confirm('Tem certeza que deseja excluir esta operação?');">
-                                              Excluir
-                                          </a>
-                                      </li>
-                                  </ul>
-                              </div>
-                          </td>
-                      </tr>
+                                        <li>
+                                            <a class="dropdown-item text-danger"
+                                               href="@Url.Action("Delete", "Operacao", new { id = item.ID })"
+                                               onclick="return confirm('Tem certeza que deseja excluir esta operação?');">
+                                                Excluir
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
 
                     }
                 </tbody>
@@ -216,6 +216,39 @@
         </div>
     }
 </div>
+
+<div class="modal fade" id="encerrarSvgModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Encerrar SVG</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form id="formEncerrarSvg"
+                  method="post"
+                  action="@Url.Action("EncerrarSVG", "Operacao")">
+
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+                    Tem certeza que deseja encerrar o SVG desta operação?
+                    <input type="hidden" id="pOperacaoID" name="pOperacaoID" value="" />
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Encerrar SVG</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
 
 @section Scripts {
     <script>
@@ -290,5 +323,16 @@
 
         // inicializa
         aplicarFiltros();
+
+
+        let operacaoIdEncerrar = null;
+
+        document.getElementById('encerrarSvgModal')
+          .addEventListener('show.bs.modal', function (event) {
+            const trigger = event.relatedTarget;
+            const id = trigger.getAttribute('data-id');
+            document.getElementById('pOperacaoID').value = id;
+          });
+
     </script>
 }

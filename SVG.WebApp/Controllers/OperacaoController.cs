@@ -101,6 +101,17 @@ namespace SVG.WebApp.Controllers
       return Ok();
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult EncerrarSVG(int pOperacaoID)
+    {
+      var oper = _operacaoAppService.GetById(pOperacaoID);
+      oper.SvgAberto = false;
+      oper.QtdVagasRestantes = 0;
+
+      _operacaoAppService.Update(oper);
+      return RedirectToAction("Index"); ;
+    }
 
     // GET: Operacao/Details/5
     public IActionResult DetalhesOperacao(int pOperacaoID)
