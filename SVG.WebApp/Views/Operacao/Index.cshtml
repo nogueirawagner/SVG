@@ -77,7 +77,7 @@
 
         <button type="button"
                 id="btnLimparFiltrosTopo"
-                class="btn btn-sm btn-outline-secondary">
+                class="btn  btn-sm btn-outline-secondary">
             Limpar filtros
         </button>
     </div>
@@ -94,8 +94,6 @@
                         <th>Tipo</th>
                         <th>OS</th>
                         <th>Coordenador</th>
-                        <th>Vagas SVG</th>
-                        @* <th>SVG Aberto</th> *@
                         <th class="text-center" style="width: 180px;">Ações</th>
                     </tr>
                 </thead>
@@ -114,10 +112,8 @@
                             <td>@item.TipoOperacao</td>
                             <td>@item.OrdemServico</td>
                             <td>@item.Coordenador</td>
-                            <td>@item.QtdVagasRestantes</td>
-                            @*  <td>@(item.SvgAberto ? "Sim" : "Não")</td> *@
 
-                            <td class="text-end">
+                            <td class="text-center">
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
                                             type="button"
@@ -135,13 +131,13 @@
                                                    data-bs-toggle="modal"
                                                    data-bs-target="#encerrarSvgModal"
                                                    data-id="@item.ID">
-                                                    Encerrar SVG
+                                                    Encerrar SVG: @item.QtdVagasRestantes vagas
                                                 </a>
                                             }
                                             else
                                             {
                                                 <span class="dropdown-item disabled text-muted">
-                                                    Encerrar SVG
+                                                    Encerrado SVG
                                                 </span>
                                             }
                                         </li>
