@@ -15,5 +15,7 @@ namespace SVG.Domain.TiposEstruturados.TiposOperacao
     public string OrdemServico { get; set; }
     public string Coordenador { get; set; }
     public string TipoOperacao { get; set; }
+    public bool SvgAberto { get; set; }
+    public DateTime DataHoraEncerramentoSVG { get; set; }
   }
 }

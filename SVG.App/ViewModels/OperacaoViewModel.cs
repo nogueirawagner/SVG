@@ -30,6 +30,8 @@ namespace SVG.App.ViewModels
     [Required(ErrorMessage = "Selecione o tipo de operação.")]
     public int TipoOperacaoID { get; set; }
 
+    public int QtdVagasRestantes { get; set; }
+
     public string TipoOperacaoNome { get; set; }
 
     public bool SvgAberto { get; set; }

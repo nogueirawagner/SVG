@@ -10,6 +10,7 @@
     public string Coordenador { get; set; }
     public int TipoOperacaoID { get; set; }
     public bool SvgAberto { get; set; }
+    public int QtdVagasRestantes { get; set; }
 
     public virtual TipoOperacao TipoOperacao { get; set; }
     public virtual ICollection<OperadorOperacao> OperadoresOperacao { get; set; }

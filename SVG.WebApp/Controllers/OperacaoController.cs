@@ -121,6 +121,7 @@ namespace SVG.WebApp.Controllers
 
       model.DataHora = date;
       model.TipoOperacaoID = 1;
+      model.SvgAberto = true;
 
       return View(model);
     }
@@ -136,6 +137,7 @@ namespace SVG.WebApp.Controllers
       ModelState.Remove("OperadoresSelecionados.Matricula");
       ModelState.Remove("OperadoresSelecionados.Telefone");
       ModelState.Remove("OperadoresSelecionados.Sessao");
+      ModelState.Remove("QtdVagasRestantes");
 
       if (!ModelState.IsValid)
       {
@@ -151,13 +153,19 @@ namespace SVG.WebApp.Controllers
       var entidade = _mapper.Map<Operacao>(model);
       entidade.DataHoraCriacao = DateTime.Now;
       entidade.OrdemServico = string.Concat("OS ", model.OrdemServico);
+      
 
       var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
       var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
 
       var operadoresContemplados = new List<int>();
       if (opSvg.Count > 0)
-        operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios).ToList();
+      {
+        if (opSvg.Count > model.QtdVagasVoluntarios)
+          operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios).ToList();
+        else
+          operadoresContemplados = opSvg;
+      }
 
       var operadoresOperacao = model.OperadoresSelecionados.Where(s => !s.SVG).ToList();
 
@@ -170,6 +178,10 @@ namespace SVG.WebApp.Controllers
       }));
 
       _operacaoAppService.Add(entidade);
+
+      var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
+      entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
+      entidade.SvgAberto = qtdRestante > 0 ? true : false;
 
       foreach (var op in operadoresOperacao)
       {
@@ -327,7 +339,7 @@ namespace SVG.WebApp.Controllers
     public IActionResult DeleteConfirmed(int id)
     {
       var operacao = _operacaoAppService.GetById(id);
-      var operadores = _operadorAppService.PegarOperadoresOperacao(id).ToList(); 
+      var operadores = _operadorAppService.PegarOperadoresOperacao(id).ToList();
 
       foreach (var operadorId in operadores)
       {

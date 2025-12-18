@@ -57,6 +57,15 @@
                 }
             </select>
         </div>
+
+        <!-- NOVO: SVG Aberto -->
+        <div class="col-md-3 col-lg-2">
+            <select id="filtroSvgAberto" class="form-select">
+                <option value="">SVG Aberto (todas)</option>
+                <option value="1">Sim</option>
+                <option value="0">Não</option>
+            </select>
+        </div> 
     </div>
 
     <!-- CONTADOR -->
@@ -79,60 +88,96 @@
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Data/Hora Criação</th>
-                        <th>Data/Hora</th>
+                        <th>Criação</th>
+                        <th>Operação</th>
                         <th>Local</th>
                         <th>Tipo</th>
                         <th>OS</th>
                         <th>Coordenador</th>
-                        <th class="text-end" style="width: 180px;">Ações</th>
+                        @* <th>SVG Aberto</th> *@
+                        <th class="text-center" style="width: 180px;">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model)
                     {
-                        <tr data-text="@($"{item.Objeto} {item.Coordenador} {item.TipoOperacao} {item.OrdemServico}".ToLower())"
-                            data-mes="@item.DataHoraCriacao.Month"
-                            data-ano="@item.DataHoraCriacao.Year">
-                            <td>@item.DataHoraCriacao.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@item.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@item.Objeto</td>
-                            <td>@item.TipoOperacao</td>
-                            <td>@item.OrdemServico</td>
-                            <td>@item.Coordenador</td>
-                            <td class="text-end">
-                                <div class="row g-1">
-                                    <div class="col-6">
-                                        <a href="@Url.Action("DetalhesOperacao", "Operacao", new { pOperacaoID = item.ID })"
-                                           class="btn btn-sm btn-outline-primary w-100">
-                                            Detalhes
-                                        </a>
-                                    </div>
+                        <tr class="@(item.SvgAberto ? "table-primary" : "")"
+                          data-text="@($"{item.Objeto} {item.Coordenador} {item.TipoOperacao} {item.OrdemServico}".ToLower())"
+                          data-mes="@item.DataHoraCriacao.Month"
+                          data-ano="@item.DataHoraCriacao.Year"
+                          data-svgaberto="@(item.SvgAberto ? "1" : "0")">
 
-                                    <div class="col-6">
-                                        <a href="@Url.Action("Edit", "Operacao", new { id = item.ID })"
-                                           class="btn btn-sm btn-outline-primary w-100">
-                                            Editar
-                                        </a>
-                                    </div>
+                          <td>@item.DataHoraCriacao.ToString("dd/MM/yyyy HH:mm")</td>
+                          <td>@item.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
+                          <td>@item.Objeto</td>
+                          <td>@item.TipoOperacao</td>
+                          <td>@item.OrdemServico</td>
+                          <td>@item.Coordenador</td>
+                         @*  <td>@(item.SvgAberto ? "Sim" : "Não")</td> *@
 
-                                    <div class="col-6">
-                                        <a href="@Url.Action("Index", "Operacao", new { id = item.ID })"
-                                           class="btn btn-sm btn-outline-primary w-100">
-                                            Escala
-                                        </a>
-                                    </div>
+                          <td class="text-end">
+                              <div class="dropdown">
+                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                          type="button"
+                                          data-bs-toggle="dropdown"
+                                          aria-expanded="false">
+                                      Ações
+                                  </button>
 
-                                    <div class="col-6">
-                                        <a href="@Url.Action("Delete", "Operacao", new { id = item.ID })"
-                                           class="btn btn-sm btn-outline-danger w-100">
-                                            Excluir
-                                        </a>
-                                    </div>
-                                </div>
-                            </td>
+                                  <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                          @if (item.SvgAberto)
+                                          {
+                                              <a class="dropdown-item text-success fw-semibold"
+                                                 href="#"
+                                                 data-bs-toggle="modal"
+                                                 data-bs-target="#encerrarSvgModal"
+                                                 data-id="@item.ID">
+                                                  Encerrar SVG
+                                              </a>
+                                          }
+                                          else
+                                          {
+                                              <span class="dropdown-item disabled text-muted">
+                                                  Encerrar SVG
+                                              </span>
+                                          }
+                                      </li>
+                                      <li>
+                                          <a class="dropdown-item"
+                                             href="@Url.Action("DetalhesOperacao", "Operacao", new { pOperacaoID = item.ID })">
+                                              Detalhes
+                                          </a>
+                                      </li>
 
-                        </tr>
+                                      <li>
+                                          <a class="dropdown-item"
+                                             href="@Url.Action("Edit", "Operacao", new { id = item.ID })">
+                                              Editar
+                                          </a>
+                                      </li>
+
+                                      <li>
+                                          <a class="dropdown-item"
+                                             href="@Url.Action("Index", "Operacao", new { id = item.ID })">
+                                              Escala
+                                          </a>
+                                      </li>
+
+                                      <li><hr class="dropdown-divider"></li>
+
+                                      <li>
+                                          <a class="dropdown-item text-danger"
+                                             href="@Url.Action("Delete", "Operacao", new { id = item.ID })"
+                                             onclick="return confirm('Tem certeza que deseja excluir esta operação?');">
+                                              Excluir
+                                          </a>
+                                      </li>
+                                  </ul>
+                              </div>
+                          </td>
+                      </tr>
+
                     }
                 </tbody>
             </table>
@@ -175,6 +220,7 @@
         const filtroTexto = document.getElementById('filtroOperacoes');
         const filtroMes = document.getElementById('filtroMes');
         const filtroAno = document.getElementById('filtroAno');
+        const filtroSvgAberto = document.getElementById('filtroSvgAberto');
 
         const contadorExibidas = document.getElementById('contadorExibidas');
         const contadorTotal = document.getElementById('contadorTotal');
@@ -192,6 +238,7 @@
             const texto = (filtroTexto.value || '').toLowerCase();
             const mes = filtroMes.value;
             const ano = filtroAno.value;
+            const svg = filtroSvgAberto ? filtroSvgAberto.value : ""; // NOVO
 
             let exibidas = 0;
 
@@ -199,12 +246,14 @@
                 const textoLinha = tr.dataset.text || '';
                 const mesLinha = tr.dataset.mes;
                 const anoLinha = tr.dataset.ano;
+                const svgLinha = tr.dataset.svgaberto; // NOVO
 
                 const matchTexto = textoLinha.includes(texto);
                 const matchMes = !mes || mes === mesLinha;
                 const matchAno = !ano || ano === anoLinha;
+                const matchSvg = !svg || svg === svgLinha; // NOVO
 
-                const mostrar = matchTexto && matchMes && matchAno;
+                const mostrar = matchTexto && matchMes && matchAno && matchSvg;
 
                 tr.style.display = mostrar ? '' : 'none';
                 if (mostrar) exibidas++;
@@ -225,12 +274,14 @@
             filtroTexto.value = '';
             filtroMes.value = '';
             filtroAno.value = '';
+            if (filtroSvgAberto) filtroSvgAberto.value = ''; // NOVO
             aplicarFiltros();
         }
 
         filtroTexto.addEventListener('input', aplicarFiltros);
         filtroMes.addEventListener('change', aplicarFiltros);
         filtroAno.addEventListener('change', aplicarFiltros);
+        if (filtroSvgAberto) filtroSvgAberto.addEventListener('change', aplicarFiltros); // NOVO
 
         btnLimparTopo.addEventListener('click', limparFiltros);
         if (btnLimpar) btnLimpar.addEventListener('click', limparFiltros);

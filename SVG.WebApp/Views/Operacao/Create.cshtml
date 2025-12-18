@@ -141,41 +141,57 @@
                     </div>
                     <div class="card-body">
 
-                        <div class="row mb-3">
-                            <div class="col-md-8">
-                                <label class="form-label">Buscar Operador</label>
-                                <input type="text" id="operadorSearch" class="form-control mb-2"
-                                       placeholder="Digite o nome para filtrar..." />
+                       <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Buscar Operador</label>
+                            <input type="text" id="operadorSearch" class="form-control mb-2"
+                                    placeholder="Digite o nome para filtrar..." />
 
-                                <div class="d-flex gap-2">
-                                    <select id="operadorSelect" class="form-select form-select-sm flex-grow-1">
-                                        <option value="">Selecione um operador...</option>
-                                        @* opções serão preenchidas via JS usando operadoresJson *@
-                                    </select>
+                            <div class="d-flex gap-2">
+                                <select id="operadorSelect" class="form-select form-select-sm flex-grow-1">
+                                    <option value="">Selecione um operador...</option>
+                                    @* opções serão preenchidas via JS usando operadoresJson *@
+                                </select>
 
-                                    <button type="button"
-                                            id="btnAddOperador"
-                                            class="btn btn-primary btn-sm align-self-center"
-                                            style="white-space: nowrap;">
-                                        Adicionar
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Qtd Vagas SVG -->
-                            <div class="col-md-4">
-                                <label asp-for="QtdVagasVoluntarios" class="form-label">Qtd Vagas SVG</label>
-                                <input asp-for="QtdVagasVoluntarios"
-                                       name="QtdVagasVoluntarios"
-                                       type="number" min="0"
-                                       class="form-control" />
-                                <span asp-validation-for="QtdVagasVoluntarios" class="text-danger"></span>
+                                <button type="button"
+                                        id="btnAddOperador"
+                                        class="btn btn-primary btn-sm align-self-center"
+                                        style="white-space: nowrap;">
+                                    Adicionar
+                                </button>
                             </div>
                         </div>
+
+                        <!-- Qtd Vagas SVG -->
+                        <div class="col-md-4">
+                            <label asp-for="QtdVagasVoluntarios" class="form-label">Qtd Vagas SVG</label>
+                            <input asp-for="QtdVagasVoluntarios"
+                                    name="QtdVagasVoluntarios"
+                                    type="number" min="0"
+                                    class="form-control" />
+                            <span asp-validation-for="QtdVagasVoluntarios" class="text-danger"></span>
+
+                            <!-- SVG Aberto -->
+                            <div class="form-check form-switch mt-3">
+                                <input class="form-check-input"
+                                        type="checkbox"
+                                        asp-for="SvgAberto"
+                                        id="SvgAbertoToggle" />
+                                <label class="form-check-label" for="SvgAbertoToggle">
+                                    SVG Aberto
+                                </label>
+                            </div>
+                        </div>
+                    </div>
 
                         <div class="mb-2 d-flex align-items-center">
                             <strong>Operadores selecionados (sessão + voluntários):</strong>
                             <span id="contadorOperadores" class="badge bg-primary ms-2">0</span>
+
+                            <span class="ms-3">
+                                <strong>SVG:</strong>
+                                <span id="contadorOperadoresSvg" class="badge bg-success ms-2">0</span>
+                            </span>
                         </div>
                         <ul id="listaOperadoresSelecionados" class="list-group">
                             <!-- JS adiciona itens aqui -->
@@ -245,10 +261,10 @@
         const operadoresData = @Html.Raw(operadoresJson);
 
         // --- Coordenador: filtro inteligente em memória (busca + seleção automática)
-// (isolado e seguro: se algum elemento não existir, NÃO quebra os outros scripts)
-document.addEventListener("DOMContentLoaded", function () {
-    const coordSearch = document.getElementById('coordenadorSearch');
-    if (!coordSearch) return;
+        // (isolado e seguro: se algum elemento não existir, NÃO quebra os outros scripts)
+        document.addEventListener("DOMContentLoaded", function () {
+        const coordSearch = document.getElementById('coordenadorSearch');
+        if (!coordSearch) return;
 
     coordSearch.addEventListener('input', function () {
         const coordSelect = document.getElementById('coordenadorSelect');
@@ -316,11 +332,18 @@ document.addEventListener("DOMContentLoaded", function () {
         const listaSessao = document.getElementById('listaOperadoresSessao');
         const listaSelecionados = document.getElementById('listaOperadoresSelecionados');
         const contadorOperadores = document.getElementById('contadorOperadores');
+        const contadorOperadoresSvg = document.getElementById('contadorOperadoresSvg');
 
         function atualizarContadorOperadores() {
-            const qtd = listaSelecionados.children.length;
-            contadorOperadores.textContent = qtd;
+            // total
+            const total = listaSelecionados.children.length;
+            contadorOperadores.textContent = total;
+
+            // somente os marcados como SVG (hidden input .inputSvgFlag == "true")
+            const svgCount = listaSelecionados.querySelectorAll('.inputSvgFlag[value="true"]').length;
+            contadorOperadoresSvg.textContent = svgCount;
         }
+
 
         // índice para OperadoresSelecionados[i]
         let operadorIndex = 0;
@@ -379,6 +402,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 this.textContent = novo ? "SVG: Sim" : "SVG: Não";
                 this.classList.toggle("btn-outline-success", novo);
                 this.classList.toggle("btn-outline-secondary", !novo);
+
+                 atualizarContadorOperadores();
             });
 
             listaSelecionados.appendChild(li);

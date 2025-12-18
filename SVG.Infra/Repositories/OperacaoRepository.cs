@@ -27,7 +27,8 @@ namespace SVG.Infra.Repositories
           o.Objeto,
           o.OrdemServico,
           o.Coordenador,
-          t.Nome TipoOperacao
+          t.Nome TipoOperacao, 
+          o.SvgAberto
         from Operacao o
           join TipoOperacao t on t.ID = o.TipoOperacaoID
         order by DataHoraCriacao desc
@@ -102,64 +103,81 @@ namespace SVG.Infra.Repositories
     public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)
     {
       string sql = @"
-          WITH CTE_Operacao AS (
-          select 
-	          op.ID,
-	          op.TipoOperacaoID
-          from Operacao op 
-          where op.DataHora >= @pDataLimite
-          )
+        WITH CTE_Operacao AS (
+        select 
+	        op.ID,
+	        op.TipoOperacaoID
+        from Operacao op 
+        where op.DataHora >= @pDataLimite
+        )
 
-          , CTE_QtdOperacoesOperadores AS (
-          select 
-	          oo.OperadorID,
-	          COUNT(*) QtdOperacoes,
-	          op.TipoOperacaoID,
-	          tp.Peso,
-	          tp.Nome
-          from CTE_Operacao op
-	          join OperadorOperacao oo 
-		          on oo.OperacaoID = op.ID 
-			          and oo.SVG = 1
-	          join TipoOperacao tp on tp.ID = op.TipoOperacaoID
-          group by 
-	          oo.OperadorID,
-	          op.TipoOperacaoID,
-	          tp.Peso,
-	          tp.Nome
-          )
+        , CTE_QtdOperacoesOperadores AS (
+        select 
+	        oo.OperadorID,
+	        COUNT(*) QtdOperacoes,
+	        op.TipoOperacaoID,
+	        tp.Peso,
+	        tp.Nome
+        from CTE_Operacao op
+	        join OperadorOperacao oo 
+		        on oo.OperacaoID = op.ID 
+			        and oo.SVG = 1
+	        join TipoOperacao tp on tp.ID = op.TipoOperacaoID
+	        where oo.OperadorID in ({0})
+        group by 
+	        oo.OperadorID,
+	        op.TipoOperacaoID,
+	        tp.Peso,
+	        tp.Nome	
+        )
 
-          , CTE_MediaOperadores AS (
+        , CTE_OperadoresNaoOperou AS (
+	        select 
+            o.ID as OperadorID,
+	        0 QtdOperacoes, 
+	        NULL TipoOperacaoID,
+	        0 Peso,
+	        '' Nome 
+        from Operador o
+        left join OperadorOperacao oo 
+            on o.ID = oo.OperadorID
+            and oo.SVG = 1
+        left join Operacao op 
+            on op.ID = oo.OperacaoID
+            and op.DataHora >= @pDataLimite
+        where o.ID in ({0})
+        group by o.ID
+        having count(op.ID) = 0
+        )
 
-          SELECT 
-              OperadorID,
-              SUM(QtdOperacoes * Peso) AS SomaPonderada,
-              SUM(Peso) AS SomaPesos,
-	          CEILING(
-                  (CAST(SUM(QtdOperacoes * Peso) AS FLOAT) / NULLIF(SUM(Peso), 0)) * 100
-              ) / 100.0 AS MediaPonderada
-          FROM CTE_QtdOperacoesOperadores
-          GROUP BY OperadorID
-          )
+        , CTE_QuantitativoOperacoes AS (
+        select * from CTE_QtdOperacoesOperadores
+        union all
+        select * from CTE_OperadoresNaoOperou
+        )
 
+        , CTE_MediaOperadores AS (
 
-          --, CTE_DemonstrativoAnalitico AS (
-          --select cte.* from CTE_MediaOperadores cte
-          --where OperadorID in (34, 33, 48, 22, 8, 17, 12, 23, 40, 41, 42, 43, 44, 46, 47, 48, 18, 11, 24)
-          --order by MediaPonderada asc
-          --OFFSET 0 ROWS
-          --FETCH NEXT @pQtdVagas ROWS ONLY
-          --)
+        SELECT 
+            OperadorID,
+            SUM(QtdOperacoes * Peso) AS SomaPonderada,
+            SUM(Peso) AS SomaPesos,
+	        COALESCE(
+	        CEILING(
+                (CAST(SUM(QtdOperacoes * Peso) AS FLOAT) / NULLIF(SUM(Peso), 0)) * 100
+            ) / 100.0, 0) AS MediaPonderada
+        FROM CTE_QuantitativoOperacoes
+        GROUP BY OperadorID
+        )
 
-          , CTE_Resultado AS (
-          select OperadorID from CTE_MediaOperadores
-          where OperadorID in ({0})
-          order by MediaPonderada asc
-          OFFSET 0 ROWS
-          FETCH NEXT @pQtdVagas ROWS ONLY
-          )
+        , CTE_Resultado AS (
+        select OperadorID from CTE_MediaOperadores
+        order by MediaPonderada asc
+        OFFSET 0 ROWS
+        FETCH NEXT @pQtdVagas ROWS ONLY
+        )
 
-          select * from CTE_Resultado";
+        select * from CTE_Resultado";
 
       var ids = string.Join(", ", pOperadorIDs);
       sql = string.Format(sql, ids);
