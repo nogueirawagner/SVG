@@ -270,57 +270,57 @@
         const coordSearch = document.getElementById('coordenadorSearch');
         if (!coordSearch) return;
 
-    coordSearch.addEventListener('input', function () {
-        const coordSelect = document.getElementById('coordenadorSelect');
-        if (!coordSelect) return;
+        coordSearch.addEventListener('input', function () {
+            const coordSelect = document.getElementById('coordenadorSelect');
+            if (!coordSelect) return;
 
-        const termo = this.value.trim().toLowerCase();
+            const termo = this.value.trim().toLowerCase();
 
-        let firstMatchIndex = -1;
-        let matchCount = 0;
+            let firstMatchIndex = -1;
+            let matchCount = 0;
 
-        for (let i = 0; i < coordSelect.options.length; i++) {
-            const opt = coordSelect.options[i];
+            for (let i = 0; i < coordSelect.options.length; i++) {
+                const opt = coordSelect.options[i];
 
-            if (!opt.value) {
-                opt.hidden = false;
-                continue;
+                if (!opt.value) {
+                    opt.hidden = false;
+                    continue;
+                }
+
+                const texto = (opt.text || "").toLowerCase();
+                const match = termo === "" || texto.includes(termo);
+
+                opt.hidden = !match;
+
+                if (match) {
+                    matchCount++;
+                    if (firstMatchIndex === -1) firstMatchIndex = i;
+                }
             }
 
-            const texto = (opt.text || "").toLowerCase();
-            const match = termo === "" || texto.includes(termo);
-
-            opt.hidden = !match;
-
-            if (match) {
-                matchCount++;
-                if (firstMatchIndex === -1) firstMatchIndex = i;
+            if (termo === "") {
+                coordSelect.selectedIndex = 0;
+                coordSelect.size = 1;
+                return;
             }
-        }
 
-        if (termo === "") {
-            coordSelect.selectedIndex = 0;
-            coordSelect.size = 1;
-            return;
-        }
+            if (matchCount === 1 && firstMatchIndex !== -1) {
+                coordSelect.selectedIndex = firstMatchIndex;
+                coordSelect.size = 1;
+            } else if (matchCount > 1) {
+                coordSelect.selectedIndex = firstMatchIndex;
+                coordSelect.size = Math.min(matchCount + 1, 8);
+            } else {
+                coordSelect.selectedIndex = 0;
+                coordSelect.size = 1;
+            }
+        });
 
-        if (matchCount === 1 && firstMatchIndex !== -1) {
-            coordSelect.selectedIndex = firstMatchIndex;
-            coordSelect.size = 1;
-        } else if (matchCount > 1) {
-            coordSelect.selectedIndex = firstMatchIndex;
-            coordSelect.size = Math.min(matchCount + 1, 8);
-        } else {
-            coordSelect.selectedIndex = 0;
-            coordSelect.size = 1;
-        }
+        coordSearch.addEventListener('blur', function () {
+            const coordSelect = document.getElementById('coordenadorSelect');
+            if (coordSelect) coordSelect.size = 1;
+        });
     });
-
-    coordSearch.addEventListener('blur', function () {
-        const coordSelect = document.getElementById('coordenadorSelect');
-        if (coordSelect) coordSelect.size = 1;
-    });
-});
 // --- Preencher combo de voluntários com todos operadores
         const opSelect = document.getElementById('operadorSelect');
         function preencherComboVoluntarios() {
@@ -434,6 +434,12 @@
 
             listaSelecionados.prepend(li);
             renumerarSelecionados();
+
+            // destaque temporário (flash) no item recém adicionado
+            li.classList.remove('op-added'); // garante re-trigger
+            void li.offsetWidth;             // força reflow para reiniciar animação
+            li.classList.add('op-added');
+
         }
 
         // --- Sessão: ao selecionar no combo, apenas MOSTRA à esquerda.
@@ -537,5 +543,44 @@
                 adicionarOperador(op, true); // voluntário
             }
         });
+
+        // --- Ao selecionar Coordenador, adicionar automaticamente na lista de operadores (direita)
+        document.addEventListener("DOMContentLoaded", function () {
+            const coordenadorSelect = document.getElementById('coordenadorSelect');
+            if (!coordenadorSelect) return;
+
+            coordenadorSelect.addEventListener('change', function () {
+                const coordId = parseInt(this.value);
+                if (!coordId) return;
+
+                const op = operadoresData.find(o => o.ID === coordId);
+                if (op) {
+                    // Coordenador participa da operação => entra como Ordinário (SVG: Não)
+                    adicionarOperador(op, false);
+                }
+            });
+        });
+
     </script>
 }
+
+<style>
+    .op-added {
+        animation: opAddedGlow 1.5s ease-out;
+    }
+
+    @@keyframes opAddedGlow {
+        0%
+
+    {
+        box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.55);
+        border-left: 4px solid rgba(25,135,84,0.9);
+    }
+
+    100% {
+        box-shadow: 0 0 0 10px rgba(25, 135, 84, 0);
+        border-left: 4px solid transparent;
+    }
+
+    }
+</style>
