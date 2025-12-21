@@ -174,7 +174,12 @@ namespace SVG.WebApp.Controllers
       if (opSvg.Count > 0)
       {
         if (opSvg.Count > model.QtdVagasVoluntarios)
+        {
+          if (model.QtdVagasVoluntarios == 0)
+            model.QtdVagasVoluntarios = opSvg.Count;
+
           operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios).ToList();
+        }
         else
           operadoresContemplados = opSvg;
       }
