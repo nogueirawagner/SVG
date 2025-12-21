@@ -71,6 +71,7 @@ namespace SVG.WebApp.Controllers
           .ToList();
 
       ViewBag.Sessoes = sessoes;
+      ViewBag.SessaoSelecionadaId = sessoes.FirstOrDefault()?.ID ?? 0;
 
 
       // =====================

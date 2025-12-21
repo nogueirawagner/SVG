@@ -15,6 +15,8 @@
     var operadoresJson = (string)ViewBag.OperadoresJson;
     var sessoes = (IEnumerable<Sessao>)ViewBag.Sessoes;
     var tipos = (IEnumerable<TipoOperacao>)ViewBag.TiposOperacao;
+
+    var sessaoSelecionadaId = (int)(ViewBag.SessaoSelecionadaId ?? 0);
 }
 
 <div class="container mt-4">
@@ -40,14 +42,12 @@
             <div class="col-md-3">
                 <label asp-for="Objeto" class="form-label">Local</label>
                 <input asp-for="Objeto" name="Objeto" placeholder="Ex.: Apoio à DCOR" class="form-control" />
-                @* <span asp-validation-for="Objeto" class="text-danger"></span> *@
             </div>
 
             <!-- DP Apoio (reduzido) -->
             <div class="col-md-1">
                 <label asp-for="OrdemServico" class="form-label">Ordem Serviço</label>
                 <input asp-for="OrdemServico" type="number" min="0" name="OrdemServico" placeholder="Ex.: 055" class="form-control" />
-                @* <span asp-validation-for="OrdemServico" class="text-danger"></span> *@
             </div>
 
             <!-- Coordenador (combo com busca em memória) -->
@@ -63,26 +63,12 @@
                         <option value="@op.ID">@op.Nome</option>
                     }
                 </select>
-                @* <span asp-validation-for="CoordenadorOperadorID" class="text-danger"></span> *@
             </div>
 
 
             <!-- Tipo Operação -->
             <div class="col-md-3">
                 <label asp-for="TipoOperacaoID" class="form-label">Tipo</label>
-                @* <select id="tipoOperacaoSelect"
-                        name="TipoOperacaoID"
-                        class="form-select">
-                    <option value="">...</option>
-                    @foreach (var t in tipos)
-                    {
-                        <option value="@t.ID"
-                                @(Model.TipoOperacaoID == t.ID || t.Nome == "Apoio" ? "selected" : "")>
-                            @t.Nome
-                        </option>
-                    }
-                </select>
-                <span asp-validation-for="TipoOperacaoID" class="text-danger"></span> *@
                 <select asp-for="TipoOperacaoID" class="form-select">
                     <option value="">Selecione...</option>
                     @foreach (var t in ViewBag.TiposOperacao as IEnumerable<dynamic>)
@@ -90,8 +76,6 @@
                         <option value="@t.ID">@t.Nome</option>
                     }
                 </select>
-                @* <span asp-validation-for="TipoOperacaoID" class="text-danger"></span> *@
-
             </div>
         </div>
 
@@ -113,14 +97,21 @@
                                     <option value="">Escolha a sessão...</option>
                                     @foreach (var s in sessoes)
                                     {
-                                        <option value="@s.ID">@s.Nome</option>
+                                        if (s.ID == sessaoSelecionadaId)
+                                        {
+                                            <option value="@s.ID" selected="selected">@s.Nome</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@s.ID">@s.Nome</option>
+                                        }
                                     }
                                 </select>
                             </div>
 
                             <div class="col-4">
                                 <button type="button" id="btnAddSessao" class="btn btn-primary btn-sm w-100">
-                                    Carregar sessão
+                                    Adicionar Operadores
                                 </button>
                             </div>
                         </div>
@@ -443,31 +434,43 @@
             renumerarSelecionados();
         }
 
-
-
-
-        // --- Sessão -> adiciona todos operadores daquela sessão (SVG = false)
+        // --- Sessão: ao selecionar no combo, apenas MOSTRA à esquerda.
+        // --- Botão "Carregar sessão": apenas ADICIONA à direita (SVG = false).
         const sessaoSelect = document.getElementById('sessaoSelect');
         const btnAddSessao = document.getElementById('btnAddSessao');
 
-        btnAddSessao.addEventListener('click', function () {
-            const sessaoId = parseInt(sessaoSelect.value);
+        function renderOperadoresDaSessao(sessaoId) {
+            listaSessao.innerHTML = '';
             if (!sessaoId) return;
 
-            const ops = operadoresData.filter(o => o.SessaoID === sessaoId);
+            const ops = operadoresData
+                .filter(o => o.SessaoID === sessaoId)
+                .sort((a, b) => (a.Nome || '').localeCompare(b.Nome || ''));
 
-            // mostra apenas para visualização à esquerda
-            listaSessao.innerHTML = '';
             ops.forEach(op => {
                 const li = document.createElement('li');
                 li.className = 'list-group-item';
                 li.textContent = `${op.Nome} (${op.Matricula})`;
                 listaSessao.appendChild(li);
             });
+        }
 
-            // adiciona na lista final (sessão)
+        // 1) Mudou sessão -> atualiza visualização à esquerda automaticamente
+        sessaoSelect.addEventListener('change', function () {
+            const sessaoId = parseInt(this.value);
+            renderOperadoresDaSessao(sessaoId);
+        });
+
+        // 2) Botão -> adiciona todos da sessão na lista da direita (como Ordinário / SVG: Não)
+        btnAddSessao.addEventListener('click', function () {
+            const sessaoId = parseInt(sessaoSelect.value);
+            if (!sessaoId) return;
+
+            const ops = operadoresData.filter(o => o.SessaoID === sessaoId);
             ops.forEach(op => adicionarOperador(op, false));
         });
+
+        renderOperadoresDaSessao(parseInt(sessaoSelect.value));
 
         // --- Voluntários: filtro inteligente + adicionar individual (SVG = true)
         const opSearch = document.getElementById('operadorSearch');
