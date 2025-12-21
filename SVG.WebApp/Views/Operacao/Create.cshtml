@@ -352,13 +352,14 @@
         // índice para OperadoresSelecionados[i]
         // let operadorIndex = 0;
 
-        function renumerarSelecionados() {
+       function renumerarSelecionados() {
             const itens = Array.from(listaSelecionados.children);
+            const total = itens.length;
 
             itens.forEach((li, idx) => {
-                // numeração visual
+                // numeração invertida (topo = maior número)
                 const badgeNum = li.querySelector('.badgeNumero');
-                if (badgeNum) badgeNum.textContent = (idx + 1);
+                if (badgeNum) badgeNum.textContent = (total - idx);
 
                 // renomeia inputs para ficar sequencial no POST
                 const inputId = li.querySelector('.inputOperadorId');
@@ -370,6 +371,7 @@
 
             atualizarContadorOperadores();
         }
+
 
 
         // Função comum para adicionar operador na lista final (sessão ou voluntário)
@@ -430,7 +432,7 @@
                 atualizarContadorOperadores();
             });
 
-            listaSelecionados.appendChild(li);
+            listaSelecionados.prepend(li);
             renumerarSelecionados();
         }
 
