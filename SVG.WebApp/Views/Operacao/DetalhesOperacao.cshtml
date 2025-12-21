@@ -69,12 +69,27 @@
     <!-- =======================
          TABELA DE OPERADORES
          ======================= -->
-    <h4 class="mb-3">Operadores da Operação</h4>
+    @{
+        var total = Model.Count();
+        var voluntarios = Model.Count(x => x.SVG); // SVG = true
+        var ordinarios = total - voluntarios;      // SVG = false
+    }
+
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <h4 class="mb-0">Operadores da Operação</h4>
+
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-secondary">Total <span id="cntTotal">@total</span></span>
+            <span class="badge bg-dark">Ordinário <span id="cntOrdinario">@ordinarios</span></span>
+            <span class="badge bg-success">Voluntário <span id="cntVoluntario">@voluntarios</span></span>
+        </div>
+    </div>
 
     <div class="table-responsive">
         <table class="table table-bordered table-striped" id="tabelaOperadores">
             <thead class="table-light">
                 <tr>
+                    <th style="width:60px;" class="text-center">#</th>
                     <th>Nome</th>
                     <th>Matrícula</th>
                     <th>Telefone</th>
@@ -84,9 +99,13 @@
             </thead>
 
             <tbody>
+                @{
+                    var i = 1;
+                }
                 @foreach (var item in Model)
                 {
                     <tr data-operador-id="@item.OperadorID">
+                        <td class="text-center fw-semibold">@i</td>
                         <td>@item.NomeOperador</td>
                         <td>@item.Matricula</td>
                         <td>@item.Telefone</td>
@@ -100,6 +119,8 @@
                             </button>
                         </td>
                     </tr>
+                    i++;
+
                 }
             </tbody>
         </table>
@@ -116,7 +137,7 @@
         </a>
     </div>
 
-    
+
 
 
 
@@ -125,52 +146,81 @@
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+                document.addEventListener("DOMContentLoaded", function () {
 
-            const urlAlterar = '@Url.Action("AlterarSVGOperador", "Operacao")';
+                    const urlAlterar = '@Url.Action("AlterarSVGOperador", "Operacao")';
 
-            // evento para todos os botões ON/OFF
-            document.querySelectorAll(".toggle-svg-btn").forEach(btn => {
 
-                btn.addEventListener("click", async function () {
+                    function atualizarContadores() {
+                        const linhas = document.querySelectorAll("#tabelaOperadores tbody tr");
+                        const total = linhas.length;
 
-                    const tr = this.closest("tr");
-                    const operadorId = tr.getAttribute("data-operador-id");
-
-                    let estadoAtual = this.getAttribute("data-svg") === "true";
-                    let novoEstado = !estadoAtual;
-
-                    // chama o serviço no controller
-                    try {
-                        const resp = await fetch(`${urlAlterar}?pOperadorID=${operadorId}&pSVG=${novoEstado}`, {
-                            method: "POST"
+                        let voluntario = 0;
+                        linhas.forEach(tr => {
+                            const btn = tr.querySelector(".toggle-svg-btn");
+                            const isSvg = btn && btn.getAttribute("data-svg") === "true";
+                            if (isSvg) voluntario++;
                         });
 
-                        if (!resp.ok) {
-                            alert("Erro ao alterar SVG");
-                            return;
-                        }
+                        const ordinario = total - voluntario;
 
-                        // atualiza visualmente
-                        this.setAttribute("data-svg", novoEstado.toString());
+                        const elTotal = document.getElementById("cntTotal");
+                        const elOrdinario = document.getElementById("cntOrdinario");
+                        const elVoluntario = document.getElementById("cntVoluntario");
 
-                        if (novoEstado) {
-                            this.classList.remove("btn-danger");
-                            this.classList.add("btn-success");
-                            this.textContent = "Sim";
-                        } else {
-                            this.classList.remove("btn-success");
-                            this.classList.add("btn-danger");
-                            this.textContent = "Não";
-                        }
-
-                    } catch (e) {
-                        console.error(e);
-                        alert("Falha ao conectar com o servidor.");
+                        if (elTotal) elTotal.textContent = total;
+                        if (elOrdinario) elOrdinario.textContent = ordinario;
+                        if (elVoluntario) elVoluntario.textContent = voluntario;
                     }
-                });
-            });
+        // evento para todos os botões ON/OFF
+                    document.querySelectorAll(".toggle-svg-btn").forEach(btn => {
 
-        });
+                        btn.addEventListener("click", async function () {
+
+                            const tr = this.closest("tr");
+                            const operadorId = tr.getAttribute("data-operador-id");
+
+                            let estadoAtual = this.getAttribute("data-svg") === "true";
+                            let novoEstado = !estadoAtual;
+
+                            // chama o serviço no controller
+                            try {
+                                const resp = await fetch(`${urlAlterar}?pOperadorID=${operadorId}&pSVG=${novoEstado}`, {
+                                    method: "POST"
+                                });
+
+                                if (!resp.ok) {
+                                    alert("Erro ao alterar SVG");
+                                    return;
+                                }
+
+                                // atualiza visualmente
+                                this.setAttribute("data-svg", novoEstado.toString());
+
+                                if (novoEstado) {
+                                    this.classList.remove("btn-danger");
+                                    this.classList.add("btn-success");
+                                    this.textContent = "Sim";
+                                } else {
+                                    this.classList.remove("btn-success");
+                                    this.classList.add("btn-danger");
+                                    this.textContent = "Não";
+                                }
+
+
+                                atualizarContadores();
+
+                            }
+                        } catch (e) {
+                                console.error(e);
+                                alert("Falha ao conectar com o servidor.");
+                            }
+                        });
+                    });
+
+                    atualizarContadores();
+
+
+                });
     </script>
 }
