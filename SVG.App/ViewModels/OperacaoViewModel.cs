@@ -13,6 +13,14 @@ namespace SVG.App.ViewModels
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
     public DateTime DataHora { get; set; }
 
+    [DataType(DataType.DateTime)]
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
+    public DateTime DataHoraInicio { get; set; }
+
+    [DataType(DataType.DateTime)]
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
+    public DateTime DataHoraFim { get; set; }
+
     [Required(ErrorMessage = "Informe o local da operação.")]
     public string Objeto { get; set; }
 

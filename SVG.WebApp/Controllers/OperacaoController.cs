@@ -122,6 +122,101 @@ namespace SVG.WebApp.Controllers
       return View(detalhes);
     }
 
+    public IActionResult CreateReforcoPlantao()
+    {
+      var model = new OperacaoViewModel();
+      PopularCombos();
+
+      var now = DateTime.Now.AddDays(2);
+      var date = new DateTime(now.Year, now.Month, now.Day, 03, 00, 00);
+      
+      model.DataHora = date;
+      model.DataHoraInicio = date;
+      model.DataHoraFim = date.AddDays(1);
+      model.TipoOperacaoID = 4;
+      model.SvgAberto = true;
+      model.Objeto = "Segurança Orgânica";
+
+      return View(model);
+    }
+
+
+    // POST: Operacao/Create
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult CreateReforcoPlantao(OperacaoViewModel model)
+    {
+      ModelState.Remove("Coordenador");
+      ModelState.Remove("TipoOperacaoNome");
+      ModelState.Remove("OperadoresSelecionados.Nome");
+      ModelState.Remove("OperadoresSelecionados.Matricula");
+      ModelState.Remove("OperadoresSelecionados.Telefone");
+      ModelState.Remove("OperadoresSelecionados.Sessao");
+      ModelState.Remove("QtdVagasRestantes");
+
+      if (!ModelState.IsValid)
+      {
+        PopularCombos(model.TipoOperacaoID, model.CoordenadorOperadorID);
+        return View(model);
+      }
+
+      // Exemplo: pegar o nome do coordenador a partir do ID selecionado
+      var coord = _operadorAppService.GetById(model.CoordenadorOperadorID);
+      if (coord != null)
+        model.Coordenador = coord.Nome;
+
+      var entidade = _mapper.Map<Operacao>(model);
+      entidade.DataHoraCriacao = DateTime.Now;
+      entidade.OrdemServico = string.Concat("OS ", model.OrdemServico);
+
+
+      var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
+      var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
+
+      var operadoresContemplados = new List<int>();
+      if (opSvg.Count > 0)
+      {
+        if (opSvg.Count > model.QtdVagasVoluntarios)
+        {
+          if (model.QtdVagasVoluntarios == 0)
+            model.QtdVagasVoluntarios = opSvg.Count;
+
+          operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios).ToList();
+        }
+        else
+          operadoresContemplados = opSvg;
+      }
+
+      var operadoresOperacao = model.OperadoresSelecionados.Where(s => !s.SVG).ToList();
+
+      var operadoresSVG = opSvg.Where(id => operadoresContemplados.Contains(id)).ToList();
+
+      operadoresOperacao.AddRange(operadoresSVG.Select(id => new OperadorSelecionadoVM
+      {
+        OperadorID = id,
+        SVG = true
+      }));
+
+      _operacaoAppService.Add(entidade);
+
+      var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
+      entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
+      entidade.SvgAberto = qtdRestante > 0 ? true : false;
+
+      foreach (var op in operadoresOperacao)
+      {
+        var operadorOperacao = new OperadorOperacao
+        {
+          OperacaoID = entidade.ID,
+          OperadorID = op.OperadorID,
+          SVG = op.SVG
+        };
+        _operadorOperacaoAppService.Add(operadorOperacao);
+      }
+
+      return RedirectToAction(nameof(Index));
+    }
+
     // GET: Operacao/Create
     public IActionResult Create()
     {
@@ -134,13 +229,14 @@ namespace SVG.WebApp.Controllers
       model.DataHora = date;
       model.TipoOperacaoID = 1;
       model.SvgAberto = true;
+      
 
       return View(model);
     }
 
     // POST: Operacao/Create
     [HttpPost]
-    //[ValidateAntiForgeryToken]
+    [ValidateAntiForgeryToken]
     public IActionResult Create(OperacaoViewModel model)
     {
       ModelState.Remove("Coordenador");
@@ -164,6 +260,7 @@ namespace SVG.WebApp.Controllers
 
       var entidade = _mapper.Map<Operacao>(model);
       entidade.DataHoraCriacao = DateTime.Now;
+      entidade.DataHora = model.DataHoraInicio;
       entidade.OrdemServico = string.Concat("OS ", model.OrdemServico);
       
 

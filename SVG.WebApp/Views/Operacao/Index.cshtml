@@ -10,9 +10,11 @@
         .ToList() ?? new List<int>();
 
     var total = Model?.Count() ?? 0;
+    var contador = Model?.Count() ?? 0;
 }
 
 <div class="container mt-4">
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">Operações</h2>
         <a href="@Url.Action("Create", "Operacao")"
@@ -23,16 +25,28 @@
 
     <!-- FILTROS -->
     <div class="row g-2 mb-2">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <input type="text"
                    id="filtroOperacoes"
                    class="form-control"
                    placeholder="Buscar por local, coordenador, tipo ou OS..." />
         </div>
 
-        <div class="col-md-3">
+        <!-- NOVO: Tipo de Operação -->
+        <div class="col-md-1 col-lg-1">
+            <select id="filtroTipoOperacao" class="form-select">
+                <option value="">Tipo</option>
+                <option value="Apoio">Apoio</option>
+                <option value="Alvorada">Alvorada</option>
+                <option value="Delta">Delta</option>
+                <option value="Segurança Orgânica">Segurança Orgânica</option>
+                <option value="Reforço Plantão">Reforço Plantão</option>
+            </select>
+        </div>
+
+        <div class="col-md-1">
             <select id="filtroMes" class="form-select">
-                <option value="">Mês (todos)</option>
+                <option value="">Mês</option>
                 <option value="1">Janeiro</option>
                 <option value="2">Fevereiro</option>
                 <option value="3">Março</option>
@@ -48,9 +62,9 @@
             </select>
         </div>
 
-        <div class="col-md-2">
+        <div class="col-md-1">
             <select id="filtroAno" class="form-select">
-                <option value="">Ano (todos)</option>
+                <option value="">Ano</option>
                 @foreach (var ano in anos)
                 {
                     <option value="@ano">@ano</option>
@@ -59,13 +73,20 @@
         </div>
 
         <!-- NOVO: SVG Aberto -->
-        <div class="col-md-3 col-lg-2">
+        <div class="col-md-1 col-lg-1">
             <select id="filtroSvgAberto" class="form-select">
-                <option value="">SVG Aberto (todas)</option>
+                <option value="">SVG</option>
                 <option value="1">Sim</option>
                 <option value="0">Não</option>
             </select>
         </div>
+
+        <button type="button"
+                id="btnLimparFiltrosTopo"
+                class="btn btn-sm btn-outline-secondary col-md-1 col-lg-1">
+            Limpar filtros
+        </button>
+
     </div>
 
     <!-- CONTADOR -->
@@ -74,12 +95,6 @@
             Exibindo <strong><span id="contadorExibidas">@total</span></strong>
             de <strong><span id="contadorTotal">@total</span></strong> operações
         </small>
-
-        <button type="button"
-                id="btnLimparFiltrosTopo"
-                class="btn  btn-sm btn-outline-secondary">
-            Limpar filtros
-        </button>
     </div>
 
     @if (Model != null && Model.Any())
@@ -88,8 +103,9 @@
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-light">
                     <tr>
+                        <th class="text-center" style="width:60px;">#</th>
                         <th>Criação</th>
-                        <th>Operação</th>
+                        <th>Horário</th>
                         <th>Local</th>
                         <th>Tipo</th>
                         <th>OS</th>
@@ -104,10 +120,15 @@
                             data-text="@($"{item.Objeto} {item.Coordenador} {item.TipoOperacao} {item.OrdemServico}".ToLower())"
                             data-mes="@item.DataHoraCriacao.Month"
                             data-ano="@item.DataHoraCriacao.Year"
-                            data-svgaberto="@(item.SvgAberto ? "1" : "0")">
+                            data-svgaberto="@(item.SvgAberto ? "1" : "0")"
+                            data-tipo="@((item.TipoOperacao ?? "").ToLower())">
+                            
+                            <td class="text-center fw-semibold">
+                                @contador
+                            </td>
 
                             <td>@item.DataHoraCriacao.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@item.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.DataHora.ToString("dd/MM/yyyy HH:mm") às @item.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>@item.Objeto</td>
                             <td>@item.TipoOperacao</td>
                             <td>@item.OrdemServico</td>
@@ -175,7 +196,7 @@
                                 </div>
                             </td>
                         </tr>
-
+                        contador--;
                     }
                 </tbody>
             </table>
@@ -252,6 +273,7 @@
         const filtroMes = document.getElementById('filtroMes');
         const filtroAno = document.getElementById('filtroAno');
         const filtroSvgAberto = document.getElementById('filtroSvgAberto');
+        const filtroTipoOperacao = document.getElementById('filtroTipoOperacao'); // NOVO
 
         const contadorExibidas = document.getElementById('contadorExibidas');
         const contadorTotal = document.getElementById('contadorTotal');
@@ -263,72 +285,81 @@
         const containerTabela = document.getElementById('containerTabela');
         const estadoVazio = document.getElementById('estadoVazio');
 
-        contadorTotal.textContent = linhas.length.toString();
+        // Total geral (sempre o total do carregamento inicial da tela)
+        if (contadorTotal) contadorTotal.textContent = linhas.length.toString();
 
         function aplicarFiltros() {
-            const texto = (filtroTexto.value || '').toLowerCase();
-            const mes = filtroMes.value;
-            const ano = filtroAno.value;
-            const svg = filtroSvgAberto ? filtroSvgAberto.value : ""; // NOVO
+            const texto = (filtroTexto?.value || '').toLowerCase();
+            const mes = filtroMes?.value || '';
+            const ano = filtroAno?.value || '';
+            const svg = filtroSvgAberto?.value || '';
+            const tipo = (filtroTipoOperacao?.value || '').toLowerCase(); // NOVO
 
             let exibidas = 0;
 
             linhas.forEach(tr => {
-                const textoLinha = tr.dataset.text || '';
-                const mesLinha = tr.dataset.mes;
-                const anoLinha = tr.dataset.ano;
-                const svgLinha = tr.dataset.svgaberto; // NOVO
+                const textoLinha = (tr.dataset.text || '');
+                const mesLinha = (tr.dataset.mes || '');
+                const anoLinha = (tr.dataset.ano || '');
+                const svgLinha = (tr.dataset.svgaberto || '');
+                const tipoLinha = (tr.dataset.tipo || ''); // NOVO (já vem em lower-case)
 
                 const matchTexto = textoLinha.includes(texto);
                 const matchMes = !mes || mes === mesLinha;
                 const matchAno = !ano || ano === anoLinha;
-                const matchSvg = !svg || svg === svgLinha; // NOVO
+                const matchSvg = !svg || svg === svgLinha;
+                const matchTipo = !tipo || tipoLinha === tipo; // NOVO
 
-                const mostrar = matchTexto && matchMes && matchAno && matchSvg;
+                const mostrar = matchTexto && matchMes && matchAno && matchSvg && matchTipo;
 
                 tr.style.display = mostrar ? '' : 'none';
                 if (mostrar) exibidas++;
             });
 
-            contadorExibidas.textContent = exibidas.toString();
+            if (contadorExibidas) contadorExibidas.textContent = exibidas.toString();
 
             if (exibidas === 0) {
-                containerTabela.style.display = 'none';
-                estadoVazio.style.display = 'block';
+                if (containerTabela) containerTabela.style.display = 'none';
+                if (estadoVazio) estadoVazio.style.display = 'block';
             } else {
-                containerTabela.style.display = 'block';
-                estadoVazio.style.display = 'none';
+                if (containerTabela) containerTabela.style.display = 'block';
+                if (estadoVazio) estadoVazio.style.display = 'none';
             }
         }
 
         function limparFiltros() {
-            filtroTexto.value = '';
-            filtroMes.value = '';
-            filtroAno.value = '';
-            if (filtroSvgAberto) filtroSvgAberto.value = ''; // NOVO
+            if (filtroTexto) filtroTexto.value = '';
+            if (filtroMes) filtroMes.value = '';
+            if (filtroAno) filtroAno.value = '';
+            if (filtroSvgAberto) filtroSvgAberto.value = '';
+            if (filtroTipoOperacao) filtroTipoOperacao.value = ''; // NOVO
             aplicarFiltros();
         }
 
-        filtroTexto.addEventListener('input', aplicarFiltros);
-        filtroMes.addEventListener('change', aplicarFiltros);
-        filtroAno.addEventListener('change', aplicarFiltros);
-        if (filtroSvgAberto) filtroSvgAberto.addEventListener('change', aplicarFiltros); // NOVO
+        if (filtroTexto) filtroTexto.addEventListener('input', aplicarFiltros);
+        if (filtroMes) filtroMes.addEventListener('change', aplicarFiltros);
+        if (filtroAno) filtroAno.addEventListener('change', aplicarFiltros);
+        if (filtroSvgAberto) filtroSvgAberto.addEventListener('change', aplicarFiltros);
+        if (filtroTipoOperacao) filtroTipoOperacao.addEventListener('change', aplicarFiltros); // NOVO
 
-        btnLimparTopo.addEventListener('click', limparFiltros);
+        if (btnLimparTopo) btnLimparTopo.addEventListener('click', limparFiltros);
         if (btnLimpar) btnLimpar.addEventListener('click', limparFiltros);
 
         // inicializa
         aplicarFiltros();
 
+        // Modal Encerrar SVG
+        const modalEncerrar = document.getElementById('encerrarSvgModal');
+        if (modalEncerrar) {
+            modalEncerrar.addEventListener('show.bs.modal', function (event) {
+                const trigger = event.relatedTarget;
+                if (!trigger) return;
 
-        let operacaoIdEncerrar = null;
-
-        document.getElementById('encerrarSvgModal')
-          .addEventListener('show.bs.modal', function (event) {
-            const trigger = event.relatedTarget;
-            const id = trigger.getAttribute('data-id');
-            document.getElementById('pOperacaoID').value = id;
-          });
-
+                const id = trigger.getAttribute('data-id');
+                const input = document.getElementById('pOperacaoID');
+                if (input) input.value = id;
+            });
+        }
     </script>
+
 }
