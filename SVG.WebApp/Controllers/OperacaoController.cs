@@ -167,8 +167,9 @@ namespace SVG.WebApp.Controllers
 
       var entidade = _mapper.Map<Operacao>(model);
       entidade.DataHoraCriacao = DateTime.Now;
+      entidade.DataHora = model.DataHoraInicio;
+      
       entidade.OrdemServico = string.Concat("OS ", model.OrdemServico);
-
 
       var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
       var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
@@ -260,9 +261,9 @@ namespace SVG.WebApp.Controllers
 
       var entidade = _mapper.Map<Operacao>(model);
       entidade.DataHoraCriacao = DateTime.Now;
-      entidade.DataHora = model.DataHoraInicio;
       entidade.OrdemServico = string.Concat("OS ", model.OrdemServico);
-      
+      entidade.DataHoraInicio = null;
+      entidade.DataHoraFim = null;
 
       var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
       var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.

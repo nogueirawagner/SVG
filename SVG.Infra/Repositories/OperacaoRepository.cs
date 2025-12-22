@@ -25,11 +25,12 @@ namespace SVG.Infra.Repositories
           o.DataHoraCriacao,
           o.DataHora,
           o.Objeto,
-          o.OrdemServico,
+          REPLACE(OrdemServico, 'OS ', '') OrdemServico,
           o.Coordenador,
           t.Nome TipoOperacao, 
           o.SvgAberto,
-          o.QtdVagasRestantes
+          o.QtdVagasRestantes,
+          o.DataHoraFim
         from Operacao o
           join TipoOperacao t on t.ID = o.TipoOperacaoID
         order by DataHoraCriacao desc

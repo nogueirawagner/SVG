@@ -104,11 +104,11 @@
                 <thead class="table-light">
                     <tr>
                         <th class="text-center" style="width:60px;">#</th>
+                        <th>OS</th>
                         <th>Criação</th>
                         <th>Horário</th>
                         <th>Local</th>
                         <th>Tipo</th>
-                        <th>OS</th>
                         <th>Coordenador</th>
                         <th class="text-center" style="width: 180px;">Ações</th>
                     </tr>
@@ -126,14 +126,18 @@
                             <td class="text-center fw-semibold">
                                 @contador
                             </td>
-
-                            <td>@item.DataHoraCriacao.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@item.DataHora.ToString("dd/MM/yyyy HH:mm") às @item.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.OrdemServico</td>
+                            <td>@item.DataHoraCriacao.ToString("dd/MM HH:mm")</td>
+                            <td>
+                                @item.DataHora.ToString("dd/MM HH:mm")
+                                @if (item.DataHoraFim.HasValue)
+                                {
+                                    <span> às @item.DataHoraFim.Value.ToString("dd/MM HH:mm")</span>
+                                }
+                            </td>
                             <td>@item.Objeto</td>
                             <td>@item.TipoOperacao</td>
-                            <td>@item.OrdemServico</td>
                             <td>@item.Coordenador</td>
-
                             <td class="text-center">
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
