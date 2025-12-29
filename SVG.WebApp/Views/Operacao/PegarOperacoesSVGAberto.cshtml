@@ -109,7 +109,7 @@
                                                         </div>
                                                     </div>
 
-                                                     @{
+                                                    @{
                                                         // dynamic-safe: tenta tratar DataHoraFim como nullable e como não-null
                                                         string fimFormatado = null;
 
@@ -251,324 +251,394 @@
 </div>
 
 @section Scripts {
-<script>
-    // ===== Dados do controller
-    const operadoresData = @Html.Raw(operadoresJson);
+    <script>
+        // ===== Dados do controller
+        const operadoresData = @Html.Raw(operadoresJson);
 
-    // ===== Elementos
-    const operacaoSearch = document.getElementById('operacaoSearch');
+        // ===== Elementos
+        const operacaoSearch = document.getElementById('operacaoSearch');
 
-    const badgeOperacaoSelecionada = document.getElementById('badgeOperacaoSelecionada');
-    const operacaoIdSelecionada = document.getElementById('operacaoIdSelecionada');
+        const badgeOperacaoSelecionada = document.getElementById('badgeOperacaoSelecionada');
+        const operacaoIdSelecionada = document.getElementById('operacaoIdSelecionada');
 
-    const operadorSearch = document.getElementById('operadorSearch');
-    const operadorSelect = document.getElementById('operadorSelect');
-    const btnAddOperador = document.getElementById('btnAddOperador');
+        const operadorSearch = document.getElementById('operadorSearch');
+        const operadorSelect = document.getElementById('operadorSelect');
+        const btnAddOperador = document.getElementById('btnAddOperador');
 
-    const contadorOperadores = document.getElementById('contadorOperadores');
-    const listaSelecionados = document.getElementById('listaOperadoresSelecionados');
+        const contadorOperadores = document.getElementById('contadorOperadores');
+        const listaSelecionados = document.getElementById('listaOperadoresSelecionados');
 
-    const sessaoSelect = document.getElementById('sessaoSelect');
-    const listaOperadoresSessao = document.getElementById('listaOperadoresSessao');
+        const sessaoSelect = document.getElementById('sessaoSelect');
+        const listaOperadoresSessao = document.getElementById('listaOperadoresSessao');
 
-    // ===== Endpoints
-    const URL_INSERE = '@Url.Action("InsereCandidatoSVG", "Operacao")';
-    const URL_REMOVE = '@Url.Action("RemoveCandidatoSVG", "Operacao")';
+        // ===== Endpoints
+        const URL_INSERE = '@Url.Action("InsereCandidatoSVG", "Operacao")';
+        const URL_REMOVE = '@Url.Action("RemoveCandidatoSVG", "Operacao")';
+        const URL_PEGAR  = '@Url.Action("PegaCandidatoSVG", "Operacao")';
 
-    // ===== Anti-forgery
-    function getAntiForgeryToken() {
-        const el = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]');
-        return el ? el.value : null;
-    }
-
-    async function postForm(url, dataObj) {
-        const token = getAntiForgeryToken();
-        const form = new URLSearchParams();
-
-        Object.keys(dataObj || {}).forEach(k => form.append(k, dataObj[k]));
-
-        // envia token se existir
-        if (token) form.append('__RequestVerificationToken', token);
-
-        const resp = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-            body: form.toString()
-        });
-
-        return resp;
-    }
-
-    async function insereCandidatoSvg(operacaoId, operadorId) {
-        try {
-            const resp = await postForm(URL_INSERE, { pOperacaoID: operacaoId, pOperadorID: operadorId });
-            return resp.ok;
-        } catch (e) {
-            console.error(e);
-            return false;
+        // ===== Anti-forgery
+        function getAntiForgeryToken() {
+            const el = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]');
+            return el ? el.value : null;
         }
-    }
 
-    async function removeCandidatoSvg(operacaoId, operadorId) {
-        try {
-            const resp = await postForm(URL_REMOVE, { pOperacaoID: operacaoId, pOperadorID: operadorId });
-            return resp.ok;
-        } catch (e) {
-            console.error(e);
-            return false;
-        }
-    }
+        async function postForm(url, dataObj) {
+            const token = getAntiForgeryToken();
+            const form = new URLSearchParams();
 
-    // ===== UI helpers
-    function habilitarPainelDireito(habilitar) {
-        operadorSearch.disabled = !habilitar;
-        operadorSelect.disabled = !habilitar;
-        btnAddOperador.disabled = !habilitar;
+            Object.keys(dataObj || {}).forEach(k => form.append(k, dataObj[k]));
 
-        sessaoSelect.disabled = !habilitar;
+            // envia token se existir
+            if (token) form.append('__RequestVerificationToken', token);
 
-        if (!habilitar) {
-            listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Selecione uma operação e uma sessão.</div>`;
-        }
-    }
-
-    function atualizarContadorOperadores() {
-        contadorOperadores.textContent = listaSelecionados.children.length;
-    }
-
-    function renumerarSelecionados() {
-        const itens = Array.from(listaSelecionados.children);
-        const total = itens.length;
-
-        itens.forEach((li, idx) => {
-            const badgeNum = li.querySelector('.badgeNumero');
-            if (badgeNum) badgeNum.textContent = (total - idx);
-        });
-
-        atualizarContadorOperadores();
-    }
-
-    function criarItemOperador({ operadorId, nome, matricula }) {
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        li.dataset.operadorId = operadorId;
-
-        li.innerHTML = `
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-secondary badgeNumero">0</span>
-                <div>
-                    <div class="fw-semibold">${nome}</div>
-                    <div class="text-muted small">${matricula}</div>
-                </div>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-outline-danger btn-sm btnRemover">
-                    Remover
-                </button>
-
-                <input type="hidden" class="inputOperadorId" value="${operadorId}">
-            </div>
-        `;
-
-        li.querySelector('.btnRemover').addEventListener('click', async function () {
-            const operacaoId = parseInt(operacaoIdSelecionada.value || '0');
-            const opId = parseInt(operadorId || '0');
-            if (!operacaoId || !opId) return;
-
-            const ok = await removeCandidatoSvg(operacaoId, opId);
-            if (!ok) return;
-
-            li.remove();
-            renumerarSelecionados();
-        });
-
-        return li;
-    }
-
-    function preencherComboOperadores() {
-        operadorSelect.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
-
-        operadoresData
-            .slice()
-            .sort((a, b) => (a.Nome || '').localeCompare(b.Nome || ''))
-            .forEach(op => {
-                const opt = document.createElement('option');
-                opt.value = op.ID;
-                opt.text = `${op.Nome} (${op.Matricula})`;
-                operadorSelect.appendChild(opt);
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: form.toString()
             });
-    }
 
-    // ===== Operações (seleção)
-    document.querySelectorAll('.operacao-item').forEach(li => {
-        li.addEventListener('click', function () {
-
-            // marca seleção visual
-            document.querySelectorAll('.operacao-item.active').forEach(x => x.classList.remove('active'));
-            this.classList.add('active');
-
-            const id = this.dataset.id;
-            operacaoIdSelecionada.value = id;
-
-            badgeOperacaoSelecionada.textContent = `Operação #${id}`;
-            habilitarPainelDireito(true);
-
-            // não limpamos automaticamente a lista selecionada aqui
-            // (pode ser que você queira manter o que já selecionou)
-            // se quiser limpar ao trocar de operação, descomente:
-            // listaSelecionados.innerHTML = ''; renumerarSelecionados();
-        });
-    });
-
-    // ===== Filtro de operações (texto)
-    operacaoSearch?.addEventListener('input', function () {
-        const termo = (this.value || '').trim().toLowerCase();
-        document.querySelectorAll('.operacao-item').forEach(item => {
-            const texto = (item.dataset.filtro || '');
-            item.style.display = (!termo || texto.includes(termo)) ? '' : 'none';
-        });
-    });
-
-    // ===== Busca de operador: filtra SELECT e lista da sessão
-    operadorSearch?.addEventListener('input', function () {
-        const termo = (this.value || '').trim().toLowerCase();
-
-        // filtra options do select
-        Array.from(operadorSelect.options).forEach((opt, idx) => {
-            if (idx === 0) return;
-            opt.hidden = termo && !(opt.text || '').toLowerCase().includes(termo);
-        });
-
-        if (operadorSelect.selectedOptions.length && operadorSelect.selectedOptions[0].hidden) {
-            operadorSelect.selectedIndex = 0;
+            return resp;
         }
 
-        // filtra lista de sessão (se já estiver renderizada)
-        Array.from(listaOperadoresSessao.querySelectorAll('[data-op-row="1"]')).forEach(row => {
-            const txt = (row.dataset.filtro || '');
-            row.style.display = (!termo || txt.includes(termo)) ? '' : 'none';
-        });
-    });
-
-    // ===== Adicionar via SELECT
-    btnAddOperador?.addEventListener('click', async function () {
-        const operacaoId = parseInt(operacaoIdSelecionada.value || '0');
-        if (!operacaoId) return;
-
-        const opId = parseInt(operadorSelect.value || '0');
-        if (!opId) return;
-
-        // evita duplicar
-        if (listaSelecionados.querySelector(`li[data-operador-id="${opId}"]`)) return;
-
-        const op = operadoresData.find(x => parseInt(x.ID) === opId);
-        if (!op) return;
-
-        const ok = await insereCandidatoSvg(operacaoId, opId);
-        if (!ok) return;
-
-        const item = criarItemOperador({
-            operadorId: op.ID,
-            nome: op.Nome,
-            matricula: op.Matricula
-        });
-
-        listaSelecionados.prepend(item);
-        renumerarSelecionados();
-
-        operadorSelect.selectedIndex = 0;
-    });
-
-    // ===== Sessão -> listar operadores com botão Adicionar
-    function renderOperadoresDaSessao(sessaoId) {
-        listaOperadoresSessao.innerHTML = '';
-
-        const operacaoId = parseInt(operacaoIdSelecionada.value || '0');
-        if (!operacaoId) {
-            listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Selecione uma operação primeiro.</div>`;
-            return;
+        async function insereCandidatoSvg(operacaoId, operadorId) {
+            try {
+                const resp = await postForm(URL_INSERE, { pOperacaoID: operacaoId, pOperadorID: operadorId });
+                return resp.ok;
+            } catch (e) {
+                console.error(e);
+                return false;
+            }
         }
 
-        if (!sessaoId) {
-            listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Selecione uma sessão.</div>`;
-            return;
+        async function removeCandidatoSvg(operacaoId, operadorId) {
+            try {
+                const resp = await postForm(URL_REMOVE, { pOperacaoID: operacaoId, pOperadorID: operadorId });
+                return resp.ok;
+            } catch (e) {
+                console.error(e);
+                return false;
+            }
         }
 
-        const ops = operadoresData
-            .filter(o => String(o.SessaoID) === String(sessaoId))
-            .sort((a, b) => (a.Nome || '').localeCompare(b.Nome || ''));
 
-        if (!ops.length) {
-            listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Nenhum operador nesta sessão.</div>`;
-            return;
+        function atualizarBotoesAdicionarSessao() {
+            // Desabilita botões "Adicionar" da lista da sessão para quem já está selecionado
+            const idsSelecionados = new Set(
+                Array.from(listaSelecionados.querySelectorAll('li[data-operador-id]'))
+                    .map(li => String(li.dataset.operadorId))
+            );
+
+            Array.from(listaOperadoresSessao.querySelectorAll('button[data-operador-id]')).forEach(btn => {
+                const id = String(btn.dataset.operadorId);
+                btn.disabled = idsSelecionados.has(id);
+            });
         }
 
-        ops.forEach(o => {
-            const row = document.createElement('div');
-            row.className = 'd-flex justify-content-between align-items-center border-bottom px-2 py-2';
-            row.dataset.opRow = "1";
-            row.dataset.filtro = `${(o.Nome || '')} ${(o.Matricula || '')}`.toLowerCase();
+        async function carregarCandidatosDaOperacao(operacaoId) {
+            // Sempre espelha o estado do banco quando trocar de operação
+            listaSelecionados.innerHTML = '';
+            renumerarSelecionados();
 
-            // já está na lista?
-            const jaExiste = !!listaSelecionados.querySelector(`li[data-operador-id="${o.ID}"]`);
+            if (!operacaoId) return;
 
-            row.innerHTML = `
-                <div class="me-2">
-                    <div class="small fw-semibold">${o.Nome}</div>
-                    <div class="text-muted small">${o.Matricula}</div>
-                </div>
-                <button type="button" class="btn btn-outline-primary btn-sm" ${jaExiste ? 'disabled' : ''}>
-                    Adicionar
-                </button>
-            `;
+            try {
+                const resp = await fetch(`${URL_PEGAR}?pOperacaoID=${operacaoId}`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
 
-            const btn = row.querySelector('button');
-            btn.addEventListener('click', async () => {
-                const operacaoId = parseInt(operacaoIdSelecionada.value || '0');
-                const opId = parseInt(o.ID || '0');
-                if (!operacaoId || !opId) return;
-
-                if (listaSelecionados.querySelector(`li[data-operador-id="${opId}"]`)) {
-                    btn.disabled = true;
+                if (!resp.ok) {
+                    console.error('Falha ao carregar candidatos SVG. Status:', resp.status);
+                    atualizarBotoesAdicionarSessao();
                     return;
                 }
 
-                const ok = await insereCandidatoSvg(operacaoId, opId);
-                if (!ok) return;
+                const data = await resp.json();
 
-                const item = criarItemOperador({
-                    operadorId: o.ID,
-                    nome: o.Nome,
-                    matricula: o.Matricula
+                (data || []).forEach(x => {
+                    const operadorId = x.OperadorID ?? x.operadorID ?? x.ID ?? x.id;
+                    const nome = x.Nome ?? x.nome ?? '';
+                    const matricula = x.Matricula ?? x.matricula ?? '';
+
+                    if (!operadorId) return;
+
+                    // idempotente
+                    if (listaSelecionados.querySelector(`li[data-operador-id="${operadorId}"]`)) return;
+
+                    const item = criarItemOperador({ operadorId, nome, matricula });
+                    listaSelecionados.appendChild(item);
                 });
 
-                listaSelecionados.prepend(item);
                 renumerarSelecionados();
+                atualizarBotoesAdicionarSessao();
+            } catch (e) {
+                console.error(e);
+                atualizarBotoesAdicionarSessao();
+            }
+        }
 
-                btn.disabled = true;
+        // ===== UI helpers
+        function habilitarPainelDireito(habilitar) {
+            operadorSearch.disabled = !habilitar;
+            operadorSelect.disabled = !habilitar;
+            btnAddOperador.disabled = !habilitar;
+
+            sessaoSelect.disabled = !habilitar;
+
+            if (!habilitar) {
+                listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Selecione uma operação e uma sessão.</div>`;
+            }
+        }
+
+        function atualizarContadorOperadores() {
+            contadorOperadores.textContent = listaSelecionados.children.length;
+        }
+
+        function renumerarSelecionados() {
+            const itens = Array.from(listaSelecionados.children);
+            const total = itens.length;
+
+            itens.forEach((li, idx) => {
+                const badgeNum = li.querySelector('.badgeNumero');
+                if (badgeNum) badgeNum.textContent = (total - idx);
             });
 
-            listaOperadoresSessao.appendChild(row);
+            atualizarContadorOperadores();
+        }
+
+        function criarItemOperador({ operadorId, nome, matricula }) {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.dataset.operadorId = operadorId;
+
+            li.innerHTML = `
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary badgeNumero">0</span>
+                    <div>
+                        <div class="fw-semibold">${nome}</div>
+                        <div class="text-muted small">${matricula}</div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-outline-danger btn-sm btnRemover">
+                        Remover
+                    </button>
+
+                    <input type="hidden" class="inputOperadorId" value="${operadorId}">
+                </div>
+            `;
+
+            li.querySelector('.btnRemover').addEventListener('click', async function () {
+                const operacaoId = parseInt(operacaoIdSelecionada.value || '0');
+                const opId = parseInt(operadorId || '0');
+                if (!operacaoId || !opId) return;
+
+                const ok = await removeCandidatoSvg(operacaoId, opId);
+                if (!ok) return;
+
+                li.remove();
+                renumerarSelecionados();
+                atualizarBotoesAdicionarSessao();
+            });
+
+            return li;
+        }
+
+        function preencherComboOperadores() {
+            operadorSelect.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+
+            operadoresData
+                .slice()
+                .sort((a, b) => (a.Nome || '').localeCompare(b.Nome || ''))
+                .forEach(op => {
+                    const opt = document.createElement('option');
+                    opt.value = op.ID;
+                    opt.text = `${op.Nome} (${op.Matricula})`;
+                    operadorSelect.appendChild(opt);
+                });
+        }
+
+        // ===== Operações (seleção)
+        document.querySelectorAll('.operacao-item').forEach(li => {
+            li.addEventListener('click', async function () {
+
+                // marca seleção visual
+                document.querySelectorAll('.operacao-item.active').forEach(x => x.classList.remove('active'));
+                this.classList.add('active');
+
+                const id = this.dataset.id;
+                operacaoIdSelecionada.value = id;
+
+                badgeOperacaoSelecionada.textContent = `Operação #${id}`;
+                habilitarPainelDireito(true);
+
+                // Sempre carrega do banco os candidatos desta operação
+                await carregarCandidatosDaOperacao(parseInt(id || '0'));
+
+                // Se já tiver uma sessão selecionada, re-renderiza para refletir botões (Adicionar) habilitados/desabilitados
+                if (sessaoSelect && sessaoSelect.value) {
+                    renderOperadoresDaSessao(sessaoSelect.value);
+                }
+
+                // não mantemos estado antigo ao trocar de operação (o banco manda)
+                // (pode ser que você queira manter o que já selecionou)
+                // se quiser limpar ao trocar de operação, descomente:
+                // listaSelecionados.innerHTML = ''; renumerarSelecionados();
+            });
         });
 
-        // reaplica filtro atual (se houver)
-        const termo = (operadorSearch.value || '').trim().toLowerCase();
-        if (termo) {
+        // ===== Filtro de operações (texto)
+        operacaoSearch?.addEventListener('input', function () {
+            const termo = (this.value || '').trim().toLowerCase();
+            document.querySelectorAll('.operacao-item').forEach(item => {
+                const texto = (item.dataset.filtro || '');
+                item.style.display = (!termo || texto.includes(termo)) ? '' : 'none';
+            });
+        });
+
+        // ===== Busca de operador: filtra SELECT e lista da sessão
+        operadorSearch?.addEventListener('input', function () {
+            const termo = (this.value || '').trim().toLowerCase();
+
+            // filtra options do select
+            Array.from(operadorSelect.options).forEach((opt, idx) => {
+                if (idx === 0) return;
+                opt.hidden = termo && !(opt.text || '').toLowerCase().includes(termo);
+            });
+
+            if (operadorSelect.selectedOptions.length && operadorSelect.selectedOptions[0].hidden) {
+                operadorSelect.selectedIndex = 0;
+            }
+
+            // filtra lista de sessão (se já estiver renderizada)
             Array.from(listaOperadoresSessao.querySelectorAll('[data-op-row="1"]')).forEach(row => {
                 const txt = (row.dataset.filtro || '');
-                row.style.display = txt.includes(termo) ? '' : 'none';
+                row.style.display = (!termo || txt.includes(termo)) ? '' : 'none';
             });
+        });
+
+        // ===== Adicionar via SELECT
+        btnAddOperador?.addEventListener('click', async function () {
+            const operacaoId = parseInt(operacaoIdSelecionada.value || '0');
+            if (!operacaoId) return;
+
+            const opId = parseInt(operadorSelect.value || '0');
+            if (!opId) return;
+
+            // evita duplicar
+            if (listaSelecionados.querySelector(`li[data-operador-id="${opId}"]`)) return;
+
+            const op = operadoresData.find(x => parseInt(x.ID) === opId);
+            if (!op) return;
+
+            const ok = await insereCandidatoSvg(operacaoId, opId);
+            if (!ok) return;
+
+            const item = criarItemOperador({
+                operadorId: op.ID,
+                nome: op.Nome,
+                matricula: op.Matricula
+            });
+
+            listaSelecionados.prepend(item);
+            renumerarSelecionados();
+            atualizarBotoesAdicionarSessao();
+
+            operadorSelect.selectedIndex = 0;
+        });
+
+        // ===== Sessão -> listar operadores com botão Adicionar
+        function renderOperadoresDaSessao(sessaoId) {
+            listaOperadoresSessao.innerHTML = '';
+
+            const operacaoId = parseInt(operacaoIdSelecionada.value || '0');
+            if (!operacaoId) {
+                listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Selecione uma operação primeiro.</div>`;
+                return;
+            }
+
+            if (!sessaoId) {
+                listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Selecione uma sessão.</div>`;
+                return;
+            }
+
+            const ops = operadoresData
+                .filter(o => String(o.SessaoID) === String(sessaoId))
+                .sort((a, b) => (a.Nome || '').localeCompare(b.Nome || ''));
+
+            if (!ops.length) {
+                listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Nenhum operador nesta sessão.</div>`;
+                return;
+            }
+
+            ops.forEach(o => {
+                const row = document.createElement('div');
+                row.className = 'd-flex justify-content-between align-items-center border-bottom px-2 py-2';
+                row.dataset.opRow = "1";
+                row.dataset.filtro = `${(o.Nome || '')} ${(o.Matricula || '')}`.toLowerCase();
+
+                // já está na lista?
+                const jaExiste = !!listaSelecionados.querySelector(`li[data-operador-id="${o.ID}"]`);
+
+                row.innerHTML = `
+                    <div class="me-2">
+                        <div class="small fw-semibold">${o.Nome}</div>
+                        <div class="text-muted small">${o.Matricula}</div>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-operador-id="${o.ID}" ${jaExiste ? 'disabled' : ''}>
+                        Adicionar
+                    </button>
+                `;
+
+                const btn = row.querySelector('button');
+                btn.addEventListener('click', async () => {
+                    const operacaoId = parseInt(operacaoIdSelecionada.value || '0');
+                    const opId = parseInt(o.ID || '0');
+                    if (!operacaoId || !opId) return;
+
+                    if (listaSelecionados.querySelector(`li[data-operador-id="${opId}"]`)) {
+                        btn.disabled = true;
+                        return;
+                    }
+
+                    const ok = await insereCandidatoSvg(operacaoId, opId);
+                    if (!ok) return;
+
+                    const item = criarItemOperador({
+                        operadorId: o.ID,
+                        nome: o.Nome,
+                        matricula: o.Matricula
+                    });
+
+                    listaSelecionados.prepend(item);
+                    renumerarSelecionados();
+
+                    btn.disabled = true;
+                });
+
+                listaOperadoresSessao.appendChild(row);
+            });
+
+            // reaplica filtro atual (se houver)
+            const termo = (operadorSearch.value || '').trim().toLowerCase();
+            if (termo) {
+                Array.from(listaOperadoresSessao.querySelectorAll('[data-op-row="1"]')).forEach(row => {
+                    const txt = (row.dataset.filtro || '');
+                    row.style.display = txt.includes(termo) ? '' : 'none';
+                });
+            }
+            atualizarBotoesAdicionarSessao();
+
         }
-    }
 
-    sessaoSelect?.addEventListener('change', function () {
-        renderOperadoresDaSessao(this.value);
-    });
+        sessaoSelect?.addEventListener('change', function () {
+            renderOperadoresDaSessao(this.value);
+        });
 
-    // ===== Init
-    preencherComboOperadores();
-    habilitarPainelDireito(false);
-    atualizarContadorOperadores();
-</script>
+        // ===== Init
+        preencherComboOperadores();
+        habilitarPainelDireito(false);
+        atualizarContadorOperadores();
+    </script>
 }
