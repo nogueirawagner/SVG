@@ -1,5 +1,4 @@
 ﻿using SVG.Domain.Entities;
-using SVG.Infra.EntityConfig;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
@@ -34,6 +33,7 @@ namespace SVG.Infra.Context.SQLServer
     public DbSet<Viatura> Viatura { get; set; }
     public DbSet<ViaturaOperacao> ViaturaOperacao { get; set; }
     public DbSet<TipoOperacao> TipoOperacoes { get; set; }
+    public DbSet<CandidatoSVGOperacao> CandidatoSVGOperacao { get; set; }
 
     #endregion
 
@@ -53,11 +53,6 @@ namespace SVG.Infra.Context.SQLServer
 
       modelBuilder.Properties<string>()
           .Configure(p => p.HasMaxLength(500));
-
-
-      #region ArquivoConfiguracao
-      modelBuilder.Configurations.Add(new OperadorConfiguration());
-      #endregion
     }
   }
 }

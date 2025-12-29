@@ -21,4 +21,8 @@
     <ProjectReference Include="..\SVG.Utilities\SVG.Utilities.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="EntityConfig\" />
+  </ItemGroup>
+
 </Project>

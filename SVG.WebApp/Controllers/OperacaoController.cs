@@ -124,24 +124,7 @@ namespace SVG.WebApp.Controllers
 
     public IActionResult PegarOperacoesSVGAberto()
     {
-      // =====================
-      // OPERADORES / COORDENADORES
-      // =====================
-      var operadores = _operadorAppService
-          .GetAll()
-          .OrderBy(o => o.Nome)
-          .ToList();
-
-      // JSON usado nos selects dinâmicos (operadores voluntários etc)
-      var operadoresDto = operadores.Select(o => new
-      {
-        o.ID,
-        o.Nome,
-        o.Matricula,
-        o.SessaoID
-      }).ToList();
-
-      ViewBag.OperadoresJson = JsonConvert.SerializeObject(operadoresDto);
+      PopularCombos();
 
       var operacoesSVG = _operacaoAppService.PegarOperacoesSVGAberto().ToList();
       var grupos = operacoesSVG
@@ -161,9 +144,10 @@ namespace SVG.WebApp.Controllers
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public void InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
+    public IActionResult InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
     {
       _operacaoAppService.InsereCandidatoSVG(pOperacaoID, pOperadorID);
+      return Ok();
     }
 
     [HttpPost]
@@ -413,13 +397,6 @@ namespace SVG.WebApp.Controllers
       PopularCombos(vm.TipoOperacaoID, vm.CoordenadorOperadorID);
 
       return View(vm);
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult PegarOperacoesSvgAbertas()
-    {
-      return View();
     }
 
     // POST: Operacao/Edit/5

@@ -21,7 +21,7 @@ namespace SVG.Infra.Repositories
     {
       _db.Database.ExecuteSqlCommand(@"
           INSERT INTO CandidatoSVGOperacao (OperadorID, OperacaoID, DataHoraCriacao)
-          VALUES @pOperadorID, @pOperacaoID, GETDATE()",
+          VALUES (@pOperadorID, @pOperacaoID, GETDATE())",
        new SqlParameter("@pOperacaoID", pOperacaoID),
        new SqlParameter("@pOperadorID", pOperadorID)
      );
