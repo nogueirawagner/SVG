@@ -1,0 +1,470 @@
+﻿@using SVG.Domain.TiposEstruturados.TiposOperacao
+@model IEnumerable<OperacoesSVGAberto>
+
+@{
+    ViewData["Title"] = "Operações com SVG Aberto";
+
+    var operadoresJson = (string)ViewBag.OperadoresJson ?? "[]";
+    var lista = (Model ?? Enumerable.Empty<OperacoesSVGAberto>()).ToList();
+
+    // Grupo por referência (não duplica) + ordem preservada
+    var grupos = ViewBag.GruposTipoOperacao as IEnumerable<dynamic>
+                 ?? Enumerable.Empty<dynamic>();
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">Operações com SVG Aberto</h2>
+        <span class="badge bg-primary">
+            Total: @lista.Count
+        </span>
+    </div>
+    <hr />
+
+    <div class="row mt-3 g-3 align-items-start">
+
+        <!-- LADO ESQUERDO: Operações com SVG Aberto (40%) -->
+        <div class="col-12 col-lg-5">
+            <div class="card h-100">
+                <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                    <span>Operações (SVG aberto)</span>
+                    <span class="badge bg-success">@lista.Count</span>
+                </div>
+
+                <div class="card-body p-2">
+
+                    <div class="mb-2">
+                        <input type="text" id="operacaoSearch" class="form-control form-control-sm"
+                               placeholder="Buscar (tipo, id, data, vagas)..." />
+                    </div>
+
+                    @if (!lista.Any())
+                    {
+                        <div class="alert alert-info mb-0">
+                            Nenhuma operação com SVG aberto.
+                        </div>
+                    }
+                    else
+                    {
+                        <div id="operacoesContainer">
+                            @{
+                                var listaGrupos = grupos.ToList();
+                            }
+
+                            @for (int i = 0; i < listaGrupos.Count; i++)
+                            {
+                                var g = listaGrupos[i];
+                                var collapseId = $"collapseTipo_{i}";
+
+                                <div class="mb-2 operacao-grupo">
+
+                                    <button class="btn btn-light w-100 d-flex justify-content-between align-items-center"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#@collapseId"
+                                            aria-expanded="false"
+                                            aria-controls="@collapseId">
+
+                                        <span class="fw-semibold">@g.TipoOperacao</span>
+                                        <span class="badge bg-secondary">@g.Operacoes.Count</span>
+                                    </button>
+
+                                    <div class="collapse mt-1" id="@collapseId">
+                                        <ul class="list-group">
+                                            @foreach (var op in g.Operacoes)
+                                            {
+                                                <li class="list-group-item list-group-item-action py-2 operacao-item"
+                                                    style="cursor:pointer;"
+                                                    data-id="@op.ID"
+                                                    data-filtro="@($"{g.TipoOperacao} {op.ID} {op.DataHora:dd/MM HH:mm} {op.QtdVagasRestantes}".ToLower())">
+
+                                                    <div class="d-flex justify-content-between">
+                                                        <div>
+                                                            <div class="fw-semibold">@g.TipoOperacao</div>
+                                                            <div class="text-muted small">
+                                                                ID: <strong>@op.ID</strong> |
+                                                                Criada: <strong>@op.DataHoraCriacao.ToString("dd/MM HH:mm")</strong>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="text-end">
+                                                            <div class="small fw-semibold">@op.DataHoraInicio.ToString("dd/MM HH:mm")</div>
+                                                            <span class="badge bg-warning text-dark">Vagas: @op.QtdVagasRestantes</span>
+                                                        </div>
+                                                    </div>
+
+                                                    @{
+                                                        // dynamic-safe: tenta tratar DataHoraFim como nullable e como não-null
+                                                        string fimFormatado = null;
+
+                                                        try
+                                                        {
+                                                            // se for DateTime?
+                                                            DateTime? fimN = (DateTime?)op.DataHoraFim;
+                                                            if (fimN.HasValue)
+                                                                fimFormatado = fimN.Value.ToString("dd/MM HH:mm");
+                                                        }
+                                                        catch
+                                                        {
+                                                            // se for DateTime
+                                                            try
+                                                            {
+                                                                DateTime fim = (DateTime)op.DataHoraFim;
+                                                                // se quiser, pode ignorar default(DateTime) = 01/01/0001
+                                                                if (fim != default(DateTime))
+                                                                    fimFormatado = fim.ToString("dd/MM HH:mm");
+                                                            }
+                                                            catch { }
+                                                        }
+                                                    }
+
+                                                    @if (!string.IsNullOrEmpty(fimFormatado))
+                                                    {
+                                                        <div class="text-muted small mt-1">
+                                                            Início: <strong>@op.DataHoraInicio.ToString("dd/MM HH:mm")</strong>
+                                                        </div>
+                                                        <div class="text-muted small mt-1">
+                                                            Fim: <strong>@fimFormatado</strong>
+                                                        </div>
+                                                    }
+
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+
+                                </div>
+                            }
+                        </div>
+
+
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- LADO DIREITO: Operadores voluntários (60%) - MESMO PADRÃO -->
+        <div class="col-12 col-lg-7">
+            <div class="card h-100">
+                <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                    <span>Candidatos ao Voluntário para Operação</span>
+                    <span id="badgeOperacaoSelecionada" class="badge bg-dark">Nenhuma operação selecionada</span>
+                </div>
+
+                <div class="card-body p-3">
+
+                    <input type="hidden" id="operacaoIdSelecionada" value="" />
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label mb-1">Buscar Operador</label>
+
+                            <input type="text"
+                                   id="operadorSearch"
+                                   class="form-control mb-2"
+                                   placeholder="Digite o nome para filtrar..."
+                                   disabled />
+
+                            <div class="d-flex gap-2">
+                                <select id="operadorSelect" class="form-select form-select-sm flex-grow-1" disabled>
+                                    <option value="">Selecione um operador...</option>
+                                </select>
+
+                                <button type="button"
+                                        id="btnAddOperador"
+                                        class="btn btn-primary btn-sm align-self-center"
+                                        style="white-space: nowrap;"
+                                        disabled>
+                                    Adicionar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label mb-1">Ações</label>
+
+                            <button type="button" id="btnCarregarOperadores" class="btn btn-outline-primary btn-sm w-100 mb-2" disabled>
+                                Carregar Operadores
+                            </button>
+
+                            <button type="button" id="btnSalvarOperadores" class="btn btn-success btn-sm w-100" disabled>
+                                Salvar Alterações
+                            </button>
+
+                            <div class="text-muted small mt-2">
+                                Selecione uma operação à esquerda.
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <div class="mb-2 d-flex align-items-center flex-wrap gap-2">
+                        <strong>Operadores selecionados:</strong>
+                        <span id="contadorOperadores" class="badge bg-primary">0</span>
+
+                        <span class="ms-0 ms-md-3 d-flex align-items-center gap-2">
+                            <strong>SVG:</strong>
+                            <span id="contadorOperadoresSvg" class="badge bg-success">0</span>
+                        </span>
+                    </div>
+
+                    <ul id="listaOperadoresSelecionados" class="list-group"></ul>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const operadoresData = @Html.Raw(operadoresJson);
+
+        const operacaoSearch = document.getElementById('operacaoSearch');
+
+        const badgeOperacaoSelecionada = document.getElementById('badgeOperacaoSelecionada');
+        const operacaoIdSelecionada = document.getElementById('operacaoIdSelecionada');
+
+        const operadorSearch = document.getElementById('operadorSearch');
+        const operadorSelect = document.getElementById('operadorSelect');
+        const btnAddOperador = document.getElementById('btnAddOperador');
+
+        const btnCarregarOperadores = document.getElementById('btnCarregarOperadores');
+        const btnSalvarOperadores = document.getElementById('btnSalvarOperadores');
+
+        const listaSelecionados = document.getElementById('listaOperadoresSelecionados');
+        const contadorOperadores = document.getElementById('contadorOperadores');
+        const contadorOperadoresSvg = document.getElementById('contadorOperadoresSvg');
+
+        // Ajuste para seus endpoints reais
+        const URL_OBTER_OPERADORES = '@Url.Action("ObterOperadoresDaOperacao", "Operacao")'; // ?pOperacaoID=123
+        const URL_SALVAR_OPERADORES = '@Url.Action("SalvarOperadoresDaOperacao", "Operacao")';
+
+        function preencherComboVoluntarios() {
+            operadorSelect.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+
+            operadoresData
+                .slice()
+                .sort((a, b) => (a.Nome || '').localeCompare(b.Nome || ''))
+                .forEach(op => {
+                    const opt = document.createElement('option');
+                    opt.value = op.ID;
+                    opt.text = `${op.Nome} (${op.Matricula})`;
+                    operadorSelect.appendChild(opt);
+                });
+        }
+        preencherComboVoluntarios();
+
+        function atualizarContadorOperadores() {
+            const total = listaSelecionados.children.length;
+            contadorOperadores.textContent = total;
+
+            const svgCount = listaSelecionados.querySelectorAll('.inputSvgFlag[value="true"]').length;
+            contadorOperadoresSvg.textContent = svgCount;
+        }
+
+        function renumerarSelecionados() {
+            const itens = Array.from(listaSelecionados.children);
+            const total = itens.length;
+
+            itens.forEach((li, idx) => {
+                const badgeNum = li.querySelector('.badgeNumero');
+                if (badgeNum) badgeNum.textContent = (total - idx);
+            });
+
+            atualizarContadorOperadores();
+        }
+
+        function criarItemOperador({ operadorId, nome, matricula, svg }) {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.dataset.operadorId = operadorId;
+
+            li.innerHTML = `
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary badgeNumero">0</span>
+                    <div>
+                        <div class="fw-semibold">${nome}</div>
+                        <div class="text-muted small">${matricula}</div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <div class="form-check form-switch m-0">
+                        <input class="form-check-input chkSvg" type="checkbox" ${svg ? 'checked' : ''}>
+                    </div>
+
+                    <button type="button" class="btn btn-outline-danger btn-sm btnRemover">
+                        Remover
+                    </button>
+
+                    <input type="hidden" class="inputOperadorId" value="${operadorId}">
+                    <input type="hidden" class="inputSvgFlag" value="${svg ? 'true' : 'false'}">
+                </div>
+            `;
+
+            li.querySelector('.chkSvg').addEventListener('change', function () {
+                li.querySelector('.inputSvgFlag').value = this.checked ? 'true' : 'false';
+                atualizarContadorOperadores();
+            });
+
+            li.querySelector('.btnRemover').addEventListener('click', function () {
+                li.remove();
+                renumerarSelecionados();
+            });
+
+            return li;
+        }
+
+        function limparSelecionados() {
+            listaSelecionados.innerHTML = '';
+            atualizarContadorOperadores();
+        }
+
+        function habilitarPainelDireito(habilitar) {
+            operadorSearch.disabled = !habilitar;
+            operadorSelect.disabled = !habilitar;
+            btnAddOperador.disabled = !habilitar;
+
+            btnCarregarOperadores.disabled = !habilitar;
+            btnSalvarOperadores.disabled = !habilitar;
+        }
+
+        // seleção de operação
+        document.querySelectorAll('.operacao-item').forEach(li => {
+            li.addEventListener('click', function () {
+                document.querySelectorAll('.operacao-item.active').forEach(x => x.classList.remove('active'));
+                this.classList.add('active');
+
+                const id = this.dataset.id;
+                operacaoIdSelecionada.value = id;
+
+                badgeOperacaoSelecionada.textContent = `Operação #${id}`;
+                habilitarPainelDireito(true);
+
+                limparSelecionados();
+            });
+        });
+
+        // filtro operações
+        operacaoSearch?.addEventListener('input', function () {
+            const termo = (this.value || '').trim().toLowerCase();
+            document.querySelectorAll('.operacao-item').forEach(item => {
+                const texto = (item.dataset.filtro || '');
+                item.style.display = (!termo || texto.includes(termo)) ? '' : 'none';
+            });
+        });
+
+        // filtro operadores no select
+        operadorSearch?.addEventListener('input', function () {
+            const termo = (this.value || '').trim().toLowerCase();
+
+            const opts = Array.from(operadorSelect.options);
+            opts.forEach((opt, idx) => {
+                if (idx === 0) return;
+                opt.hidden = termo && !(opt.text || '').toLowerCase().includes(termo);
+            });
+
+            if (operadorSelect.selectedOptions.length && operadorSelect.selectedOptions[0].hidden) {
+                operadorSelect.selectedIndex = 0;
+            }
+        });
+
+        // adicionar operador
+        btnAddOperador.addEventListener('click', function () {
+            const opId = parseInt(operadorSelect.value || '0');
+            if (!opId) return;
+
+            if (listaSelecionados.querySelector(`li[data-operador-id="${opId}"]`)) return;
+
+            const op = operadoresData.find(x => x.ID === opId);
+            if (!op) return;
+
+            const item = criarItemOperador({
+                operadorId: op.ID,
+                nome: op.Nome,
+                matricula: op.Matricula,
+                svg: true // padrão voluntário
+            });
+
+            listaSelecionados.prepend(item);
+            renumerarSelecionados();
+            operadorSelect.selectedIndex = 0;
+        });
+
+        // carregar operadores
+        btnCarregarOperadores.addEventListener('click', async function () {
+            const opId = parseInt(operacaoIdSelecionada.value || '0');
+            if (!opId) return;
+
+            limparSelecionados();
+
+            try {
+                const resp = await fetch(`${URL_OBTER_OPERADORES}?pOperacaoID=${opId}`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!resp.ok) return;
+
+                const data = await resp.json();
+
+                (data || []).forEach(x => {
+                    const item = criarItemOperador({
+                        operadorId: x.operadorID ?? x.OperadorID,
+                        nome: x.nome ?? x.Nome,
+                        matricula: x.matricula ?? x.Matricula,
+                        svg: (x.svg ?? x.SVG) === true
+                    });
+
+                    listaSelecionados.appendChild(item);
+                });
+
+                renumerarSelecionados();
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
+        // salvar
+        btnSalvarOperadores.addEventListener('click', async function () {
+            const opId = parseInt(operacaoIdSelecionada.value || '0');
+            if (!opId) return;
+
+            const operadores = Array.from(listaSelecionados.children).map(li => {
+                const operadorId = parseInt(li.querySelector('.inputOperadorId').value || '0');
+                const svg = (li.querySelector('.inputSvgFlag').value === 'true');
+                return { OperadorID: operadorId, SVG: svg };
+            });
+
+            try {
+                const payload = { OperacaoID: opId, Operadores: operadores };
+
+                const resp = await fetch(URL_SALVAR_OPERADORES, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (resp.ok) {
+                    btnSalvarOperadores.classList.remove('btn-success');
+                    btnSalvarOperadores.classList.add('btn-outline-success');
+                    setTimeout(() => {
+                        btnSalvarOperadores.classList.remove('btn-outline-success');
+                        btnSalvarOperadores.classList.add('btn-success');
+                    }, 700);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
+        habilitarPainelDireito(false);
+        atualizarContadorOperadores();
+    </script>
+}

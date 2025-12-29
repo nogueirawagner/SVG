@@ -22,14 +22,16 @@ namespace SVG.Infra.Repositories
       var sql = @"
           select 
 	          o.ID, 
+            o.DataHoraCriacao,
 	          o.DataHora,
-	          o.DataHoraInicio,
+	          COALESCE(o.DataHoraInicio, o.DataHora) DataHoraInicio,
 	          o.DataHoraFim,
 	          t.Nome TipoOperacao,
 	          o.QtdVagasRestantes
           from Operacao o
 	          join TipoOperacao t on t.ID = o.TipoOperacaoID
           where SvgAberto = 1
+          order by DataHoraCriacao desc, DataHoraInicio desc, DataHoraFim desc
         ";
       return _db.Database.
        SqlQuery<OperacoesSVGAberto>(sql);

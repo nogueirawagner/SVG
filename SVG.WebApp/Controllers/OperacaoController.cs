@@ -122,6 +122,44 @@ namespace SVG.WebApp.Controllers
       return View(detalhes);
     }
 
+    public IActionResult PegarOperacoesSVGAberto()
+    {
+      // =====================
+      // OPERADORES / COORDENADORES
+      // =====================
+      var operadores = _operadorAppService
+          .GetAll()
+          .OrderBy(o => o.Nome)
+          .ToList();
+
+      // JSON usado nos selects dinâmicos (operadores voluntários etc)
+      var operadoresDto = operadores.Select(o => new
+      {
+        o.ID,
+        o.Nome,
+        o.Matricula,
+        o.SessaoID
+      }).ToList();
+
+      ViewBag.OperadoresJson = JsonConvert.SerializeObject(operadoresDto);
+
+      var operacoesSVG = _operacaoAppService.PegarOperacoesSVGAberto().ToList();
+      var grupos = operacoesSVG
+        .GroupBy(o => o.TipoOperacao)
+        .Select(g => new
+        {
+          TipoOperacao = g.Key,
+          Operacoes = g.ToList()
+        })
+        .ToList();
+
+      ViewBag.GruposTipoOperacao = grupos;
+
+
+      return View(operacoesSVG);
+    }
+
+
     public IActionResult CreateReforcoPlantao()
     {
       var model = new OperacaoViewModel();
