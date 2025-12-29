@@ -211,14 +211,14 @@
                     <div class="modal-content">
 
                         <div class="modal-header">
-                            <h5 class="modal-title">Operação de Reforço</h5>
+                            <h5 class="modal-title">Operação de Segurança Orgânica</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
 
                         <div class="modal-body">
-                            Você selecionou <strong>Reforço Plantão</strong>.
+                            Você selecionou <strong>Segurança Orgânica</strong>.
                             <br />
-                            Deseja criar esta operação na tela específica de Reforço?
+                            Deseja criar esta operação na tela específica de S.O?
                         </div>
 
                         <div class="modal-footer">
@@ -227,7 +227,7 @@
                             </button> *@
                             <a class="btn btn-primary" id="btnSimReforco"
                                href="@Url.Action("CreateReforcoPlantao", "Operacao")">
-                                Sim, ir para Reforço
+                                Sim, ir para S.O
                             </a>
                         </div>
 
@@ -595,7 +595,7 @@
         });
 
         (function () {
-            const TIPO_REFORCO_PLANTAO_ID = "5"; // ID 5 = Reforço Plantão
+            const TIPO_REFORCO_PLANTAO_ID = "4"; // ID 5 = Reforço Plantão
 
             const selectTipo = document.getElementById("TipoOperacaoID");
             const modalEl = document.getElementById("modalReforco");

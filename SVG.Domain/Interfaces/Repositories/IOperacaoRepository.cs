@@ -9,5 +9,6 @@ namespace SVG.Domain.Interfaces.Repositories
     void AlterarSVGOperador(int pOperadorId, bool pSvg);
     IEnumerable<DetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID);
     IEnumerable<OperacoesRealizadas> PegarOperacoesRealizadas();
+    IEnumerable<OperacoesSVGAberto> PegarOperacoesSVGAberto();
   }
 }
