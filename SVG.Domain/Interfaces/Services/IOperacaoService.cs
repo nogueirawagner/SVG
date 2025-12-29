@@ -10,5 +10,7 @@ namespace SVG.Domain.Interfaces.Services
     void AlterarSVGOperador(int pOperadorId, bool pSvg);
     IEnumerable<OperacoesRealizadas> PegarOperacoesRealizadas();
     IEnumerable<OperacoesSVGAberto> PegarOperacoesSVGAberto();
+    void InsereCandidatoSVG(int pOperacaoID, int pOperadorID);
+    void RemoveCandidatoSVG(int pOperacaoID, int pOperadorID);
   }
 }

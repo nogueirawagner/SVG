@@ -17,6 +17,27 @@ namespace SVG.Infra.Repositories
       _db = dbContext;
     }
 
+    public void InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
+    {
+      _db.Database.ExecuteSqlCommand(@"
+          INSERT INTO CandidatoSVGOperacao (OperadorID, OperacaoID, DataHoraCriacao)
+          VALUES @pOperadorID, @pOperacaoID, GETDATE()",
+       new SqlParameter("@pOperacaoID", pOperacaoID),
+       new SqlParameter("@pOperadorID", pOperadorID)
+     );
+    }
+
+    public void RemoveCandidatoSVG(int pOperacaoID, int pOperadorID)
+    {
+      _db.Database.ExecuteSqlCommand(@"
+          DELETE FROM CandidatoSVGOperacao 
+          WHERE OperacaoID = @pOperacaoID 
+            and OperadorID = @pOperadorID", 
+        new SqlParameter("@pOperacaoID", pOperacaoID),
+        new SqlParameter("@pOperadorID", pOperadorID)
+      );
+    }
+
     public IEnumerable<OperacoesSVGAberto> PegarOperacoesSVGAberto()
     {
       var sql = @"
@@ -56,8 +77,8 @@ namespace SVG.Infra.Repositories
         order by DataHoraCriacao desc
         ";
 
-     return _db.Database.
-        SqlQuery<OperacoesRealizadas>(sql);
+      return _db.Database.
+         SqlQuery<OperacoesRealizadas>(sql);
     }
 
     public IEnumerable<DetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)

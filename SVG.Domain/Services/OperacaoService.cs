@@ -20,6 +20,11 @@ namespace SVG.Domain.Services
       _operacaoRepository.AlterarSVGOperador(pOperadorId, pSvg);
     }
 
+    public void InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
+    {
+      _operacaoRepository.InsereCandidatoSVG(pOperacaoID, pOperadorID);
+    }
+
     public IEnumerable<DetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
     {
       return _operacaoRepository.PegarDetalhesOperacao(pOperacaoID);
@@ -38,6 +43,11 @@ namespace SVG.Domain.Services
     public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)
     {
       return _operacaoRepository.PegarOperadoresSVG(pOperadorIDs, pDataLimite, pQtdVagas);  
+    }
+
+    public void RemoveCandidatoSVG(int pOperacaoID, int pOperadorID)
+    {
+      _operacaoRepository.RemoveCandidatoSVG(pOperacaoID, pOperadorID);
     }
   }
 }

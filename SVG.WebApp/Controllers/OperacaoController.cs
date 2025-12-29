@@ -159,6 +159,19 @@ namespace SVG.WebApp.Controllers
       return View(operacoesSVG);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public void InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
+    {
+      _operacaoAppService.InsereCandidatoSVG(pOperacaoID, pOperadorID);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public void RemoveCandidatoSVG(int pOperacaoID, int pOperadorID)
+    {
+      _operacaoAppService.RemoveCandidatoSVG(pOperacaoID, pOperadorID);
+    }
 
     public IActionResult CreateReforcoPlantao()
     {

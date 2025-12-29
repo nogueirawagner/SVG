@@ -20,6 +20,11 @@ namespace SVG.App.Services
       _operacaoService.AlterarSVGOperador(pOperadorId, pSvg);
     }
 
+    public void InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
+    {
+      _operacaoService.InsereCandidatoSVG(pOperacaoID, pOperadorID);
+    }
+
     public IEnumerable<DetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
     {
       return _operacaoService.PegarDetalhesOperacao(pOperacaoID); 
@@ -40,5 +45,9 @@ namespace SVG.App.Services
       return _operacaoService.PegarOperadoresSVG(pOperadorIDs, pDataLimite, pQtdVagas);
     }
 
+    public void RemoveCandidatoSVG(int pOperacaoID, int pOperadorID)
+    {
+      _operacaoService.RemoveCandidatoSVG(pOperacaoID, pOperadorID);
+    }
   }
 }

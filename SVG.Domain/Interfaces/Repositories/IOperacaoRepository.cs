@@ -10,5 +10,7 @@ namespace SVG.Domain.Interfaces.Repositories
     IEnumerable<DetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID);
     IEnumerable<OperacoesRealizadas> PegarOperacoesRealizadas();
     IEnumerable<OperacoesSVGAberto> PegarOperacoesSVGAberto();
+    void InsereCandidatoSVG(int pOperacaoID, int pOperadorID);
+    void RemoveCandidatoSVG(int pOperacaoID, int pOperadorID);
   }
 }
