@@ -1,5 +1,5 @@
 ﻿@using SVG.Domain.TiposEstruturados.TiposOperacao
-@model IEnumerable<OperacoesSVGAberto>
+@model IEnumerable<XOperacoesSVGAberto>
 
 @{
     ViewData["Title"] = "Operações com SVG Aberto";
@@ -19,7 +19,7 @@
 
     // Total operações (se quiser mostrar no topo)
     int totalOps = 0;
-    try { totalOps = (Model ?? Enumerable.Empty<OperacoesSVGAberto>()).Count(); } catch { totalOps = 0; }
+    try { totalOps = (Model ?? Enumerable.Empty<XOperacoesSVGAberto>()).Count(); } catch { totalOps = 0; }
 }
 
 <div class="container mt-4">

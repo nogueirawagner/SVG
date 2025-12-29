@@ -7,7 +7,7 @@ using SVG.Domain.Entities;
 
 namespace SVG.Domain.TiposEstruturados.TiposOperador
 {
-  public class OperadorSessao
+  public class XOperadorSessao
   {
     public int SessaoID { get; set; }
     public int NomeSessao { get; set; }

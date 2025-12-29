@@ -142,12 +142,18 @@ namespace SVG.WebApp.Controllers
       return View(operacoesSVG);
     }
 
+    [HttpGet]
+    public ActionResult PegaCandidatoSVG(int pOperacaoID)
+    {
+      var lista = _operacaoAppService.PegaCandidatoSVG(pOperacaoID);
+      return Json(lista);
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
+    public void InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
     {
       _operacaoAppService.InsereCandidatoSVG(pOperacaoID, pOperadorID);
-      return Ok();
     }
 
     [HttpPost]

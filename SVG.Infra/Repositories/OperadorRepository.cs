@@ -19,7 +19,7 @@ namespace SVG.Infra.Repositories
       _db = dbContext;
     }
 
-    public IEnumerable<DetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId)
+    public IEnumerable<XDetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId)
     {
       var sql = @"
 			WITH CTE_Operacao AS (
@@ -70,11 +70,11 @@ namespace SVG.Infra.Repositories
 				select * from CTE_Resultado
 				order by TipoOperacao";
 
-      return _db.Database.SqlQuery<DetalhamentoOperadorOperacao>(sql,
+      return _db.Database.SqlQuery<XDetalhamentoOperadorOperacao>(sql,
         new SqlParameter("@pOperadorId", pOperadorId));
     }
 
-    public IEnumerable<ResumoOperadorOperacao> PegarResumoOperador()
+    public IEnumerable<XResumoOperadorOperacao> PegarResumoOperador()
     {
       var sql = @"
 				WITH CTE_Operacao AS (
@@ -137,7 +137,7 @@ namespace SVG.Infra.Repositories
 				order by OperadorNome 
           ";
 
-      return _db.Database.SqlQuery<ResumoOperadorOperacao>(sql);
+      return _db.Database.SqlQuery<XResumoOperadorOperacao>(sql);
     }
 
     public IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId)

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SVG.Domain.TiposEstruturados.TiposOperador
 {
-  public class ResumoOperadorOperacao
+  public class XResumoOperadorOperacao
   {
     public int OperadorID { get; set; }
     public string OperadorNome { get; set; }

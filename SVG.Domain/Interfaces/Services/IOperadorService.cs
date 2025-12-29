@@ -10,8 +10,8 @@ namespace SVG.Domain.Interfaces.Services
 {
   public interface IOperadorService : IServiceBase<Operador>
   {
-    public IEnumerable<ResumoOperadorOperacao> PegarResumoOperador();
-    IEnumerable<DetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId);
+    public IEnumerable<XResumoOperadorOperacao> PegarResumoOperador();
+    IEnumerable<XDetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId);
     IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId);
   }
 }

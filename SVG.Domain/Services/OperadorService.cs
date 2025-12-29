@@ -15,12 +15,12 @@ namespace SVG.Domain.Services
       _operadorRepository = operadorRepository;
     }
 
-    public IEnumerable<DetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId)
+    public IEnumerable<XDetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId)
     {
       return _operadorRepository.PegarDetalhamentoOperador(pOperadorId);
     }
 
-    public IEnumerable<ResumoOperadorOperacao> PegarResumoOperador()
+    public IEnumerable<XResumoOperadorOperacao> PegarResumoOperador()
     {
       return _operadorRepository.PegarResumoOperador();
     }

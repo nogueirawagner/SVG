@@ -7,8 +7,8 @@ namespace SVG.App.Interface
 {
   public interface IOperadorAppService : IAppServiceBase<Operador>
   {
-    public IEnumerable<ResumoOperadorOperacao> PegarResumoOperador();
-    IEnumerable<DetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId);
+    public IEnumerable<XResumoOperadorOperacao> PegarResumoOperador();
+    IEnumerable<XDetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId);
     IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId);
 
   }

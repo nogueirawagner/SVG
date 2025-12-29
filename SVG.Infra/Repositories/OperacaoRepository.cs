@@ -17,14 +17,40 @@ namespace SVG.Infra.Repositories
       _db = dbContext;
     }
 
+    public IEnumerable<XCandidatosOperacaoSVG> PegaCandidatoSVG(int pOperacaoID)
+    {
+      var sql = @"
+            select 
+	            c.OperacaoID, 
+	            c.OperadorID,
+	            o.Nome,
+	            o.Matricula
+            from CandidatoSVGOperacao c
+	            join Operador o on o.ID = c.OperadorID
+            where c.OperacaoID = @pOperacaoID";
+
+      return _db.Database.
+         SqlQuery<XCandidatosOperacaoSVG>(sql,
+           new SqlParameter("@pOperacaoID", pOperacaoID)
+         );
+    }
+
     public void InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
     {
       _db.Database.ExecuteSqlCommand(@"
-          INSERT INTO CandidatoSVGOperacao (OperadorID, OperacaoID, DataHoraCriacao)
-          VALUES (@pOperadorID, @pOperacaoID, GETDATE())",
+        IF NOT EXISTS (
+            SELECT 1
+            FROM CandidatoSVGOperacao
+            WHERE OperadorID = @pOperadorID
+              AND OperacaoID = @pOperacaoID
+        )
+        BEGIN
+            INSERT INTO CandidatoSVGOperacao (OperadorID, OperacaoID, DataHoraCriacao)
+            VALUES (@pOperadorID, @pOperacaoID, GETDATE())
+        END",
        new SqlParameter("@pOperacaoID", pOperacaoID),
        new SqlParameter("@pOperadorID", pOperadorID)
-     );
+      );
     }
 
     public void RemoveCandidatoSVG(int pOperacaoID, int pOperadorID)
@@ -38,7 +64,7 @@ namespace SVG.Infra.Repositories
       );
     }
 
-    public IEnumerable<OperacoesSVGAberto> PegarOperacoesSVGAberto()
+    public IEnumerable<XOperacoesSVGAberto> PegarOperacoesSVGAberto()
     {
       var sql = @"
           select 
@@ -55,10 +81,10 @@ namespace SVG.Infra.Repositories
           order by DataHoraCriacao desc, DataHoraInicio desc, DataHoraFim desc
         ";
       return _db.Database.
-       SqlQuery<OperacoesSVGAberto>(sql);
+       SqlQuery<XOperacoesSVGAberto>(sql);
     }
 
-    public IEnumerable<OperacoesRealizadas> PegarOperacoesRealizadas()
+    public IEnumerable<XOperacoesRealizadas> PegarOperacoesRealizadas()
     {
       var sql = @"
         select 
@@ -78,10 +104,10 @@ namespace SVG.Infra.Repositories
         ";
 
       return _db.Database.
-         SqlQuery<OperacoesRealizadas>(sql);
+         SqlQuery<XOperacoesRealizadas>(sql);
     }
 
-    public IEnumerable<DetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
+    public IEnumerable<XDetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
     {
       var sql = @"
         select 
@@ -107,13 +133,13 @@ namespace SVG.Infra.Repositories
         ";
 
       var raw = _db.Database.
-         SqlQuery<DetalhesOperacao>(sql,
+         SqlQuery<XDetalhesOperacao>(sql,
            new SqlParameter("@pOperacaoID", pOperacaoID)
          );
 
       foreach (var item in raw)
       {
-        yield return new DetalhesOperacao
+        yield return new XDetalhesOperacao
         {
           ID = item.ID,
           DataHoraCriacao = item.DataHoraCriacao,

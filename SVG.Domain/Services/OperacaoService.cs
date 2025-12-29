@@ -25,17 +25,22 @@ namespace SVG.Domain.Services
       _operacaoRepository.InsereCandidatoSVG(pOperacaoID, pOperadorID);
     }
 
-    public IEnumerable<DetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
+    public IEnumerable<XCandidatosOperacaoSVG> PegaCandidatoSVG(int pOperacaoID)
+    {
+      return _operacaoRepository.PegaCandidatoSVG(pOperacaoID);
+    }
+
+    public IEnumerable<XDetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
     {
       return _operacaoRepository.PegarDetalhesOperacao(pOperacaoID);
     }
 
-    public IEnumerable<OperacoesRealizadas> PegarOperacoesRealizadas()
+    public IEnumerable<XOperacoesRealizadas> PegarOperacoesRealizadas()
     {
       return _operacaoRepository.PegarOperacoesRealizadas();
     }
 
-    public IEnumerable<OperacoesSVGAberto> PegarOperacoesSVGAberto()
+    public IEnumerable<XOperacoesSVGAberto> PegarOperacoesSVGAberto()
     {
       return _operacaoRepository.PegarOperacoesSVGAberto();
     }
