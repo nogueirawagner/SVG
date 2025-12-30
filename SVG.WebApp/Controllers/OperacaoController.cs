@@ -104,6 +104,25 @@ namespace SVG.WebApp.Controllers
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public IActionResult EncerrarCalcularSVG(int pOperacaoID)
+    {
+      var oper = _operacaoAppService.GetById(pOperacaoID);
+
+      var operadores = _operacaoAppService.PegaCandidatoSVG(pOperacaoID).ToList();
+      var opSvg = operadores.Select(o => o.OperadorID).ToList();
+
+      var operadoresSVG = CalcularOperdoresSVG(opSvg, oper.QtdVagasRestantes)
+        .Select(o => new OperadorSelecionadoVM { OperadorID = o, SVG = true}).ToList();
+      SalvarOperadoresOperacao(pOperacaoID, operadoresSVG);
+
+      oper.SvgAberto = false;
+      oper.QtdVagasRestantes = 0;
+      _operacaoAppService.Update(oper);
+      return RedirectToAction("DetalhesOperacao", new { pOperacaoID = pOperacaoID });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult EncerrarSVG(int pOperacaoID)
     {
       var oper = _operacaoAppService.GetById(pOperacaoID);
@@ -307,26 +326,9 @@ namespace SVG.WebApp.Controllers
       entidade.DataHoraFim = null;
 
       var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
-      var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
-
-      var operadoresContemplados = new List<int>();
-      if (opSvg.Count > 0)
-      {
-        if (opSvg.Count > model.QtdVagasVoluntarios)
-        {
-          if (model.QtdVagasVoluntarios == 0)
-            model.QtdVagasVoluntarios = opSvg.Count;
-
-          operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios).ToList();
-        }
-        else
-          operadoresContemplados = opSvg;
-      }
+      var operadoresSVG = CalcularOperdoresSVG(opSvg, model.QtdVagasRestantes);
 
       var operadoresOperacao = model.OperadoresSelecionados.Where(s => !s.SVG).ToList();
-
-      var operadoresSVG = opSvg.Where(id => operadoresContemplados.Contains(id)).ToList();
-
       operadoresOperacao.AddRange(operadoresSVG.Select(id => new OperadorSelecionadoVM
       {
         OperadorID = id,
@@ -339,18 +341,45 @@ namespace SVG.WebApp.Controllers
       entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
       entidade.SvgAberto = qtdRestante > 0 ? true : false;
 
+      SalvarOperadoresOperacao(entidade.ID, operadoresOperacao);
+
+      return RedirectToAction(nameof(Index));
+    }
+
+    private void SalvarOperadoresOperacao(int pOperacaoID, List<OperadorSelecionadoVM> operadoresOperacao)
+    {
       foreach (var op in operadoresOperacao)
       {
         var operadorOperacao = new OperadorOperacao
         {
-          OperacaoID = entidade.ID,
+          OperacaoID = pOperacaoID,
           OperadorID = op.OperadorID,
           SVG = op.SVG
         };
         _operadorOperacaoAppService.Add(operadorOperacao);
       }
+    }
 
-      return RedirectToAction(nameof(Index));
+    private List<int> CalcularOperdoresSVG(List<int> pOperadoresID, int pQtdVagas)
+    {
+      var opSvg = pOperadoresID;
+      var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
+
+      var operadoresContemplados = new List<int>();
+      if (opSvg.Count > 0)
+      {
+        if (opSvg.Count > pQtdVagas)
+        {
+          if (pQtdVagas == 0)
+            pQtdVagas = opSvg.Count;
+
+          operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, pQtdVagas).ToList();
+        }
+        else
+          operadoresContemplados = opSvg;
+      }
+
+      return operadoresContemplados;
     }
 
     // GET: Operacao/Edit/5
