@@ -7,8 +7,6 @@
   {
     public override void Up()
     {
-      CreateIndex("dbo.Operacao", "TipoOperacaoID");
-
       Sql(@"
         WHILE 1=1
         BEGIN
