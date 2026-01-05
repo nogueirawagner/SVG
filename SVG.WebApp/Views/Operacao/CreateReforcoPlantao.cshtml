@@ -1,409 +1,405 @@
 ﻿@model SVG.App.ViewModels.OperacaoViewModel
-
 @using SVG.Domain.Entities
+@using System.Globalization
 
 @{
-    ViewData["Title"] = "Reforço do Plantão";
+    ViewData["Title"] = "Segurança Orgânica";
 
-    // Default no Create: SvgAberto = true (sem sobrescrever quando volta com ModelState inválido)
-    if (!ViewContext.ViewData.ModelState.ContainsKey(nameof(Model.SvgAberto)))
-    {
-        Model.SvgAberto = true;
-    }
-    var operadoresJson = (string)ViewBag.OperadoresJson; 
-    var tipos = (IEnumerable<TipoOperacao>)ViewBag.TiposOperacao;
+    // Tipos de operação (para fixar Segurança Orgânica)
+    var tipos = (IEnumerable<TipoOperacao>)ViewBag.TiposOperacao ?? Enumerable.Empty<TipoOperacao>();
+
+    // tenta achar o tipo "Segurança Orgânica" (com/sem acento)
+    var tipoSegurancaOrganica =
+        tipos.FirstOrDefault(t => (t.Nome ?? "").Equals("Segurança Orgânica", StringComparison.OrdinalIgnoreCase))
+        ?? tipos.FirstOrDefault(t => (t.Nome ?? "").Equals("Seguranca Organica", StringComparison.OrdinalIgnoreCase));
+
+    var tipoOperacaoIdFixado = (tipoSegurancaOrganica != null ? tipoSegurancaOrganica.ID : Model.TipoOperacaoID);
 }
 
 <div class="container mt-4">
-    <h2>Nova Operação de Reforço</h2>
-    <hr />
 
-    <form asp-action="CreateReforcoPlantao" method="post" class="mt-3">
-        <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Criar Operação – Segurança Orgânica</h2>
+        <a asp-action="Index" asp-controller="Operacao" class="btn btn-sm btn-outline-secondary">Voltar</a>
+    </div>
 
-        <div class="row g-3 align-items-end">
-            <div class="col-md-2">
-                <label asp-for="DataHoraInicio" class="form-label">Horário Início</label>
-                <input asp-for="DataHoraInicio"
-                       type="datetime-local"
-                       name="DataHoraInicio"
-                       class="form-control"
-                       value="@Model.DataHoraInicio.ToString("yyyy-MM-ddTHH:mm")" />
-                <span asp-validation-for="DataHoraInicio" class="text-danger"></span>
-            </div>       
+    <!-- ======================
+         FORM (apenas para agrupar inputs + antiforgery)
+         NÃO será submetido por submit.
+         ====================== -->
+    <form id="formCriarOperacao" class="card" method="post" action="@Url.Action("CreateReforcoPlantao", "Operacao")">
 
+       <div asp-validation-summary="All" class="text-danger"></div>
+        @Html.AntiForgeryToken()
 
-            <div class="col-md-2">
-                <label asp-for="DataHoraFim" class="form-label">Horário Fim</label>
-                <input asp-for="DataHoraFim"
-                       type="datetime-local"
-                       name="DataHoraFim"
-                       class="form-control"
-                       value="@Model.DataHoraFim.ToString("yyyy-MM-ddTHH:mm")" />
-                <span asp-validation-for="DataHoraFim" class="text-danger"></span>
-            </div>       
-
-
-            <div class="col-md-1">
-                <label asp-for="OrdemServico" class="form-label">OS</label>
-                <input asp-for="OrdemServico" type="number" min="0" name="OrdemServico" placeholder="Ex.: 055" class="form-control" />
-            </div>
-
-            <!-- Objeto (reduzido) -->
-            <div class="col-md-2">
-                <label asp-for="Objeto" class="form-label">Objeto</label>
-                <input asp-for="Objeto" name="Objeto" placeholder="Ex.: Segurança Orgânica" class="form-control" />
-            </div>
-
-            <!-- SVG Aberto -->
-            <div class="col-md-1">
-                <label class="form-label d-block">SVG</label>
-                <div class="form-check form-switch mt-1">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           asp-for="SvgAberto"
-                           id="SvgAbertoToggleTop" />
-                    <label class="form-check-label" for="SvgAbertoToggleTop">
-                        Aberto
-                    </label>
-                </div>
-            </div>
-            <!-- Tipo Operação (fixo) -->
-            @{
-                var tipoFixo = (tipos ?? Enumerable.Empty<TipoOperacao>()).FirstOrDefault(t => t.Nome == "Reforço de Plantão");
-                var tipoFixoId = tipoFixo?.ID ?? Model.TipoOperacaoID;
-                var tipoFixoNome = tipoFixo?.Nome ?? "Reforço de Plantão";
-            }
-            <div class="col-md-2">
-                <label class="form-label">Tipo</label>
-                <input type="text" class="form-control" value="@tipoFixoNome" disabled />
-                <input type="hidden" name="TipoOperacaoID" value="@tipoFixoId" />
-            </div>
+        <div class="card-header py-2">
+            Preencha os campos e clique em <strong>Adicionar</strong>
         </div>
 
-        <div class="row mt-4 g-3 align-items-start">
+        <div class="card-body">
+            <div asp-validation-summary="All" class="text-danger"></div>
 
-            <!-- VOLUNTÁRIOS -->
-            <div class="col-12">
-                <div class="card h-100">
-                    <div class="card-header py-2">
-                        Operadores para Operação
-                    </div>
+            <!-- Tipo fixo -->
+            <input type="hidden" id="TipoOperacaoID" name="TipoOperacaoID" value="@tipoOperacaoIdFixado" />
 
-                    <div class="card-body p-3">
+            <div class="row g-2 align-items-end">
 
-                        <div class="row g-3">
-                            <div class="col-md-8">
-                                <label class="form-label mb-1">Buscar Operador</label>
+                <!-- OS (somente números) -->
+                <div class="col-md-2">
+                    <label asp-for="OrdemServico" class="form-label">OS</label>
+                    <input asp-for="OrdemServico"
+                           id="OrdemServico"
+                           name="OrdemServico"
+                           class="form-control"
+                           inputmode="numeric"
+                           pattern="[0-9]*"
+                           maxlength="12"
+                           placeholder="Ex.: 12345" />
+                </div>
 
-                                <input type="text"
-                                       id="operadorSearch"
-                                       class="form-control mb-2"
-                                       placeholder="Digite o nome para filtrar..." />
+                <!-- Início -->
+                <div class="col-md-2">
+                    <label asp-for="DataHoraInicio" class="form-label">Horário Início</label>
+                    <input asp-for="DataHoraInicio"
+                           id="DataHoraInicio"
+                           name="DataHoraInicio"
+                           type="datetime-local"
+                           class="form-control"
+                           value="@(Model.DataHoraInicio == default(DateTime) ? "" : Model.DataHoraInicio.ToString("dd/MMTHH:mm"))" />
+                </div>
 
-                                <div class="d-flex gap-2">
-                                    <select id="operadorSelect" class="form-select form-select-sm flex-grow-1">
-                                        <option value="">Selecione um operador...</option>
-                                        @* opções serão preenchidas via JS usando operadoresJson *@
-                                    </select>
+                <!-- Fim -->
+                <div class="col-md-2">
+                    <label asp-for="DataHoraFim" class="form-label">Horário Fim</label>
+                    <input asp-for="DataHoraFim"
+                           id="DataHoraFim"
+                           name="DataHoraFim"
+                           type="datetime-local"
+                           class="form-control"
+                           value="@(Model.DataHoraFim == default(DateTime) ? "" : Model.DataHoraFim.ToString("dd/MMTHH:mm"))" />
+                </div>
 
-                                    <button type="button"
-                                            id="btnAddOperador"
-                                            class="btn btn-primary btn-sm align-self-center"
-                                            style="white-space: nowrap;">
-                                        Adicionar
-                                    </button>
-                                </div>
-                            </div>
+                <!-- Objeto (menor) -->
+                <div class="col-md-4">
+                    <label asp-for="Objeto" class="form-label">Descrição / Objeto</label>
+                    <input asp-for="Objeto"
+                           id="Objeto"
+                           name="Objeto"
+                           class="form-control"
+                           placeholder="Ex.: Posto 01 – Entrada principal" />
+                </div>
 
-                            <!-- Qtd Vagas SVG -->
-                            <div class="col-md-4">
-                                <label asp-for="QtdVagasVoluntarios" class="form-label mb-1">Vagas Totais SVG</label>
-                                <input asp-for="QtdVagasVoluntarios"
-                                       name="QtdVagasVoluntarios"
-                                       type="number" min="0"
-                                       class="form-control form-control-sm" />
-                                <span asp-validation-for="QtdVagasVoluntarios" class="text-danger"></span>
-                            </div>
+                <!-- Vagas (readonly = 1) -->
+                <div class="col-md-1">
+                    <label asp-for="QtdVagasVoluntarios" class="form-label">Vagas</label>
+                    <input asp-for="QtdVagasVoluntarios"
+                           id="QtdVagasVoluntarios"
+                           name="QtdVagasVoluntarios"
+                           type="number"
+                           class="form-control"
+                           value="1"
+                           readonly />
+                </div>
 
-                            <hr class="my-3" />
-
-                            <div class="mb-2 d-flex align-items-center flex-wrap gap-2">
-                                <strong>Operadores selecionados:</strong>
-                                <span id="contadorOperadores" class="badge bg-primary">0</span>
-
-                                <span class="ms-0 ms-md-3 d-flex align-items-center gap-2">
-                                    <strong>SVG:</strong>
-                                    <span id="contadorOperadoresSvg" class="badge bg-success">0</span>
-                                </span>
-                            </div>
-
-                            <ul id="listaOperadoresSelecionados" class="list-group">
-                                <!-- JS adiciona itens aqui -->
-                            </ul>
-
-                        </div>
+                <!-- SVG aberto -->
+                <div class="col-md-1">
+                    <label class="form-label d-block">SVG</label>
+                    <div class="form-check mt-2">
+                        <input asp-for="SvgAberto" class="form-check-input" type="checkbox" id="SvgAberto" name="SvgAberto" />
+                        <label class="form-check-label" for="SvgAberto">Sim</label>
                     </div>
                 </div>
-            </div>
 
+                <div class="col-12 d-flex justify-content-end gap-2">
+                    <button type="button" id="btnCarregar" class="btn btn-outline-secondary">
+                        Carregar por OS
+                    </button>
 
-            <div class="d-flex justify-content-between mt-4">
-                <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
-                @* <button type="submit" class="btn btn-success">Salvar Operação</button> *@
-                <button type="submit" href="@Url.Action("CreateReforcoPlantao", "Operacao")" id="btnSalvar" class="btn btn-primary" disabled>Salvar</button>
+                    <!-- IMPORTANTE: não submit -->
+                    <button type="button" id="btnAdicionar" class="btn btn-primary">
+                        Adicionar
+                    </button>
+                </div>
             </div>
+        </div>
     </form>
+
+    <!-- ======================
+         LISTA: OPERAÇÕES CRIADAS (pela OS)
+         ====================== -->
+    <div class="card mt-3">
+        <div class="card-header py-2 d-flex justify-content-between align-items-center">
+            <span>Operações criadas para a OS <strong id="osAtual">—</strong></span>
+            <span class="badge bg-secondary">Total: <span id="totalOps">0</span></span>
+        </div>
+
+        <div class="card-body p-0">
+            <div id="estadoLista" class="p-3">
+                <div class="text-muted">Informe uma OS e clique em <strong>Carregar por OS</strong>.</div>
+            </div>
+
+            <div class="table-responsive" id="wrapTabela" style="display:none;">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">ID</th>
+                            <th style="width: 170px;">Início</th>
+                            <th style="width: 170px;">Fim</th>
+                            <th>Objeto</th>
+                            <th style="width: 90px;" class="text-end">Vagas</th>
+                            <th style="width: 220px;" class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyOps">
+                        <!-- preenchido via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
 
-          document.addEventListener("DOMContentLoaded", function () {
-           const form = document.querySelector("form");
-           const btnSalvar = document.getElementById("btnSalvar");
+            const form = document.getElementById("formCriarOperacao");
 
-           // 1) Recria as regras unobtrusive
-           $.validator.unobtrusive.parse(form);
+            const btnCarregar = document.getElementById("btnCarregar");
+            const btnAdicionar = document.getElementById("btnAdicionar");
 
-           // 2) Pega o validator do form
-           const validator = $(form).data("validator");
-           console.log("Validator:", validator);
+            const estadoLista = document.getElementById("estadoLista");
+            const wrapTabela = document.getElementById("wrapTabela");
+            const tbodyOps = document.getElementById("tbodyOps");
+            const osAtual = document.getElementById("osAtual");
+            const totalOps = document.getElementById("totalOps");
 
-           function atualizarBotao() {
-             const valido = $(form).valid();
+            const inputOs = document.getElementById("OrdemServico");
+            const inputVagas = document.getElementById("QtdVagasVoluntarios");
+            const inputTipo = document.getElementById("TipoOperacaoID");
 
-             // DEBUG: quais campos estão errando
-             if (!valido) {
-               const v = $(form).validate();
-               console.log("Campos com erro:", v.errorMap);
-               console.log("Lista de erros:", v.errorList);
-             }
+            const criarUrl = form.getAttribute("action");
 
-             btnSalvar.disabled = !valido;
-           }
+            let osSelecionada = "";
 
-           // Para aparecer erro quando o usuário mexer
-           form.addEventListener("input", atualizarBotao);
-           form.addEventListener("change", atualizarBotao);
+            function getAntiForgeryToken() {
+                const input = form.querySelector('input[name="__RequestVerificationToken"]');
+                return input ? input.value : "";
+            }
 
-           // Força mostrar mensagens ao tentar enviar
-           form.addEventListener("submit", function (e) {
-             if (!$(form).valid()) {
-               e.preventDefault();
-               $(form).validate().focusInvalid();
-             }
-           });
+            function getOs() {
+                const v = (inputOs?.value || "");
+                return (v && v.trim()) ? v.trim() : "";
+            }
 
-           // inicial
-           atualizarBotao();
-         });
+            function setInfo(msgHtml) {
+                estadoLista.style.display = "block";
+                wrapTabela.style.display = "none";
+                estadoLista.innerHTML = `<div class="p-3"><div class="alert alert-info mb-0">${msgHtml}</div></div>`;
+            }
 
+            function setLoading(msg) {
+                estadoLista.style.display = "block";
+                wrapTabela.style.display = "none";
+                estadoLista.innerHTML = `<div class="p-3 text-muted">${msg}</div>`;
+            }
 
+            function setError(msgHtml) {
+                estadoLista.style.display = "block";
+                wrapTabela.style.display = "none";
+                estadoLista.innerHTML = `<div class="p-3"><div class="alert alert-danger mb-0">${msgHtml}</div></div>`;
+            }
 
-         // Dados de operadores vindos do controller (ID, Nome, Matricula, SessaoID)
-         const operadoresData = @Html.Raw(operadoresJson);
-         const opSelect = document.getElementById('operadorSelect');
-         function preencherComboVoluntarios() {
-             operadoresData.forEach(op => {
-                 const opt = document.createElement('option');
-                 opt.value = op.ID;
-                 opt.text = `${op.Nome} (${op.Matricula})`;
-                 opSelect.appendChild(opt);
-             });
-         }
-         preencherComboVoluntarios();        const listaSelecionados = document.getElementById('listaOperadoresSelecionados');
-         const contadorOperadores = document.getElementById('contadorOperadores');
-         const contadorOperadoresSvg = document.getElementById('contadorOperadoresSvg');
+            function formatarDataHora(v) {
+    if (!v) return "";
 
-         function atualizarContadorOperadores() {
-             // total
-             const total = listaSelecionados.children.length;
-             contadorOperadores.textContent = total;
+    let d;
 
-             // somente os marcados como SVG (hidden input .inputSvgFlag == "true")
-             const svgCount = listaSelecionados.querySelectorAll('.inputSvgFlag[value="true"]').length;
-             contadorOperadoresSvg.textContent = svgCount;
-         }
+    // MVC clássico: "/Date(1704373200000)/"
+    if (typeof v === "string" && v.startsWith("/Date(")) {
+        const ms = parseInt(v.replace("/Date(", "").replace(")/", ""), 10);
+        d = new Date(ms);
+    } else {
+        d = new Date(v);
+    }
 
+    if (isNaN(d.getTime())) return "";
 
-         // índice para OperadoresSelecionados[i]
-         // let operadorIndex = 0;
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mi = String(d.getMinutes()).padStart(2, "0");
 
-        function renumerarSelecionados() {
-             const itens = Array.from(listaSelecionados.children);
-             const total = itens.length;
-
-             itens.forEach((li, idx) => {
-                 // numeração invertida (topo = maior número)
-                 const badgeNum = li.querySelector('.badgeNumero');
-                 if (badgeNum) badgeNum.textContent = (total - idx);
-
-                 // renomeia inputs para ficar sequencial no POST
-                 const inputId = li.querySelector('.inputOperadorId');
-                 const inputSvg = li.querySelector('.inputSvgFlag');
-
-                 if (inputId) inputId.name = `OperadoresSelecionados[${idx}].OperadorID`;
-                 if (inputSvg) inputSvg.name = `OperadoresSelecionados[${idx}].SVG`;
-             });
-
-             atualizarContadorOperadores();
-         }
-
-
-
-         // Função comum para adicionar operador na lista final (sessão ou voluntário)
-                 // Função comum para adicionar operador na lista final (sessão ou voluntário)
-         function adicionarOperador(op, svgFlag) {
-             const liId = 'op-' + op.ID;
-             if (document.getElementById(liId)) return;
-
-             const li = document.createElement('li');
-             li.className = 'list-group-item d-flex justify-content-between align-items-center';
-             li.id = liId;
-
-             const tipo = svgFlag ? 'Voluntário' : 'Ordinário';
-             const svgText = svgFlag ? 'SVG: Sim' : 'SVG: Não';
-             const svgBtnClass = svgFlag ? 'btn-outline-success' : 'btn-outline-secondary';
-
-             li.innerHTML = `
-                 <div>
-                     <span class="badge bg-secondary me-2 badgeNumero">1</span>
-                     <strong>${op.Nome}</strong> (${op.Matricula})
-                     <span class="badge bg-secondary ms-2 badgeTipo">${tipo}</span>
-                 </div>
-
-                 <div class="btn-group btn-group-sm" role="group">
-                     <button type="button" class="btn ${svgBtnClass} btnToggleSvg">${svgText}</button>
-                     <button type="button" class="btn btn-outline-danger btnRemoverOperador">Remover</button>
-                 </div>
-
-                 <input type="hidden" value="${op.ID}" class="inputOperadorId" />
-                 <input type="hidden" value="${svgFlag}" class="inputSvgFlag" />
-             `;
-
-             // Remover
-             li.querySelector('.btnRemoverOperador').addEventListener('click', function () {
-                 li.remove();
-                 renumerarSelecionados();
-             });
-
-             // Toggle SVG
-             li.querySelector('.btnToggleSvg').addEventListener('click', function () {
-                 const inputSvg = li.querySelector('.inputSvgFlag');
-                 const atual = (inputSvg.value === "true");
-                 const novo = !atual;
-
-                 inputSvg.value = novo ? "true" : "false";
-
-                 // texto + cor do botão SVG
-                 this.textContent = novo ? "SVG: Sim" : "SVG: Não";
-                 this.classList.toggle("btn-outline-success", novo);
-                 this.classList.toggle("btn-outline-secondary", !novo);
-
-                 // >>> troca Ordinário/Voluntário junto com o SVG
-                 const badgeTipo = li.querySelector('.badgeTipo');
-                 if (badgeTipo) {
-                     badgeTipo.textContent = novo ? "Voluntário" : "Ordinário";
-                 }
-
-                 atualizarContadorOperadores();
-             });
-
-             listaSelecionados.prepend(li);
-             renumerarSelecionados();
-
-             // destaque temporário (flash) no item recém adicionado
-             li.classList.remove('op-added'); // garante re-trigger
-             void li.offsetWidth;             // força reflow para reiniciar animação
-             li.classList.add('op-added');
-         }
-
-         // --- Voluntários: filtro inteligente + adicionar individual (SVG = true)
-         const opSearch = document.getElementById('operadorSearch');
-
-         opSearch.addEventListener('input', function () {
-             const termo = this.value.trim().toLowerCase();
-
-             let firstMatchIndex = -1;
-             let matchCount = 0;
-
-             for (let i = 0; i < opSelect.options.length; i++) {
-                 const opt = opSelect.options[i];
-
-                 if (!opt.value) {
-                     opt.hidden = false;
-                     continue;
-                 }
-
-                 const texto = opt.text.toLowerCase();
-                 const match = termo === "" || texto.includes(termo);
-
-                 opt.hidden = !match;
-
-                 if (match) {
-                     matchCount++;
-                     if (firstMatchIndex === -1) {
-                         firstMatchIndex = i;
-                     }
-                 }
-             }
-
-             if (termo === "") {
-                 opSelect.selectedIndex = 0;
-                 opSelect.size = 1;
-                 return;
-             }
-
-             if (matchCount === 1 && firstMatchIndex !== -1) {
-                 opSelect.selectedIndex = firstMatchIndex;
-                 opSelect.size = 1;
-             } else if (matchCount > 1) {
-                 opSelect.selectedIndex = firstMatchIndex;
-                 opSelect.size = Math.min(matchCount + 1, 8);
-             } else {
-                 opSelect.selectedIndex = 0;
-                 opSelect.size = 1;
-             }
-         });
-
-         opSearch.addEventListener('blur', function () {
-             opSelect.size = 1;
-         });
-
-         const btnAddOperador = document.getElementById('btnAddOperador');
-         btnAddOperador.addEventListener('click', function () {
-             const opt = opSelect.options[opSelect.selectedIndex];
-             if (!opt || !opt.value) return;
-
-             const id = parseInt(opt.value);
-             const op = operadoresData.find(o => o.ID === id);
-             if (op) {
-                 adicionarOperador(op, true); // voluntário
-             }
-         });
-
-
-
-    </script>
+    return `${dd}/${mm} ${hh}:${mi}`;
 }
 
-<style>
-    .op-added {
-        animation: opAddedGlow 1.5s ease-out;
-    }
 
-    @@keyframes opAddedGlow {
-        0% {
-            box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.55);
-            border-left: 4px solid rgba(25,135,84,0.9);
-        }
+            function pick(obj, pascal, camel) {
+                if (!obj) return null;
+                if (obj[pascal] !== undefined && obj[pascal] !== null) return obj[pascal];
+                if (obj[camel] !== undefined && obj[camel] !== null) return obj[camel];
+                return null;
+            }
 
-        100% {
-            box-shadow: 0 0 0 10px rgba(25, 135, 84, 0);
-            border-left: 4px solid transparent;
-        }
-    }
-</style>
+            async function carregarOperacoesPorOS() {
+                osAtual.textContent = osSelecionada || "—";
+
+                if (!osSelecionada) {
+                    setInfo("Informe uma OS e clique em <strong>Carregar por OS</strong>.");
+                    return;
+                }
+
+                setLoading("Carregando operações...");
+
+                try {
+                    // ✅ Tenta com pOrdemServico (seu controller) e fallback com ordemServico
+                    let url = `/Operacao/ListarOperacoesPorOrdemServico?pOrdemServico=${encodeURIComponent(osSelecionada)}`;
+                    let resp = await fetch(url, { method: "GET" });
+
+                    if (!resp.ok) {
+                        url = `/Operacao/ListarOperacoesPorOrdemServico?ordemServico=${encodeURIComponent(osSelecionada)}`;
+                        resp = await fetch(url, { method: "GET" });
+                    }
+
+                    if (!resp.ok) {
+                        setError(`Falha ao carregar lista. Status: <strong>${resp.status} ${resp.statusText}</strong>`);
+                        return;
+                    }
+
+                    const itens = await resp.json();
+
+                    totalOps.textContent = (itens || []).length;
+
+                    if (!itens || itens.length === 0) {
+                        setInfo("Nenhuma operação encontrada para esta OS.");
+                        return;
+                    }
+
+                    tbodyOps.innerHTML = "";
+
+                    itens.forEach(op => {
+                        const tr = document.createElement("tr");
+
+                        const id = pick(op, "ID", "id");
+                        const dhInicio = pick(op, "DataHoraInicio", "dataHoraInicio");
+                        const dhFim = pick(op, "DataHoraFim", "dataHoraFim");
+                        const objeto = pick(op, "Objeto", "objeto") ?? "";
+                        const vagas = pick(op, "QtdVagasRestantes", "qtdVagasRestantes") ?? 0;
+
+                        tr.innerHTML = `
+                            <td><strong>#${id}</strong></td>
+                            <td class="small text-muted">${formatarDataHora(dhInicio)}</td>
+                            <td class="small text-muted">${formatarDataHora(dhFim)}</td>
+                            <td>${objeto}</td>
+                            <td class="text-end">${vagas}</td>
+                            <td class="text-end">
+                              ${id
+                                ? `<a class="btn btn-sm btn-danger" href="/Operacao/Delete?id=${id}">Remover</a>`
+                                : `<span class="text-muted">—</span>`}
+                            </td>
+                        `;
+
+                        tbodyOps.appendChild(tr);
+                    });
+
+                    estadoLista.style.display = "none";
+                    wrapTabela.style.display = "block";
+
+                } catch (e) {
+                    console.error(e);
+                    setError("Erro ao carregar. Verifique sua conexão e o endpoint.");
+                }
+            }
+
+            // OS: somente números (como você quer buscar por 222)
+            if (inputOs) {
+                inputOs.addEventListener("input", function () {
+                    this.value = (this.value || "").replace(/\D/g, "");
+                });
+
+                inputOs.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        btnCarregar.click();
+                    }
+                });
+            }
+
+            // Vagas sempre 1
+            if (inputVagas) inputVagas.value = 1;
+
+            // Carregar por OS
+            btnCarregar.addEventListener("click", function () {
+                const os = getOs();
+                osSelecionada = os || "";
+                carregarOperacoesPorOS();
+            });
+
+            // Adicionar: chama serviço Create (POST) e depois recarrega lista do serviço
+            btnAdicionar.addEventListener("click", async function () {
+
+                if (window.jQuery && window.jQuery.validator) {
+                    if (!$(form).valid()) return;
+                }
+
+                const os = getOs();
+                if (!os) {
+                    setInfo("Informe uma OS válida antes de adicionar.");
+                    return;
+                }
+
+                osSelecionada = os;
+
+                if (inputVagas) inputVagas.value = 1;
+
+                const formData = new FormData(form);
+                formData.set("TipoOperacaoID", inputTipo?.value || "");
+                formData.set("QtdVagasVoluntarios", "1");
+                formData.set("OrdemServico", os);
+
+                try {
+                    setLoading("Adicionando operação...");
+
+                    const resp = await fetch(criarUrl, {
+                        method: "POST",
+                        body: formData,
+                        headers: { "RequestVerificationToken": getAntiForgeryToken() }
+                    });
+
+                    if (!resp.ok) {
+                        const txt = await resp.text();
+                        setError(`Falha ao adicionar operação.
+                                  <br/>Status: <strong>${resp.status} ${resp.statusText}</strong>
+                                  <br/><small class="text-muted">${(txt || "").substring(0, 400)}</small>`);
+                        return;
+                    }
+
+                    // Limpa campos por-operação
+                    const inInicio = document.getElementById("DataHoraInicio");
+                    const inFim = document.getElementById("DataHoraFim");
+                    const inObj = document.getElementById("Objeto");
+
+                    if (inInicio) inInicio.value = "";
+                    if (inFim) inFim.value = "";
+                    if (inObj) inObj.value = "";
+                    if (inputVagas) inputVagas.value = 1;
+
+                    // ✅ Recarrega SEMPRE do serviço (fonte da verdade)
+                    await carregarOperacoesPorOS();
+
+                } catch (e) {
+                    console.error(e);
+                    setError("Erro ao adicionar. Verifique sua conexão e o endpoint de criação.");
+                }
+            });
+
+            // estado inicial
+            setInfo("Informe uma OS e clique em <strong>Carregar por OS</strong>.");
+        });
+    </script>
+
+
+}

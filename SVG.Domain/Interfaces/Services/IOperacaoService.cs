@@ -13,5 +13,6 @@ namespace SVG.Domain.Interfaces.Services
     void InsereCandidatoSVG(int pOperacaoID, int pOperadorID);
     void RemoveCandidatoSVG(int pOperacaoID, int pOperadorID);
     IEnumerable<XCandidatosOperacaoSVG> PegaCandidatoSVG(int pOperacaoID);
+    IEnumerable<XOperacoesRealizadas> ListarOperacoesPorOrdemServico(string pOrdemServico);
   }
 }

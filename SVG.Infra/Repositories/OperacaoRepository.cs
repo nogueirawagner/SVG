@@ -107,6 +107,32 @@ namespace SVG.Infra.Repositories
          SqlQuery<XOperacoesRealizadas>(sql);
     }
 
+    public IEnumerable<XOperacoesRealizadas> ListarOperacoesPorOrdemServico(string pOrdemServico)
+    {
+      var sql = @"
+        select 
+          o.ID,
+          o.DataHoraCriacao,
+          o.DataHoraInicio,
+          o.Objeto,
+          REPLACE(OrdemServico, 'OS ', '') OrdemServico,
+          o.Coordenador,
+          t.Nome TipoOperacao, 
+          o.SvgAberto,
+          o.QtdVagasRestantes,
+          o.DataHoraFim
+        from Operacao o
+          join TipoOperacao t on t.ID = o.TipoOperacaoID
+        where contains(OrdemServico, @pOrdemServico)
+        order by DataHoraCriacao desc
+        ";
+
+      return _db.Database.
+         SqlQuery<XOperacoesRealizadas>(sql,
+           new SqlParameter("@pOrdemServico", pOrdemServico)
+         );
+    }
+
     public IEnumerable<XDetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
     {
       var sql = @"

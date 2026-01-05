@@ -200,11 +200,19 @@ namespace SVG.WebApp.Controllers
       return View(model);
     }
 
+    [HttpGet]
+    public ActionResult ListarOperacoesPorOrdemServico(string pOrdemServico)
+    {
+      var lista = _operacaoAppService
+          .ListarOperacoesPorOrdemServico(pOrdemServico).ToList();
+
+      return Json(lista);
+    }
 
     // POST: Operacao/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult CreateReforcoPlantao(OperacaoViewModel model)
+    public void CreateReforcoPlantao(OperacaoViewModel model)
     {
       ModelState.Remove("Coordenador");
       ModelState.Remove("TipoOperacaoNome");
@@ -217,7 +225,7 @@ namespace SVG.WebApp.Controllers
       if (!ModelState.IsValid)
       {
         PopularCombos(model.TipoOperacaoID, model.CoordenadorOperadorID);
-        return View(model);
+        //return View(model);
       }
 
       // Exemplo: pegar o nome do coordenador a partir do ID selecionado
@@ -258,11 +266,12 @@ namespace SVG.WebApp.Controllers
         SVG = true
       }));
 
-      _operacaoAppService.Add(entidade);
 
       var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
       entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
       entidade.SvgAberto = qtdRestante > 0 ? true : false;
+      
+      _operacaoAppService.Add(entidade);
 
       foreach (var op in operadoresOperacao)
       {
@@ -274,8 +283,6 @@ namespace SVG.WebApp.Controllers
         };
         _operadorOperacaoAppService.Add(operadorOperacao);
       }
-
-      return RedirectToAction(nameof(Index));
     }
 
     // GET: Operacao/Create

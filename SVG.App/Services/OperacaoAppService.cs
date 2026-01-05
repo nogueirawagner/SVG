@@ -25,6 +25,11 @@ namespace SVG.App.Services
       _operacaoService.InsereCandidatoSVG(pOperacaoID, pOperadorID);
     }
 
+    public IEnumerable<XOperacoesRealizadas> ListarOperacoesPorOrdemServico(string pOrdemServico)
+    {
+      return _operacaoService.ListarOperacoesPorOrdemServico(pOrdemServico);
+    }
+
     public IEnumerable<XCandidatosOperacaoSVG> PegaCandidatoSVG(int pOperacaoID)
     {
       return _operacaoService.PegaCandidatoSVG(pOperacaoID);
