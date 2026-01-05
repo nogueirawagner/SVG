@@ -45,7 +45,7 @@
             <div class="row g-2 align-items-end">
 
                 <!-- OS (somente números) -->
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <label asp-for="OrdemServico" class="form-label">OS</label>
                     <input asp-for="OrdemServico"
                            id="OrdemServico"
@@ -54,7 +54,7 @@
                            inputmode="numeric"
                            pattern="[0-9]*"
                            maxlength="12"
-                           placeholder="Ex.: 12345" />
+                           placeholder="Ex.: 556" />
                 </div>
 
                 <!-- Início -->
@@ -80,7 +80,7 @@
                 </div>
 
                 <!-- Objeto (menor) -->
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label asp-for="Objeto" class="form-label">Descrição / Objeto</label>
                     <input asp-for="Objeto"
                            id="Objeto"
@@ -142,12 +142,12 @@
                 <table class="table table-sm align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 80px;">ID</th>
-                            <th style="width: 170px;">Início</th>
-                            <th style="width: 170px;">Fim</th>
-                            <th>Objeto</th>
-                            <th style="width: 90px;" class="text-end">Vagas</th>
-                            <th style="width: 220px;" class="text-end">Ações</th>
+                            <th class="text-center" style="width: 80px;">ID</th>
+                            <th class="text-center" style="width: 170px;">Início</th>
+                            <th class="text-center" style="width: 170px;">Fim</th>
+                            <th class="text-center">Objeto</th>
+                            <th style="width: 90px;" class="text-center">Vagas</th>
+                            <th style="width: 220px;" class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tbodyOps">
@@ -291,14 +291,14 @@
 
                         tr.innerHTML = `
                             <td><strong>#${id}</strong></td>
-                            <td class="small text-muted">${formatarDataHora(dhInicio)}</td>
-                            <td class="small text-muted">${formatarDataHora(dhFim)}</td>
-                            <td>${objeto}</td>
-                            <td class="text-end">${vagas}</td>
-                            <td class="text-end">
+                                    <td class="small text-muted text-center">${formatarDataHora(dhInicio)}</td>
+                                    <td class="small text-muted text-center">${formatarDataHora(dhFim)}</td>
+                                    <td class="small text-muted text-center">${objeto}</td>
+                                    <td class="small text-muted text-center">${vagas}</td>
+                                    <td class="small text-muted text-center">
                               ${id
-                                ? `<a class="btn btn-sm btn-danger" href="/Operacao/Delete?id=${id}">Remover</a>`
-                                : `<span class="text-muted">—</span>`}
+                                        ? `<a class="btn btn-sm btn-danger text-center" href="/Operacao/Delete?id=${id}">Remover</a>`
+                                        : `<span class="text-muted text-center">—</span>`}
                             </td>
                         `;
 
