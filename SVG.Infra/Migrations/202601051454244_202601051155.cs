@@ -8,13 +8,20 @@
     public override void Up()
     {
       Sql(@"
-        CREATE FULLTEXT INDEX ON dbo.Operacao
-        (
-            OrdemServico LANGUAGE 1046,
-	          Objeto LANGUAGE 1046
-        )
-        KEY INDEX [PK_dbo.Operacao]
-        WITH (STOPLIST = SYSTEM);
+      IF NOT EXISTS (
+          SELECT 1
+          FROM sys.fulltext_indexes fi
+          WHERE fi.object_id = OBJECT_ID('dbo.Operacao')
+      )
+      BEGIN
+          CREATE FULLTEXT INDEX ON dbo.Operacao
+          (
+              OrdemServico LANGUAGE 1046,
+              Objeto        LANGUAGE 1046
+          )
+          KEY INDEX [PK_dbo.Operacao]
+          WITH (STOPLIST = SYSTEM);
+      END
       ");
     }
 
