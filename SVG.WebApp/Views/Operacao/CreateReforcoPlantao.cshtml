@@ -179,7 +179,7 @@
                             <th>Início</th>
                             <th>Fim</th>
                             <th>Objeto</th>
-                            <th>Operadores</th>
+                            <th>Qtd. Operadores</th>
                             <th>Vagas</th>
                             <th>SVG</th>
                             <th>Ações</th>
@@ -455,7 +455,13 @@
                             <td class="text-center small text-muted">${formatarDataHora(inicio)}</td>
                             <td class="text-center small text-muted">${formatarDataHora(fim)}</td>
                             <td class="text-center">${objeto}</td>
-                            <td class="text-center">${qtdOperadores}</td>
+                            <td class="text-center">
+                            <span class="badge bg-secondary  op-ops-popover"
+                                    style="cursor: help;"
+                                    data-opid="${id}">
+                                ${qtdOperadores}
+                            </span>
+                            </td>
                             <td class="text-center">${vagas}</td>
                             <td class="text-center">
                             <span class="badge ${svgAberto ? "bg-success" : "bg-secondary"}">
@@ -639,7 +645,104 @@
                 // recarrega lista do serviço (mantém estado)
                 await carregarOperacoesPorOS();
             });
-
         });
+
+
+        // POPUP PARA EXIBIR OS OPERADORES
+        function escapeHtml(s) {
+            return String(s ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+        }
+
+        async function buscarOperadoresResumido(opId) {
+            const url = `/Operacao/PegarOperadoresOperacaoResumido?pOperacaoID=${encodeURIComponent(opId)}&_=${Date.now()}`;
+            const resp = await fetch(url, { method: "GET", cache: "no-store" });
+            if (!resp.ok) throw new Error("Falha ao buscar operadores");
+            return await resp.json(); // IEnumerable<XOperadorSelecionado>
+        }
+
+        function montarHtmlOperadores(lista) {
+            if (!Array.isArray(lista) || lista.length === 0) {
+            return `<div class="text-muted">Nenhum operador vinculado.</div>`;
+            }
+
+            return `
+            <div style="min-width: 260px;">
+                <ul class="mb-0 ps-3">
+                ${lista.map(o => {
+                    const nome = escapeHtml(o.Nome ?? o.nome ?? "");
+                    const matricula = escapeHtml(o.Matricula ?? o.matricula ?? "");
+                    return `<li>${nome} <span class="text-muted">(${matricula})</span></li>`;
+                }).join("")}
+                </ul>
+            </div>
+            `;
+        }
+
+        // Hover (delegação)
+        tbodyOps.addEventListener("mouseover", async function (e) {
+            const el = e.target.closest(".op-ops-popover");
+            if (!el) return;
+
+            const opId = el.getAttribute("data-opid");
+            if (!opId) return;
+
+            // remove popover anterior do mesmo elemento
+            const existing = bootstrap.Popover.getInstance(el);
+            if (existing) existing.dispose();
+
+            // placeholder
+            const pop = new bootstrap.Popover(el, {
+            container: "body",
+            trigger: "manual",
+            placement: "top",
+            html: true,
+            title: "Operadores",
+            content: `<div class="text-muted">Carregando...</div>`
+            });
+            pop.show();
+
+            try {
+            // ✅ você pediu: sempre chama o serviço no hover
+            const lista = await buscarOperadoresResumido(opId);
+
+            pop.dispose();
+            const pop2 = new bootstrap.Popover(el, {
+                container: "body",
+                trigger: "manual",
+                placement: "top",
+                html: true,
+                title: "Operadores",
+                content: montarHtmlOperadores(lista)
+            });
+            pop2.show();
+
+            } catch (err) {
+            pop.dispose();
+            const popErr = new bootstrap.Popover(el, {
+                container: "body",
+                trigger: "manual",
+                placement: "top",
+                html: true,
+                title: "Operadores",
+                content: `<div class="text-danger">Erro ao carregar operadores.</div>`
+            });
+            popErr.show();
+            }
+        });
+
+        tbodyOps.addEventListener("mouseout", function (e) {
+            const el = e.target.closest(".op-ops-popover");
+            if (!el) return;
+
+            const instance = bootstrap.Popover.getInstance(el);
+            if (instance) instance.dispose();
+        });
+
+
     </script>
 }
