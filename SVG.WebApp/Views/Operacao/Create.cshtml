@@ -94,7 +94,7 @@
                             <div class="col-8">
                                 <label class="form-label mb-1">Selecionar Sessão</label>
                                 <select id="sessaoSelect" class="form-select form-select-sm">
-                                    <option value="">Escolha a sessão...</option>
+                                    <option value="">Escolha a seção...</option>
                                     @foreach (var s in sessoes)
                                     {
                                         if (s.ID == sessaoSelecionadaId)
@@ -119,11 +119,11 @@
                         <hr class="my-2" />
 
                         <div class="mb-2">
-                            <strong>Operadores da sessão selecionada:</strong>
+                            <strong>Operadores da seção selecionada:</strong>
                         </div>
 
                         <ul id="listaOperadoresSessao" class="list-group">
-                            <!-- JS mostra operadores da sessão atual aqui (visual) -->
+                            <!-- JS mostra operadores da seção atual aqui (visual) -->
                         </ul>
                     </div>
                 </div>
@@ -407,8 +407,8 @@
 
 
 
-        // Função comum para adicionar operador na lista final (sessão ou voluntário)
-                // Função comum para adicionar operador na lista final (sessão ou voluntário)
+        // Função comum para adicionar operador na lista final (seção ou voluntário)
+                // Função comum para adicionar operador na lista final (seção ou voluntário)
         function adicionarOperador(op, svgFlag) {
             const liId = 'op-' + op.ID;
             if (document.getElementById(liId)) return;
@@ -476,7 +476,7 @@
         }
 
         // --- Sessão: ao selecionar no combo, apenas MOSTRA à esquerda.
-        // --- Botão "Carregar sessão": apenas ADICIONA à direita (SVG = false).
+        // --- Botão "Carregar seção": apenas ADICIONA à direita (SVG = false).
         const sessaoSelect = document.getElementById('sessaoSelect');
         const btnAddSessao = document.getElementById('btnAddSessao');
 
@@ -496,13 +496,13 @@
             });
         }
 
-        // 1) Mudou sessão -> atualiza visualização à esquerda automaticamente
+        // 1) Mudou seção -> atualiza visualização à esquerda automaticamente
         sessaoSelect.addEventListener('change', function () {
             const sessaoId = parseInt(this.value);
             renderOperadoresDaSessao(sessaoId);
         });
 
-        // 2) Botão -> adiciona todos da sessão na lista da direita (como Ordinário / SVG: Não)
+        // 2) Botão -> adiciona todos da seção na lista da direita (como Ordinário / SVG: Não)
         btnAddSessao.addEventListener('click', function () {
             const sessaoId = parseInt(sessaoSelect.value);
             if (!sessaoId) return;

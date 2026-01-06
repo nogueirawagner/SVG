@@ -249,11 +249,11 @@
                         </select>
                     </div>
 
-                    <div class="fw-semibold small mb-2">Operadores da sessão selecionada:</div>
+                    <div class="fw-semibold small mb-2">Operadores da seção selecionada:</div>
 
                     <div id="listaOperadoresSessao" class="border rounded p-1" style="max-height: 420px; overflow:auto;">
                         <div class="text-muted small p-2">
-                            Selecione uma operação e uma sessão.
+                            Selecione uma operação e uma seção.
                         </div>
                     </div>
 
@@ -336,7 +336,7 @@
 
 
     function atualizarBotoesAdicionarSessao() {
-        // Desabilita botões "Adicionar" da lista da sessão para quem já está selecionado
+        // Desabilita botões "Adicionar" da lista da seção para quem já está selecionado
         const idsSelecionados = new Set(
             Array.from(listaSelecionados.querySelectorAll('li[data-operador-id]'))
                 .map(li => String(li.dataset.operadorId))
@@ -400,7 +400,7 @@
         sessaoSelect.disabled = !habilitar;
 
         if (!habilitar) {
-            listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Selecione uma operação e uma sessão.</div>`;
+            listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Selecione uma operação e uma seção.</div>`;
         }
     }
 
@@ -490,7 +490,7 @@
             // Sempre carrega do banco os candidatos desta operação
             await carregarCandidatosDaOperacao(parseInt(id || '0'));
 
-            // Se já tiver uma sessão selecionada, re-renderiza para refletir botões (Adicionar) habilitados/desabilitados
+            // Se já tiver uma seção selecionada, re-renderiza para refletir botões (Adicionar) habilitados/desabilitados
             if (sessaoSelect && sessaoSelect.value) {
                 renderOperadoresDaSessao(sessaoSelect.value);
             }
@@ -511,7 +511,7 @@
         });
     });
 
-    // ===== Busca de operador: filtra SELECT e lista da sessão
+    // ===== Busca de operador: filtra SELECT e lista da seção
     operadorSearch?.addEventListener('input', function () {
         const termo = (this.value || '').trim().toLowerCase();
 
@@ -525,7 +525,7 @@
             operadorSelect.selectedIndex = 0;
         }
 
-        // filtra lista de sessão (se já estiver renderizada)
+        // filtra lista de seção (se já estiver renderizada)
         Array.from(listaOperadoresSessao.querySelectorAll('[data-op-row="1"]')).forEach(row => {
             const txt = (row.dataset.filtro || '');
             row.style.display = (!termo || txt.includes(termo)) ? '' : 'none';
@@ -573,7 +573,7 @@
         }
 
         if (!sessaoId) {
-            listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Selecione uma sessão.</div>`;
+            listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Selecione uma seção.</div>`;
             return;
         }
 
@@ -582,7 +582,7 @@
             .sort((a, b) => (a.Nome || '').localeCompare(b.Nome || ''));
 
         if (!ops.length) {
-            listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Nenhum operador nesta sessão.</div>`;
+            listaOperadoresSessao.innerHTML = `<div class="text-muted small p-2">Nenhum operador nesta seção.</div>`;
             return;
         }
 
