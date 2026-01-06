@@ -507,7 +507,7 @@
                 btn.textContent = "Removendo...";
 
                 try {
-                    const resp = await fetch("/Operacao/RemoverOperacao", {
+                    const resp = await fetch("/Operacao/Delete", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -523,15 +523,30 @@
                         return;
                     }
 
-                    const data = await resp.json();
-                    if (!data || data.ok !== true) {
-                        btn.disabled = false;
-                        btn.textContent = "Remover";
-                        alert("Falha ao remover.");
-                        return;
+                    // ✅ Se o controller redirecionar para Index, o fetch vai seguir e trazer HTML.
+                    // Então não podemos assumir que resp.json() vai funcionar.
+                    const ct = (resp.headers.get("content-type") || "").toLowerCase();
+
+                    if (ct.includes("application/json")) {
+                        const data = await resp.json();
+
+                        if (!data || data.ok !== true) {
+                            btn.disabled = false;
+                            btn.textContent = "Remover";
+                            alert("Falha ao remover.");
+                            return;
+                        }
+
+                        // sucesso via JSON -> atualiza UI abaixo
+                    } else {
+                        // veio HTML (provável redirect) -> considera sucesso (operação já removeu no banco)
+                        // Opcional: você pode checar resp.redirected também:
+                        // if (resp.redirected) { ... }
+                        // Aqui só seguimos.
                     }
 
-                    // remove linha do DOM
+                    // ✅ Atualiza UI sem sair da página:
+                    // Opção A: remover a linha localmente (mais rápido)
                     const tr = btn.closest("tr");
                     if (tr) tr.remove();
 
@@ -543,6 +558,10 @@
                         setInfo("Nenhuma operação encontrada para esta OS.");
                     }
 
+                    // Opção B (mais consistente): recarregar do serviço (mantém estado)
+                    // Descomente se preferir garantir que a lista reflete o banco:
+                    // await carregarOperacoesPorOS();
+
                 } catch (err) {
                     console.error(err);
                     btn.disabled = false;
@@ -550,6 +569,7 @@
                     alert("Erro ao remover. Verifique sua conexão.");
                 }
             });
+
 
             // ==========================
             // Eventos OS / Add
