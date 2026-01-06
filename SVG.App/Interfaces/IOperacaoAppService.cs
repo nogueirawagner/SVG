@@ -1,5 +1,6 @@
 ﻿using SVG.Domain.Entities;
 using SVG.Domain.TiposEstruturados.TiposOperacao;
+using SVG.Domain.TiposEstruturados.TiposOperador;
 
 namespace SVG.App.Interface
 {
@@ -14,5 +15,6 @@ namespace SVG.App.Interface
     void RemoveCandidatoSVG(int pOperacaoID, int pOperadorID);
     IEnumerable<XCandidatosOperacaoSVG> PegaCandidatoSVG(int pOperacaoID);
     IEnumerable<XOperacoesRealizadas> ListarOperacoesPorOrdemServico(string pOrdemServico);
+    IEnumerable<XOperadorSelecionado> PegarOperadoresOperacaoResumido(int pOperacaoID);
   }
 }

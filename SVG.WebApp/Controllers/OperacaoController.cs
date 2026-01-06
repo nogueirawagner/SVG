@@ -219,6 +219,17 @@ namespace SVG.WebApp.Controllers
       return Json(lista);
     }
 
+
+    [HttpGet]
+    public ActionResult PegarOperadoresOperacaoResumido(int pOperacaoID)
+    {
+
+      var lista = _operacaoAppService
+          .PegarOperadoresOperacaoResumido(pOperacaoID).ToList();
+
+      return Json(lista);
+    }
+
     // POST: Operacao/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -276,10 +287,16 @@ namespace SVG.WebApp.Controllers
         SVG = true
       }));
 
-
-      var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
-      entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
-      entidade.SvgAberto = qtdRestante > 0 ? true : false;
+      if (!entidade.SvgAberto)
+      {
+        entidade.QtdVagasRestantes = 0;
+      }
+      else
+      {
+        var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
+        entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
+        entidade.SvgAberto = qtdRestante > 0 ? true : false;
+      }
 
       _operacaoAppService.Add(entidade);
 
@@ -354,9 +371,17 @@ namespace SVG.WebApp.Controllers
 
       _operacaoAppService.Add(entidade);
 
-      var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
-      entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
-      entidade.SvgAberto = qtdRestante > 0 ? true : false;
+      if (!entidade.SvgAberto)
+      {
+        entidade.QtdVagasRestantes = 0;
+      }
+      else
+      {
+        var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
+        entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
+        entidade.SvgAberto = qtdRestante > 0 ? true : false;
+      }
+
 
       SalvarOperadoresOperacao(entidade.ID, operadoresOperacao);
 

@@ -2,6 +2,7 @@
 using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Services;
 using SVG.Domain.TiposEstruturados.TiposOperacao;
+using SVG.Domain.TiposEstruturados.TiposOperador;
 
 namespace SVG.App.Services
 {
@@ -48,6 +49,11 @@ namespace SVG.App.Services
     public IEnumerable<XOperacoesSVGAberto> PegarOperacoesSVGAberto()
     {
       return _operacaoService.PegarOperacoesSVGAberto();
+    }
+
+    public IEnumerable<XOperadorSelecionado> PegarOperadoresOperacaoResumido(int pOperacaoID)
+    {
+      return _operacaoService.PegarOperadoresOperacaoResumido(pOperacaoID);
     }
 
     public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)

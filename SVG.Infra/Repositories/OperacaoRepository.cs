@@ -1,6 +1,7 @@
 ﻿using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.TiposEstruturados.TiposOperacao;
+using SVG.Domain.TiposEstruturados.TiposOperador;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.Repositories;
 using System.Data.SqlClient;
@@ -194,6 +195,22 @@ namespace SVG.Infra.Repositories
         op.SVG = pSvg;
         _db.SaveChanges();
       }
+    }
+
+    public IEnumerable<XOperadorSelecionado> PegarOperadoresOperacaoResumido(int pOperacaoID)
+    {
+      var sql = @"
+      select 
+	      o.Nome, 
+	      o.Matricula 
+      from Operador o
+	      join OperadorOperacao oo on oo.OperadorID = o.ID
+      where oo.OperacaoID = @pOperacaoID";
+
+      return _db.Database.
+         SqlQuery<XOperadorSelecionado>(sql,
+           new SqlParameter("@pOperacaoID", pOperacaoID)
+         );
     }
 
     public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)
