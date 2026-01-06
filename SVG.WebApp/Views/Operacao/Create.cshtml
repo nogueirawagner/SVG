@@ -211,14 +211,14 @@
                     <div class="modal-content">
 
                         <div class="modal-header">
-                            <h5 class="modal-title">Operação de Segurança Orgânica</h5>
+                            <h5 class="modal-title">Operação de S.O/Delta</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
 
                         <div class="modal-body">
-                            Você selecionou <strong>Segurança Orgânica</strong>.
+                            Você selecionou <strong>Segurança Orgânica ou Delta</strong>.
                             <br />
-                            Deseja criar esta operação na tela específica de S.O?
+                            Deseja criar esta operação na tela específica de S.O / Delta?
                         </div>
 
                         <div class="modal-footer">
@@ -227,7 +227,7 @@
                             </button> *@
                             <a class="btn btn-primary" id="btnSimReforco"
                                href="@Url.Action("CreateReforcoPlantao", "Operacao")">
-                                Sim, ir para S.O
+                                Sim
                             </a>
                         </div>
 
@@ -595,7 +595,8 @@
         });
 
         (function () {
-            const TIPO_REFORCO_PLANTAO_ID = "4"; // ID 5 = Reforço Plantão
+            const TIPO_REFORCO_PLANTAO_ID = "4"; // ID 4 = Reforço Plantão
+            const TIPO_DELTA_ID = "3"; // ID 3 = Reforço Plantão
 
             const selectTipo = document.getElementById("TipoOperacaoID");
             const modalEl = document.getElementById("modalReforco");
@@ -615,7 +616,7 @@
             selectTipo.addEventListener("change", function () {
                 const valorAtual = selectTipo.value || "";
 
-                if (valorAtual === TIPO_REFORCO_PLANTAO_ID) {
+                        if (valorAtual === TIPO_REFORCO_PLANTAO_ID || valorAtual === TIPO_DELTA_ID) {
                     modal.show();
                 }
             });
@@ -630,7 +631,7 @@
             // Se fechar no X (ou por qualquer motivo), também volta
             modalEl.addEventListener("hidden.bs.modal", function () {
                 // se o usuário não clicou em "Sim", volta (a navegação do "Sim" troca de página)
-                if (selectTipo.value === TIPO_REFORCO_PLANTAO_ID) {
+                if (selectTipo.value === TIPO_REFORCO_PLANTAO_ID || valorAtual === TIPO_DELTA_ID) {
                     selectTipo.value = valorAnterior || "";
                 }
             });
