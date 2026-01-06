@@ -5,31 +5,26 @@
 @{
     ViewData["Title"] = "Segurança Orgânica";
 
-    // Tipos de operação (para fixar Segurança Orgânica)
-    var tipos = (IEnumerable<TipoOperacao>)ViewBag.TiposOperacao ?? Enumerable.Empty<TipoOperacao>();
+    // Tipos de operação (Delta / Segurança Orgânica) - garantido via ViewBag
+    var tipos = (IEnumerable<TipoOperacao>)ViewBag.TiposOperacao;
 
-    // tenta achar o tipo "Segurança Orgânica" (com/sem acento)
-    var tipoSegurancaOrganica =
-        tipos.FirstOrDefault(t => (t.Nome ?? "").Equals("Segurança Orgânica", StringComparison.OrdinalIgnoreCase))
-        ?? tipos.FirstOrDefault(t => (t.Nome ?? "").Equals("Seguranca Organica", StringComparison.OrdinalIgnoreCase));
-
-    var tipoOperacaoIdFixado = (tipoSegurancaOrganica != null ? tipoSegurancaOrganica.ID : Model.TipoOperacaoID);
+    // Operadores para combo/busca
+    var operadoresJson = (string)ViewBag.OperadoresJson ?? "[]";
 }
 
 <div class="container mt-4">
+    <div asp-validation-summary="All" class="text-danger"></div>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Criar Operação – Segurança Orgânica</h2>
+        <h2 class="mb-0">Criar Operação</h2>
         <a asp-action="Index" asp-controller="Operacao" class="btn btn-sm btn-outline-secondary">Voltar</a>
     </div>
 
     <!-- ======================
-         FORM (apenas para agrupar inputs + antiforgery)
-         NÃO será submetido por submit.
+         FORM: CRIAR UMA OPERAÇÃO
+         (cada operação tem suas próprias datas)
          ====================== -->
     <form id="formCriarOperacao" class="card" method="post" action="@Url.Action("CreateReforcoPlantao", "Operacao")">
-
-       <div asp-validation-summary="All" class="text-danger"></div>
         @Html.AntiForgeryToken()
 
         <div class="card-header py-2">
@@ -37,75 +32,113 @@
         </div>
 
         <div class="card-body">
-            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="row g-3 align-items-end">
 
-            <!-- Tipo fixo -->
-            <input type="hidden" id="TipoOperacaoID" name="TipoOperacaoID" value="@tipoOperacaoIdFixado" />
-
-            <div class="row g-2 align-items-end">
-
-                <!-- OS (somente números) -->
-                <div class="col-md-1">
+                <!-- OS (chave do agrupamento) -->
+                <div class="col-md-2">
                     <label asp-for="OrdemServico" class="form-label">OS</label>
                     <input asp-for="OrdemServico"
                            id="OrdemServico"
-                           name="OrdemServico"
+                           type="text"
                            class="form-control"
-                           inputmode="numeric"
-                           pattern="[0-9]*"
-                           maxlength="12"
-                           placeholder="Ex.: 556" />
+                           placeholder="Ex.: 222" />
                 </div>
 
-                <!-- Início -->
-                <div class="col-md-2">
+                <!-- TipoOperacao (Delta / Segurança Orgânica) -->
+                <div class="col-md-4">
+                    <label class="form-label">Tipo de Operação</label>
+                    <select class="form-select" id="TipoOperacaoID" name="TipoOperacaoID">
+                        @foreach (var t in tipos)
+                        {
+                            var selected = (Model.TipoOperacaoID == t.ID) ? "selected" : "";
+                            <option value="@t.ID" selected="@selected">@t.Nome</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Datas por operação -->
+                <div class="col-md-3">
                     <label asp-for="DataHoraInicio" class="form-label">Horário Início</label>
                     <input asp-for="DataHoraInicio"
                            id="DataHoraInicio"
-                           name="DataHoraInicio"
                            type="datetime-local"
                            class="form-control"
-                           value="@(Model.DataHoraInicio == default(DateTime) ? "" : Model.DataHoraInicio.ToString("dd/MMTHH:mm"))" />
+                           value="@(Model.DataHoraInicio == default(DateTime) ? "" : Model.DataHoraInicio.ToString("yyyy-MM-ddTHH:mm"))" />
+                    <span asp-validation-for="DataHoraInicio" class="text-danger"></span>
                 </div>
 
-                <!-- Fim -->
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label asp-for="DataHoraFim" class="form-label">Horário Fim</label>
                     <input asp-for="DataHoraFim"
                            id="DataHoraFim"
-                           name="DataHoraFim"
                            type="datetime-local"
                            class="form-control"
-                           value="@(Model.DataHoraFim == default(DateTime) ? "" : Model.DataHoraFim.ToString("dd/MMTHH:mm"))" />
+                           value="@(Model.DataHoraFim == default(DateTime) ? "" : Model.DataHoraFim.ToString("yyyy-MM-ddTHH:mm"))" />
+                    <span asp-validation-for="DataHoraFim" class="text-danger"></span>
                 </div>
 
-                <!-- Objeto (menor) -->
-                <div class="col-md-3">
+                <!-- ======================
+                     Operadores (busca + combo)
+                     ====================== -->
+                <div class="col-md-4">
+                    <label class="form-label">Buscar Operador</label>
+                    <input type="text" id="operadorBusca" class="form-control" placeholder="Digite nome ou matrícula..." />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Operadores</label>
+                    <select id="operadorSelect" class="form-select">
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" id="btnAddOperador" class="btn btn-outline-primary w-100">
+                        Adicionar
+                    </button>
+                </div>
+
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                            <span>Operadores selecionados</span>
+                            <span class="badge bg-secondary">Total: <span id="operadoresCount">0</span></span>
+                        </div>
+                        <div class="card-body p-2">
+                            <ul id="listaOperadoresSelecionados" class="list-group">
+                                <!-- itens via JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Objeto -->
+                <div class="col-md-8">
                     <label asp-for="Objeto" class="form-label">Descrição / Objeto</label>
                     <input asp-for="Objeto"
                            id="Objeto"
-                           name="Objeto"
                            class="form-control"
                            placeholder="Ex.: Posto 01 – Entrada principal" />
+                    <span asp-validation-for="Objeto" class="text-danger"></span>
                 </div>
 
-                <!-- Vagas (readonly = 1) -->
-                <div class="col-md-1">
+                <!-- Vagas -->
+                <div class="col-md-2">
                     <label asp-for="QtdVagasVoluntarios" class="form-label">Vagas</label>
                     <input asp-for="QtdVagasVoluntarios"
                            id="QtdVagasVoluntarios"
-                           name="QtdVagasVoluntarios"
                            type="number"
+                           min="0"
                            class="form-control"
-                           value="1"
-                           readonly />
+                           value="@(Model.QtdVagasVoluntarios)" />
+                    <span asp-validation-for="QtdVagasVoluntarios" class="text-danger"></span>
                 </div>
 
-                <!-- SVG aberto -->
-                <div class="col-md-1">
-                    <label class="form-label d-block">SVG</label>
+                <!-- SVG aberto (opcional) -->
+                <div class="col-md-2">
+                    <label class="form-label">SVG Aberto</label>
                     <div class="form-check mt-2">
-                        <input asp-for="SvgAberto" class="form-check-input" type="checkbox" id="SvgAberto" name="SvgAberto" />
+                        <input asp-for="SvgAberto" class="form-check-input" type="checkbox" id="SvgAberto" />
                         <label class="form-check-label" for="SvgAberto">Sim</label>
                     </div>
                 </div>
@@ -115,17 +148,17 @@
                         Carregar por OS
                     </button>
 
-                    <!-- IMPORTANTE: não submit -->
                     <button type="button" id="btnAdicionar" class="btn btn-primary">
                         Adicionar
                     </button>
                 </div>
+
             </div>
         </div>
     </form>
 
     <!-- ======================
-         LISTA: OPERAÇÕES CRIADAS (pela OS)
+         BLOCO DA TABELA: PERMANECE COMO ESTÁ
          ====================== -->
     <div class="card mt-3">
         <div class="card-header py-2 d-flex justify-content-between align-items-center">
@@ -140,14 +173,16 @@
 
             <div class="table-responsive" id="wrapTabela" style="display:none;">
                 <table class="table table-sm align-middle mb-0">
-                    <thead class="table-light">
+                    <thead class="table-light text-center">
                         <tr>
-                            <th class="text-center" style="width: 80px;">ID</th>
-                            <th class="text-center" style="width: 170px;">Início</th>
-                            <th class="text-center" style="width: 170px;">Fim</th>
-                            <th class="text-center">Objeto</th>
-                            <th style="width: 90px;" class="text-center">Vagas</th>
-                            <th style="width: 220px;" class="text-center">Ações</th>
+                            <th>ID</th>
+                            <th>Início</th>
+                            <th>Fim</th>
+                            <th>Objeto</th>
+                            <th>Operadores</th>
+                            <th>Vagas</th>
+                            <th>SVG</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tbodyOps">
@@ -183,16 +218,19 @@
 
             const criarUrl = form.getAttribute("action");
 
+            // Operadores
+            const operadoresData = @Html.Raw(operadoresJson);
+            const operadorBusca = document.getElementById("operadorBusca");
+            const operadorSelect = document.getElementById("operadorSelect");
+            const btnAddOperador = document.getElementById("btnAddOperador");
+            const listaOperadoresSelecionados = document.getElementById("listaOperadoresSelecionados");
+            const operadoresCount = document.getElementById("operadoresCount");
+
             let osSelecionada = "";
 
             function getAntiForgeryToken() {
                 const input = form.querySelector('input[name="__RequestVerificationToken"]');
                 return input ? input.value : "";
-            }
-
-            function getOs() {
-                const v = (inputOs?.value || "");
-                return (v && v.trim()) ? v.trim() : "";
             }
 
             function setInfo(msgHtml) {
@@ -214,36 +252,157 @@
             }
 
             function formatarDataHora(v) {
-    if (!v) return "";
+                if (!v) return "";
 
-    let d;
+                let d;
+                if (typeof v === "string" && v.startsWith("/Date(")) {
+                    const ms = parseInt(v.replace("/Date(", "").replace(")/", ""), 10);
+                    d = new Date(ms);
+                } else {
+                    d = new Date(v);
+                }
 
-    // MVC clássico: "/Date(1704373200000)/"
-    if (typeof v === "string" && v.startsWith("/Date(")) {
-        const ms = parseInt(v.replace("/Date(", "").replace(")/", ""), 10);
-        d = new Date(ms);
-    } else {
-        d = new Date(v);
-    }
+                if (isNaN(d.getTime())) return "";
 
-    if (isNaN(d.getTime())) return "";
+                const dd = String(d.getDate()).padStart(2, "0");
+                const mm = String(d.getMonth() + 1).padStart(2, "0");
+                const hh = String(d.getHours()).padStart(2, "0");
+                const mi = String(d.getMinutes()).padStart(2, "0");
 
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const hh = String(d.getHours()).padStart(2, "0");
-    const mi = String(d.getMinutes()).padStart(2, "0");
+                return `${dd}/${mm} ${hh}:${mi}`;
+            }
 
-    return `${dd}/${mm} ${hh}:${mi}`;
-}
-
-
-            function pick(obj, pascal, camel) {
-                if (!obj) return null;
-                if (obj[pascal] !== undefined && obj[pascal] !== null) return obj[pascal];
-                if (obj[camel] !== undefined && obj[camel] !== null) return obj[camel];
+            function pick(o, ...keys) {
+                for (const k of keys) {
+                    if (o && o[k] !== undefined && o[k] !== null) return o[k];
+                }
                 return null;
             }
 
+            function getOs() {
+                const v = (inputOs?.value || "").trim();
+                return v;
+            }
+
+            // ==========================
+            // Operadores: popula e filtra
+            // ==========================
+            function renderOperadorOptions(filtro) {
+                const f = (filtro || "").toLowerCase();
+                const cur = operadorSelect.value;
+
+                operadorSelect.innerHTML = `<option value="">Selecione...</option>`;
+
+                const filtrados = operadoresData
+                    .filter(o => {
+                        const nome = (o.Nome || "").toLowerCase();
+                        const mat = (o.Matricula || "").toString().toLowerCase();
+                        return !f || nome.includes(f) || mat.includes(f);
+                    })
+                    .slice(0, 200);
+
+                filtrados.forEach(o => {
+                    const opt = document.createElement("option");
+                    opt.value = o.ID;
+                    opt.text = `${o.Nome} (${o.Matricula})`;
+                    operadorSelect.appendChild(opt);
+                });
+
+                // mantém seleção se possível
+                if (cur) operadorSelect.value = cur;
+            }
+
+            function atualizarOperadoresCount() {
+                operadoresCount.textContent = listaOperadoresSelecionados.querySelectorAll("li").length;
+            }
+
+            function reindexarOperadoresHidden() {
+                const itens = listaOperadoresSelecionados.querySelectorAll("li");
+                itens.forEach((li, idx) => {
+                    const hid = li.querySelector("input[type=hidden]");
+                    if (hid) hid.name = `OperadoresSelecionados[${idx}].OperadorID`;
+                });
+                atualizarOperadoresCount();
+            }
+
+            function limparOperadoresUI() {
+                if (operadorBusca) operadorBusca.value = "";
+                if (operadorSelect) operadorSelect.value = "";
+
+                if (listaOperadoresSelecionados) {
+                    listaOperadoresSelecionados.innerHTML = "";
+                }
+
+                renderOperadorOptions("");
+                atualizarOperadoresCount();
+            }
+
+            function addOperadorSelecionado(op) {
+                const id = op.ID;
+                if (!id) return;
+
+                // evita duplicado
+                if (listaOperadoresSelecionados.querySelector(`li[data-id="${id}"]`)) return;
+
+                const li = document.createElement("li");
+                li.className = "list-group-item d-flex justify-content-between align-items-center";
+                li.dataset.id = id;
+
+                li.innerHTML = `
+                    <div>
+                        <strong>${op.Nome}</strong>
+                        <span class="text-muted">(${op.Matricula})</span>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger btnRemoverOperador">Remover</button>
+                    </div>
+                    <input type="hidden" value="${id}" />
+                `;
+
+                li.querySelector(".btnRemoverOperador").addEventListener("click", function () {
+                    li.remove();
+                    reindexarOperadoresHidden();
+                });
+
+                listaOperadoresSelecionados.appendChild(li);
+                reindexarOperadoresHidden();
+            }
+
+            // init
+            renderOperadorOptions("");
+
+            operadorBusca.addEventListener("input", function () {
+                const termo = (this.value || "").trim();
+                renderOperadorOptions(termo);
+
+                // pega as opções (ignorando "Selecione...")
+                const options = Array.from(operadorSelect.options).filter(o => o.value);
+
+                if (options.length === 1) {
+                    // 1 resultado: seleciona automaticamente
+                    operadorSelect.value = options[0].value;
+                } else if (options.length > 1) {
+                    // vários: seleciona o primeiro (já deixa pronto)
+                    operadorSelect.value = options[0].value;
+                } else {
+                    operadorSelect.value = "";
+                }
+            });
+
+            btnAddOperador.addEventListener("click", function () {
+                const id = parseInt(operadorSelect.value || "0", 10);
+                if (!id) return;
+                const op = operadoresData.find(x => x.ID === id);
+                if (!op) return;
+
+                addOperadorSelecionado(op);
+                operadorSelect.value = "";
+                operadorBusca.focus();
+            });
+
+            // ==========================
+            // Tabela por OS (serviço)
+            // ==========================
             async function carregarOperacoesPorOS() {
                 osAtual.textContent = osSelecionada || "—";
 
@@ -255,14 +414,12 @@
                 setLoading("Carregando operações...");
 
                 try {
-                    // ✅ Tenta com pOrdemServico (seu controller) e fallback com ordemServico
-                    let url = `/Operacao/ListarOperacoesPorOrdemServico?pOrdemServico=${encodeURIComponent(osSelecionada)}`;
-                    let resp = await fetch(url, { method: "GET" });
-
-                    if (!resp.ok) {
-                        url = `/Operacao/ListarOperacoesPorOrdemServico?ordemServico=${encodeURIComponent(osSelecionada)}`;
-                        resp = await fetch(url, { method: "GET" });
-                    }
+                    // espera: string (nvarch) no controller
+                    const url = `/Operacao/ListarOperacoesPorOrdemServico?pOrdemServico=${encodeURIComponent(osSelecionada)}`;
+                    const resp = await fetch(url, {
+                        method: "GET",
+                        cache: "no-store"
+                    });
 
                     if (!resp.ok) {
                         setError(`Falha ao carregar lista. Status: <strong>${resp.status} ${resp.statusText}</strong>`);
@@ -273,7 +430,7 @@
 
                     totalOps.textContent = (itens || []).length;
 
-                    if (!itens || itens.length === 0) {
+                    if (!Array.isArray(itens) || itens.length === 0) {
                         setInfo("Nenhuma operação encontrada para esta OS.");
                         return;
                     }
@@ -283,22 +440,38 @@
                     itens.forEach(op => {
                         const tr = document.createElement("tr");
 
-                        const id = pick(op, "ID", "id");
-                        const dhInicio = pick(op, "DataHoraInicio", "dataHoraInicio");
-                        const dhFim = pick(op, "DataHoraFim", "dataHoraFim");
-                        const objeto = pick(op, "Objeto", "objeto") ?? "";
+                        const id = pick(op, "ID", "Id", "id");
+                        const inicio = pick(op, "DataHoraInicio", "dataHoraInicio", "DataHora", "dataHora");
+                        const fim = pick(op, "DataHoraFim", "dataHoraFim");
+                        const objeto = pick(op, "Objeto", "objeto") || "";
+                        const qtdOperadores = pick(op, "QtdOperadores", "qtdOperadores") ?? 0;
                         const vagas = pick(op, "QtdVagasRestantes", "qtdVagasRestantes") ?? 0;
+                        const svgAberto = pick(op, "SvgAberto", "svgAberto") === true;
+
+                        const idValido = id !== null && id !== undefined && id !== "" && !isNaN(Number(id));
 
                         tr.innerHTML = `
-                            <td><strong>#${id}</strong></td>
-                                    <td class="small text-muted text-center">${formatarDataHora(dhInicio)}</td>
-                                    <td class="small text-muted text-center">${formatarDataHora(dhFim)}</td>
-                                    <td class="small text-muted text-center">${objeto}</td>
-                                    <td class="small text-muted text-center">${vagas}</td>
-                                    <td class="small text-muted text-center">
-                              ${id
-                                        ? `<a class="btn btn-sm btn-danger text-center" href="/Operacao/Delete?id=${id}">Remover</a>`
-                                        : `<span class="text-muted text-center">—</span>`}
+                            <td class="text-center"><strong>#${idValido ? id : "—"}</strong></td>
+                            <td class="text-center small text-muted">${formatarDataHora(inicio)}</td>
+                            <td class="text-center small text-muted">${formatarDataHora(fim)}</td>
+                            <td class="text-center">${objeto}</td>
+                            <td class="text-center">${qtdOperadores}</td>
+                            <td class="text-center">${vagas}</td>
+                            <td class="text-center">
+                            <span class="badge ${svgAberto ? "bg-success" : "bg-secondary"}">
+                                ${svgAberto ? "Sim" : "Não"}
+                            </span>
+                            </td>
+                            <td class="text-center">
+                            ${
+                                idValido
+                                ? `<button type="button"
+                                            class="btn btn-sm btn-danger btn-remover"
+                                            data-id="${id}">
+                                        Remover
+                                    </button>`
+                                : `<span class="text-muted">—</span>`
+                            }
                             </td>
                         `;
 
@@ -314,9 +487,70 @@
                 }
             }
 
-            // OS: somente números (como você quer buscar por 222)
+            // Remover via AJAX (mantém estado e não sai da página)
+            tbodyOps.addEventListener("click", async function (e) {
+                const btn = e.target.closest(".btn-remover");
+                if (!btn) return;
+
+                const id = btn.getAttribute("data-id");
+                if (!id) return;
+
+                if (!confirm("Remover esta operação?")) return;
+
+                btn.disabled = true;
+                btn.textContent = "Removendo...";
+
+                try {
+                    const resp = await fetch("/Operacao/RemoverOperacao", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                            "RequestVerificationToken": getAntiForgeryToken()
+                        },
+                        body: `id=${encodeURIComponent(id)}`
+                    });
+
+                    if (!resp.ok) {
+                        btn.disabled = false;
+                        btn.textContent = "Remover";
+                        alert(`Falha ao remover. Status ${resp.status}`);
+                        return;
+                    }
+
+                    const data = await resp.json();
+                    if (!data || data.ok !== true) {
+                        btn.disabled = false;
+                        btn.textContent = "Remover";
+                        alert("Falha ao remover.");
+                        return;
+                    }
+
+                    // remove linha do DOM
+                    const tr = btn.closest("tr");
+                    if (tr) tr.remove();
+
+                    // atualiza contador
+                    const linhas = tbodyOps.querySelectorAll("tr").length;
+                    totalOps.textContent = linhas;
+
+                    if (linhas === 0) {
+                        setInfo("Nenhuma operação encontrada para esta OS.");
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    btn.disabled = false;
+                    btn.textContent = "Remover";
+                    alert("Erro ao remover. Verifique sua conexão.");
+                }
+            });
+
+            // ==========================
+            // Eventos OS / Add
+            // ==========================
             if (inputOs) {
                 inputOs.addEventListener("input", function () {
+                    // só números (como você deseja buscar 222 em "OS 222")
                     this.value = (this.value || "").replace(/\D/g, "");
                 });
 
@@ -331,14 +565,12 @@
             // Vagas sempre 1
             if (inputVagas) inputVagas.value = 1;
 
-            // Carregar por OS
             btnCarregar.addEventListener("click", function () {
                 const os = getOs();
                 osSelecionada = os || "";
                 carregarOperacoesPorOS();
             });
 
-            // Adicionar: chama serviço Create (POST) e depois recarrega lista do serviço
             btnAdicionar.addEventListener("click", async function () {
 
                 if (window.jQuery && window.jQuery.validator) {
@@ -353,12 +585,19 @@
 
                 osSelecionada = os;
 
-                if (inputVagas) inputVagas.value = 1;
+                // NÃO force mais: if (inputVagas) inputVagas.value = 1;
+                if (inputVagas && (!inputVagas.value || inputVagas.value === "0")) inputVagas.value = 1;
+
+                const vagasAtual = (inputVagas?.value || "").trim();
+                const tipoSelecionado = (inputTipo?.value || "").trim();
 
                 const formData = new FormData(form);
-                formData.set("TipoOperacaoID", inputTipo?.value || "");
-                formData.set("QtdVagasVoluntarios", "1");
+
+                // garante valores importantes no payload
+                formData.set("QtdVagasVoluntarios", vagasAtual);
                 formData.set("OrdemServico", os);
+                formData.set("TipoOperacaoID", (inputTipo?.value || ""));
+                formData.set("TipoOperacaoID", tipoSelecionado);
 
                 try {
                     setLoading("Adicionando operação...");
@@ -377,29 +616,30 @@
                         return;
                     }
 
-                    // Limpa campos por-operação
-                    const inInicio = document.getElementById("DataHoraInicio");
-                    const inFim = document.getElementById("DataHoraFim");
-                    const inObj = document.getElementById("Objeto");
+                    // limpa campos por-operação
+                    // const inInicio = document.getElementById("DataHoraInicio");
+                    // const inFim = document.getElementById("DataHoraFim");
+                    // const inObj = document.getElementById("Objeto");
 
-                    if (inInicio) inInicio.value = "";
-                    if (inFim) inFim.value = "";
-                    if (inObj) inObj.value = "";
+                    // if (inInicio) inInicio.value = "";
+                    // if (inFim) inFim.value = "";
+                    // if (inObj) inObj.value = "";
                     if (inputVagas) inputVagas.value = 1;
 
-                    // ✅ Recarrega SEMPRE do serviço (fonte da verdade)
+                    // ✅ limpa operadores (busca + lista) após criar operação
+                    limparOperadoresUI();
+
+                    // recarrega lista do serviço (mantém estado)
                     await carregarOperacoesPorOS();
 
                 } catch (e) {
                     console.error(e);
                     setError("Erro ao adicionar. Verifique sua conexão e o endpoint de criação.");
                 }
+                // recarrega lista do serviço (mantém estado)
+                await carregarOperacoesPorOS();
             });
 
-            // estado inicial
-            setInfo("Informe uma OS e clique em <strong>Carregar por OS</strong>.");
         });
     </script>
-
-
 }

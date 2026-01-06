@@ -116,6 +116,7 @@ namespace SVG.Infra.Repositories
           o.DataHoraInicio,
           o.Objeto,
           REPLACE(OrdemServico, 'OS ', '') OrdemServico,
+          (select COUNT(*) from OperadorOperacao where OperacaoID = o.ID) QtdOperadores,
           o.Coordenador,
           t.Nome TipoOperacao, 
           o.SvgAberto,

@@ -112,7 +112,7 @@ namespace SVG.WebApp.Controllers
       var opSvg = operadores.Select(o => o.OperadorID).ToList();
 
       var operadoresSVG = CalcularOperdoresSVG(opSvg, oper.QtdVagasRestantes)
-        .Select(o => new OperadorSelecionadoVM { OperadorID = o, SVG = true}).ToList();
+        .Select(o => new OperadorSelecionadoVM { OperadorID = o, SVG = true }).ToList();
       SalvarOperadoresOperacao(pOperacaoID, operadoresSVG);
 
       oper.SvgAberto = false;
@@ -187,9 +187,18 @@ namespace SVG.WebApp.Controllers
       var model = new OperacaoViewModel();
       PopularCombos();
 
+      var tipos = _tipoOperacaoAppService
+      .GetAll()
+      .OrderBy(t => t.Nome)
+      .Where(s => s.ID == 3 || s.ID == 4)
+      .ToList();
+
+      ViewBag.TiposOperacao = tipos;
+      ViewBag.TipoOperacaoID = 1;
+
       var now = DateTime.Now.AddDays(2);
       var date = new DateTime(now.Year, now.Month, now.Day, 03, 00, 00);
-      
+
       model.DataHora = date;
       model.DataHoraInicio = date;
       model.DataHoraFim = date.AddDays(1);
@@ -203,6 +212,7 @@ namespace SVG.WebApp.Controllers
     [HttpGet]
     public ActionResult ListarOperacoesPorOrdemServico(string pOrdemServico)
     {
+
       var lista = _operacaoAppService
           .ListarOperacoesPorOrdemServico(pOrdemServico).ToList();
 
@@ -236,7 +246,7 @@ namespace SVG.WebApp.Controllers
       var entidade = _mapper.Map<Operacao>(model);
       entidade.DataHoraCriacao = DateTime.Now;
       entidade.DataHora = model.DataHoraInicio;
-      
+
       entidade.OrdemServico = string.Concat("OS ", model.OrdemServico);
 
       var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
@@ -270,7 +280,7 @@ namespace SVG.WebApp.Controllers
       var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
       entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
       entidade.SvgAberto = qtdRestante > 0 ? true : false;
-      
+
       _operacaoAppService.Add(entidade);
 
       foreach (var op in operadoresOperacao)
@@ -297,7 +307,7 @@ namespace SVG.WebApp.Controllers
       model.DataHora = date;
       model.TipoOperacaoID = 1;
       model.SvgAberto = true;
-      
+
 
       return View(model);
     }
