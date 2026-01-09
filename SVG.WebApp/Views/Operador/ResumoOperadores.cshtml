@@ -44,7 +44,7 @@
                     </th>
                     <th>Matrícula</th>
                     <th>Telefone</th>
-                    <th>Sessão</th>
+                    <th>Seção</th>
 
                     <th class="text-end">
                         Qtd Operações
@@ -103,7 +103,7 @@
 
 @section Scripts {
     <script>
-        // --- FILTROS (Nome + Sessão) ---
+        // --- FILTROS (Nome + Seção) ---
         const inputBuscaNome = document.getElementById('buscarNome');
         const inputBuscaSessao = document.getElementById('buscarSessao');
         const tabela = document.getElementById('tabelaResumo');
@@ -117,7 +117,7 @@
                 const row = tbody.rows[i];
 
                 const nomeCell = row.cells[1];   // coluna Nome
-                const sessaoCell = row.cells[4]; // coluna Sessão
+                const sessaoCell = row.cells[4]; // coluna Seção
 
                 const nome = nomeCell.textContent.toLowerCase();
                 const sessao = sessaoCell.textContent.toLowerCase();

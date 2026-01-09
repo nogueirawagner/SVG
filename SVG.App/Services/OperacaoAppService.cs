@@ -41,6 +41,11 @@ namespace SVG.App.Services
       return _operacaoService.PegarDetalhesOperacao(pOperacaoID); 
     }
 
+    public IEnumerable<XEscalaPlantao> PegarEscalaPlantao(DateTime pDataReferencia)
+    {
+      return _operacaoService.PegarEscalaPlantao(pDataReferencia);
+    }
+
     public IEnumerable<XOperacoesRealizadas> PegarOperacoesRealizadas()
     {
       return _operacaoService.PegarOperacoesRealizadas();

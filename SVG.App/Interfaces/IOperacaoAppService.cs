@@ -16,5 +16,6 @@ namespace SVG.App.Interface
     IEnumerable<XCandidatosOperacaoSVG> PegaCandidatoSVG(int pOperacaoID);
     IEnumerable<XOperacoesRealizadas> ListarOperacoesPorOrdemServico(string pOrdemServico);
     IEnumerable<XOperadorSelecionado> PegarOperadoresOperacaoResumido(int pOperacaoID);
+    IEnumerable<XEscalaPlantao> PegarEscalaPlantao(DateTime pDataReferencia);
   }
 }

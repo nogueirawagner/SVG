@@ -77,6 +77,16 @@
 
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
         <h4 class="mb-0">Operadores da Operação</h4>
+        <div class="mb-3 fw-semibold">
+            Equipe Plantão:
+            <span class="text-primary">@ViewBag.PlantaoHoje</span>
+            |
+            Próxima Equipe:
+            <span class="text-success">@ViewBag.PlantaoAmanha</span>
+            |
+            Fantasma:
+            <span class="text-muted">@ViewBag.PlantaoFantasma</span>
+        </div>
 
         <div class="d-flex align-items-center gap-2">
             <span class="badge bg-secondary">Total <span id="cntTotal">@total</span></span>
@@ -92,7 +102,7 @@
                     <th style="width:60px;" class="text-center">#</th>
                     <th>Nome</th>
                     <th>Matrícula</th>
-                    <th>Sessão</th>
+                    <th>Seção</th>
                     <th class="text-center">SVG</th>
                 </tr>
             </thead>

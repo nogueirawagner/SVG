@@ -6,6 +6,7 @@ using SVG.App.Interface;
 using SVG.App.Services;
 using SVG.App.ViewModels;
 using SVG.Domain.Entities;
+using SVG.Domain.TiposEstruturados.Enums;
 using SVG.Domain.TiposEstruturados.TiposOperador;
 
 namespace SVG.WebApp.Controllers
@@ -37,6 +38,11 @@ namespace SVG.WebApp.Controllers
 
     private void PopularCombos(int? tipoOperacaoId = null, int? coordenadorId = null)
     {
+      var escala = _operacaoAppService.PegarEscalaPlantao(DateTime.Now).ToList();
+      ViewBag.PlantaoHoje = escala.First(s => s.Situacao == XSituacaoPlantao.Atual).Nome;
+      ViewBag.PlantaoAmanha = escala.First(s => s.Situacao == XSituacaoPlantao.Proxima).Nome;
+      ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
+
       // =====================
       // OPERADORES / COORDENADORES
       // =====================
@@ -70,9 +76,9 @@ namespace SVG.WebApp.Controllers
           .OrderBy(s => s.Nome)
           .ToList();
 
+      var escalaHoje = escala.FirstOrDefault(s => s.Situacao == XSituacaoPlantao.Atual);
       ViewBag.Sessoes = sessoes;
-      ViewBag.SessaoSelecionadaId = sessoes.FirstOrDefault()?.ID ?? 0;
-
+      ViewBag.SessaoSelecionadaId = escalaHoje.SecaoID;
 
       // =====================
       // TIPOS DE OPERAÇÃO
@@ -91,6 +97,11 @@ namespace SVG.WebApp.Controllers
     // GET: Operacao
     public IActionResult Index(string search)
     {
+      var escala = _operacaoAppService.PegarEscalaPlantao(DateTime.Now).ToList();
+      ViewBag.PlantaoHoje = escala.First(s => s.Situacao == XSituacaoPlantao.Atual).Nome;
+      ViewBag.PlantaoAmanha = escala.First(s => s.Situacao == XSituacaoPlantao.Proxima).Nome;
+      ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
+
       var operacoes = _operacaoAppService.PegarOperacoesRealizadas().ToList();
       return View(operacoes);
     }

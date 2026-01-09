@@ -25,6 +25,16 @@
 
     <form asp-action="Create" method="post" class="mt-3">
         <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="mb-3 fw-semibold">
+            Plantão:
+            <span class="text-primary">@ViewBag.PlantaoHoje</span>
+            |
+            Amanhã:
+            <span class="text-success">@ViewBag.PlantaoAmanha</span>
+            |
+            Fantasma:
+            <span class="text-muted">@ViewBag.PlantaoFantasma</span>
+        </div>
 
         <div class="row g-3 align-items-end">
             <!-- Data / Hora -->
@@ -84,7 +94,7 @@
             <div class="col-12 col-lg-5">
                 <div class="card h-100">
                     <div class="card-header py-2">
-                        Sessão
+                        Seção
                     </div>
 
                     <!-- Mais compacto verticalmente -->
@@ -92,7 +102,7 @@
 
                         <div class="row g-2 align-items-end">
                             <div class="col-8">
-                                <label class="form-label mb-1">Selecionar Sessão</label>
+                                <label class="form-label mb-1">Selecionar Seção</label>
                                 <select id="sessaoSelect" class="form-select form-select-sm">
                                     <option value="">Escolha a seção...</option>
                                     @foreach (var s in sessoes)
@@ -475,7 +485,7 @@
 
         }
 
-        // --- Sessão: ao selecionar no combo, apenas MOSTRA à esquerda.
+        // --- Seção: ao selecionar no combo, apenas MOSTRA à esquerda.
         // --- Botão "Carregar seção": apenas ADICIONA à direita (SVG = false).
         const sessaoSelect = document.getElementById('sessaoSelect');
         const btnAddSessao = document.getElementById('btnAddSessao');

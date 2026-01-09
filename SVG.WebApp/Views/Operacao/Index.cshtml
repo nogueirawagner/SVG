@@ -95,6 +95,17 @@
             Exibindo <strong><span id="contadorExibidas">@total</span></strong>
             de <strong><span id="contadorTotal">@total</span></strong> operações
         </small>
+
+         <div class="mb-3 fw-semibold">
+            Plantão:
+            <span class="text-primary">@ViewBag.PlantaoHoje</span>
+            |
+            Amanhã:
+            <span class="text-success">@ViewBag.PlantaoAmanha</span>
+            |
+            Fantasma:
+            <span class="text-muted">@ViewBag.PlantaoFantasma</span>
+        </div>
     </div>
 
     @if (Model != null && Model.Any())

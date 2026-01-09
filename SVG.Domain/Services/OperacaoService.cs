@@ -41,6 +41,11 @@ namespace SVG.Domain.Services
       return _operacaoRepository.PegarDetalhesOperacao(pOperacaoID);
     }
 
+    public IEnumerable<XEscalaPlantao> PegarEscalaPlantao(DateTime pDataReferencia)
+    {
+      return _operacaoRepository.PegarEscalaPlantao(pDataReferencia);
+    }
+
     public IEnumerable<XOperacoesRealizadas> PegarOperacoesRealizadas()
     {
       return _operacaoRepository.PegarOperacoesRealizadas();

@@ -232,15 +232,15 @@
         <div class="col-12 col-lg-3">
             <div class="card h-100">
                 <div class="card-header py-2">
-                    Sessão
+                    Seção
                 </div>
 
                 <div class="card-body p-2">
 
-                    <label class="form-label mb-1">Selecionar Sessão</label>
+                    <label class="form-label mb-1">Selecionar Seção</label>
                     <div class="d-flex gap-2 mb-2">
                         <select id="sessaoSelect" class="form-select form-select-sm" disabled>
-                            <option value="">Selecionar Sessão</option>
+                            <option value="">Selecionar Seção</option>
                             @* Ordena por Nome para UX; se quiser manter ordem do serviço, remova o OrderBy *@
                             @foreach (var s in sessoes.OrderBy(x => (string)x.Nome))
                             {
@@ -562,7 +562,7 @@
         operadorSelect.selectedIndex = 0;
     });
 
-    // ===== Sessão -> listar operadores com botão Adicionar
+    // ===== Seção -> listar operadores com botão Adicionar
     function renderOperadoresDaSessao(sessaoId) {
         listaOperadoresSessao.innerHTML = '';
 

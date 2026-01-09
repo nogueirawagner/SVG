@@ -34,6 +34,7 @@ namespace SVG.Infra.Context.SQLServer
     public DbSet<ViaturaOperacao> ViaturaOperacao { get; set; }
     public DbSet<TipoOperacao> TipoOperacoes { get; set; }
     public DbSet<CandidatoSVGOperacao> CandidatoSVGOperacao { get; set; }
+    public DbSet<CalendarioPlantao> CalendarioPlantao { get; set; }
 
     #endregion
 

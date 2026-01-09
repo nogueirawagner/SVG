@@ -186,6 +186,19 @@ namespace SVG.Infra.Repositories
       }
     }
 
+    public IEnumerable<XEscalaPlantao> PegarEscalaPlantao(DateTime pDataReferencia)
+    {
+      var sql = @"
+        select * from fn_Escala_Plantao_PorData(@pDataReferencia) e
+	        join Sessao s on s.ID = e.SecaoID
+        order by dataPlantao
+        ";
+      return _db.Database.
+         SqlQuery<XEscalaPlantao>(sql,
+           new SqlParameter("@pDataReferencia", pDataReferencia)
+         );
+    }
+
     public void AlterarSVGOperador(int pOperadorId, bool pSvg)
     {
       var op = _db.OperadorOperacao.FirstOrDefault(x => x.OperadorID == pOperadorId);
