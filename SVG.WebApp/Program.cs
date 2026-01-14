@@ -1,8 +1,9 @@
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
-using SVG.Infra.Context.SQLServer;
 using SVG.IoC;
 using SVG.WebApp.AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using SVG.Identity.Identity.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,17 +16,25 @@ container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
 builder.Services.AddSimpleInjector(container, options => options.AddAspNetCore().AddControllerActivation());
 var config = AutoMapperConfig.RegisterMappings();
 container.RegisterInstance(config.CreateMapper());
-
-//var connectionString =
-//    builder.Configuration.GetConnectionString("ConnectionLocal");
-
-//#if DEBUG
-//var cs = builder.Configuration.GetConnectionString("ConnectionLocal");
-//# else
-//var cs =  builder.Configuration.GetConnectionString("ConnectionProduction_Az");
-//#endif
-
 BootStrapper.RegisterServices(container);
+
+
+// DbContext do Identity (vem da class library)
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//builder.Services
+//    .AddDefaultIdentity<IdentityUser>()
+//    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Cookie (rotas padrão do Identity UI)
+builder.Services.ConfigureApplicationCookie(opt =>
+{
+  opt.LoginPath = "/Identity/Account/Login";
+  opt.LogoutPath = "/Identity/Account/Logout";
+  opt.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
+
 
 var app = builder.Build();
 app.Services.UseSimpleInjector(container);
@@ -35,6 +44,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Rotas MVC (controllers)
