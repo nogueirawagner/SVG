@@ -1,4 +1,5 @@
-﻿using SVG.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.TiposEstruturados.TiposOperacao;
 using SVG.Domain.TiposEstruturados.TiposOperador;

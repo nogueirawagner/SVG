@@ -1,6 +1,6 @@
-﻿using SVG.Domain.Interfaces.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using SVG.Domain.Interfaces.Repositories;
 using SVG.Infra.Context.SQLServer;
-using System.Data.Entity;
 
 namespace SVG.Infra.Repositories
 {
