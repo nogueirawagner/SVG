@@ -1,4 +1,5 @@
-﻿using SimpleInjector;
+﻿using Microsoft.EntityFrameworkCore;
+using SimpleInjector;
 using SVG.App.Interface;
 using SVG.App.Services;
 using SVG.Domain.Interfaces.Repositories;
@@ -13,12 +14,9 @@ namespace SVG.IoC
   {
     public static void RegisterServices(Container container)
     {
-      container.Register<SQLServerContext>(() =>
-      {
-        return new SQLServerContext();
-      }, Lifestyle.Scoped);
+      container.Register<SQLServerContext>(Lifestyle.Scoped);
 
-      container.Register<ISQLServerContext>(() =>
+      container.Register<ISqlServerContext>(() =>
         container.GetInstance<SQLServerContext>(),
         Lifestyle.Scoped);
 

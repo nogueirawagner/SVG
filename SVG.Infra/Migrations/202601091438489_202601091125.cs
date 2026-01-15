@@ -7,24 +7,39 @@
   {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-      CreateTable(
-          "dbo.CalendarioPlantao",
-          c => new
+      migrationBuilder.CreateTable(
+          name: "CalendarioPlantao",
+          columns: table => new
           {
-            ID = c.Int(nullable: false, identity: true),
-            SecaoID = c.Int(nullable: false),
-            UltimoPlantao = c.DateTime(nullable: false),
-          })
-          .PrimaryKey(t => t.ID)
-          .ForeignKey("dbo.Sessao", t => t.SecaoID)
-          .Index(t => t.SecaoID);
+            ID = table.Column<int>(nullable: false)
+                  .Annotation("SqlServer:Identity", "1, 1"),
+
+            SecaoID = table.Column<int>(nullable: false),
+
+            UltimoPlantao = table.Column<DateTime>(nullable: false)
+          },
+          constraints: table =>
+          {
+            table.PrimaryKey("PK_CalendarioPlantao", x => x.ID);
+
+            table.ForeignKey(
+              name: "FK_CalendarioPlantao_Sessao_SecaoID",
+              column: x => x.SecaoID,
+              principalTable: "Sessao",
+              principalColumn: "ID",
+              onDelete: ReferentialAction.Cascade);
+          });
+
+      migrationBuilder.CreateIndex(
+          name: "IX_CalendarioPlantao_SecaoID",
+          table: "CalendarioPlantao",
+          column: "SecaoID");
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-      DropForeignKey("dbo.CalendarioPlantao", "SecaoID", "dbo.Sessao");
-      DropIndex("dbo.CalendarioPlantao", new[] { "SecaoID" });
-      DropTable("dbo.CalendarioPlantao");
+      migrationBuilder.DropTable(
+          name: "CalendarioPlantao");
     }
   }
 }

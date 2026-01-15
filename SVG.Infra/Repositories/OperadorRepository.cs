@@ -1,11 +1,11 @@
-﻿using SVG.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.TiposEstruturados.TiposOperador;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.FunctionsDB;
 using SVG.Infra.Repositories;
-using System.CodeDom;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace SVG.Infra.Repositories
 {
@@ -70,8 +70,10 @@ namespace SVG.Infra.Repositories
 				select * from CTE_Resultado
 				order by TipoOperacao";
 
-      return _db.Database.SqlQuery<XDetalhamentoOperadorOperacao>(sql,
-        new SqlParameter("@pOperadorId", pOperadorId));
+      return _db.Set<XDetalhamentoOperadorOperacao>()
+        .FromSqlRaw(sql, new SqlParameter("@pOperadorId", pOperadorId))
+        .AsNoTracking()
+        ;
     }
 
     public IEnumerable<XResumoOperadorOperacao> PegarResumoOperador()
@@ -108,11 +110,11 @@ namespace SVG.Infra.Repositories
 
 				SELECT 
 					OperadorID,
-					SUM(CASE WHEN qtd.SVG = 1 THEN QtdOperacoes ELSE 0 END) AS QtdOperacoesSVG,
+					SUM(CASE WHEN qtd.SVG =1 THEN QtdOperacoes ELSE0 END) AS QtdOperacoesSVG,
 					SUM(QtdOperacoes) QtdOperacoes,
 					CEILING(
-								(CAST(SUM(QtdOperacoes * Peso) AS FLOAT) / NULLIF(SUM(Peso), 0)) * 100
-						) / 100.0 AS MediaPonderada
+								(CAST(SUM(QtdOperacoes * Peso) AS FLOAT) / NULLIF(SUM(Peso),0)) *100
+						) /100.0 AS MediaPonderada
 				FROM CTE_QtdOperacoesOperadores qtd
 					join Operador op on op.ID = qtd.OperadorID
 				GROUP BY OperadorID
@@ -134,18 +136,41 @@ namespace SVG.Infra.Repositories
 				)
 
 				select * from CTE_Resultado r
-				order by OperadorNome 
-          ";
+				order by OperadorNome";
 
-      return _db.Database.SqlQuery<XResumoOperadorOperacao>(sql);
+      return _db.Set<XResumoOperadorOperacao>()
+        .FromSqlRaw(sql)
+        .AsNoTracking()
+        ;
     }
 
     public IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId)
     {
 			var sql = @"select ID from OperadorOperacao where OperacaoID = @pOperacaoID";
+			var results = new List<int>();
 
-      return _db.Database.SqlQuery<int>(sql, 
-				new SqlParameter("@pOperacaoID", pOperacaoId));
+			var conn = _db.Database.GetDbConnection();
+			try
+			{
+				if (conn.State != System.Data.ConnectionState.Open)
+					conn.Open();
+
+				using var cmd = conn.CreateCommand();
+				cmd.CommandText = sql;
+				cmd.Parameters.Add(new SqlParameter("@pOperacaoID", pOperacaoId));
+
+				using var reader = cmd.ExecuteReader();
+				while (reader.Read())
+				{
+					if (!reader.IsDBNull(0)) results.Add(reader.GetInt32(0));
+				}
+			}
+			finally
+			{
+				try { if (conn.State == System.Data.ConnectionState.Open) conn.Close(); } catch { }
+			}
+
+			return results;
     }
   }
 }

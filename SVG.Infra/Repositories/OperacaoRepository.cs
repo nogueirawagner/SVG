@@ -6,6 +6,7 @@ using SVG.Domain.TiposEstruturados.TiposOperador;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.Repositories;
 using Microsoft.Data.SqlClient;
+using System.Linq;
 
 namespace SVG.Infra.Repositories
 {
@@ -35,7 +36,7 @@ namespace SVG.Infra.Repositories
       return _db.Set<XCandidatosOperacaoSVG>()
        .FromSqlRaw(sql, new SqlParameter("@pOperacaoID", pOperacaoID))
        .AsNoTracking()
-       .ToList();
+       ;
     }
 
     public void InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
@@ -83,8 +84,10 @@ namespace SVG.Infra.Repositories
           where SvgAberto = 1
           order by DataHoraCriacao desc, DataHoraInicio desc, DataHoraFim desc
         ";
-      return _db.Database.
-       SqlQuery<XOperacoesSVGAberto>(sql);
+      return _db.Set<XOperacoesSVGAberto>()
+       .FromSqlRaw(sql)
+       .AsNoTracking()
+       ;
     }
 
     public IEnumerable<XOperacoesRealizadas> PegarOperacoesRealizadas()
@@ -106,8 +109,10 @@ namespace SVG.Infra.Repositories
         order by DataHoraCriacao desc
         ";
 
-      return _db.Database.
-         SqlQuery<XOperacoesRealizadas>(sql);
+      return _db.Set<XOperacoesRealizadas>()
+       .FromSqlRaw(sql)
+       .AsNoTracking()
+       ;
     }
 
     public IEnumerable<XOperacoesRealizadas> ListarOperacoesPorOrdemServico(string pOrdemServico)
@@ -131,10 +136,10 @@ namespace SVG.Infra.Repositories
         order by DataHoraCriacao desc
         ";
 
-      return _db.Database.
-         SqlQuery<XOperacoesRealizadas>(sql,
-           new SqlParameter("@pOrdemServico", pOrdemServico)
-         );
+      return _db.Set<XOperacoesRealizadas>()
+       .FromSqlRaw(sql, new SqlParameter("@pOrdemServico", pOrdemServico))
+       .AsNoTracking()
+       ;
     }
 
     public IEnumerable<XDetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
@@ -162,10 +167,10 @@ namespace SVG.Infra.Repositories
         where o.ID = @pOperacaoID
         ";
 
-      var raw = _db.Database.
-         SqlQuery<XDetalhesOperacao>(sql,
-           new SqlParameter("@pOperacaoID", pOperacaoID)
-         );
+      var raw = _db.Set<XDetalhesOperacao>()
+       .FromSqlRaw(sql, new SqlParameter("@pOperacaoID", pOperacaoID))
+       .AsNoTracking()
+       ;
 
       foreach (var item in raw)
       {
@@ -195,10 +200,10 @@ namespace SVG.Infra.Repositories
 	        join Sessao s on s.ID = e.SecaoID
         order by dataPlantao
         ";
-      return _db.Database.
-         SqlQuery<XEscalaPlantao>(sql,
-           new SqlParameter("@pDataReferencia", pDataReferencia)
-         );
+      return _db.Set<XEscalaPlantao>()
+       .FromSqlRaw(sql, new SqlParameter("@pDataReferencia", pDataReferencia))
+       .AsNoTracking()
+       ;
     }
 
     public void AlterarSVGOperador(int pOperadorId, bool pSvg)
@@ -222,10 +227,10 @@ namespace SVG.Infra.Repositories
 	      join OperadorOperacao oo on oo.OperadorID = o.ID
       where oo.OperacaoID = @pOperacaoID";
 
-      return _db.Database.
-         SqlQuery<XOperadorSelecionado>(sql,
-           new SqlParameter("@pOperacaoID", pOperacaoID)
-         );
+      return _db.Set<XOperadorSelecionado>()
+       .FromSqlRaw(sql, new SqlParameter("@pOperacaoID", pOperacaoID))
+       .AsNoTracking()
+       ;
     }
 
     public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)
@@ -310,11 +315,34 @@ namespace SVG.Infra.Repositories
       var ids = string.Join(", ", pOperadorIDs);
       sql = string.Format(sql, ids);
 
-      return _db.Database.
-         SqlQuery<int>(sql,
-           new SqlParameter("@pDataLimite", pDataLimite),
-           new SqlParameter("@pQtdVagas", pQtdVagas)
-         );
+      var results = new List<int>();
+
+      var conn = _db.Database.GetDbConnection();
+      try
+      {
+        if (conn.State != System.Data.ConnectionState.Open)
+          conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = sql;
+        var paramData = new SqlParameter("@pDataLimite", pDataLimite);
+        var paramQtd = new SqlParameter("@pQtdVagas", pQtdVagas);
+        cmd.Parameters.Add(paramData);
+        cmd.Parameters.Add(paramQtd);
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+          if (!reader.IsDBNull(0))
+            results.Add(reader.GetInt32(0));
+        }
+      }
+      finally
+      {
+        try { if (conn.State == System.Data.ConnectionState.Open) conn.Close(); } catch { }
+      }
+
+      return results;
     }
   }
 }

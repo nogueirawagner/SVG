@@ -7,7 +7,7 @@
   {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-      Sql(@"
+      migrationBuilder.Sql(@"
         BEGIN TRAN;
 
         -- =========================================

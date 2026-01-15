@@ -41,7 +41,7 @@ namespace SVG.Infra.Repositories
     public IEnumerable<TEntity> GetAll()
     {
       //retornando varios objetos
-      return _db.Set<TEntity>().ToList();
+      return _db.Set<TEntity>();
     }
 
     public void Update(TEntity obj)
