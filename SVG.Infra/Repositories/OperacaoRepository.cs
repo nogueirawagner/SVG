@@ -5,7 +5,7 @@ using SVG.Domain.TiposEstruturados.TiposOperacao;
 using SVG.Domain.TiposEstruturados.TiposOperador;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.Repositories;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace SVG.Infra.Repositories
 {
@@ -31,15 +31,16 @@ namespace SVG.Infra.Repositories
 	            join Operador o on o.ID = c.OperadorID
             where c.OperacaoID = @pOperacaoID";
 
-      return _db.Database.
-         SqlQuery<XCandidatosOperacaoSVG>(sql,
-           new SqlParameter("@pOperacaoID", pOperacaoID)
-         );
+      // EF Core pattern: map to a keyless entity and execute raw SQL via FromSqlRaw
+      return _db.Set<XCandidatosOperacaoSVG>()
+       .FromSqlRaw(sql, new SqlParameter("@pOperacaoID", pOperacaoID))
+       .AsNoTracking()
+       .ToList();
     }
 
     public void InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
     {
-      _db.Database.ExecuteSqlCommand(@"
+      _db.Database.ExecuteSqlRaw(@"
         IF NOT EXISTS (
             SELECT 1
             FROM CandidatoSVGOperacao
@@ -57,7 +58,7 @@ namespace SVG.Infra.Repositories
 
     public void RemoveCandidatoSVG(int pOperacaoID, int pOperadorID)
     {
-      _db.Database.ExecuteSqlCommand(@"
+      _db.Database.ExecuteSqlRaw(@"
           DELETE FROM CandidatoSVGOperacao 
           WHERE OperacaoID = @pOperacaoID 
             and OperadorID = @pOperadorID", 

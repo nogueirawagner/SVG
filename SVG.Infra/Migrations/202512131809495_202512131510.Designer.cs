@@ -7,13 +7,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SVG.Infra.Migrations
 {
-    [DbContext(typeof(SVG.Infra.Context.SQLServer.SQLServerContext))]
-    [Migration("202512131809495_202512131510")]
-    partial class _202512131510
+  [DbContext(typeof(SVG.Infra.Context.SQLServer.SQLServerContext))]
+  [Migration("202512131809495_202512131510")]
+  partial class _202512131510
+  {
+    protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
-        {
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
-        }
+      modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
     }
+  }
 }
