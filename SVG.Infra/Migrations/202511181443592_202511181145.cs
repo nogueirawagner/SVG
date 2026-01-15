@@ -1,26 +1,69 @@
-﻿namespace SVG.Infra.Migrations
-{
-  using System;
-  using System.Data.Entity.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-  public partial class _202511181145 : DbMigration
+#nullable disable
+
+namespace SVG.Infra.Migrations
+{
+  public partial class _202511181145 : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      RenameTable(name: "dbo.Equipe", newName: "Sessao");
-      AddColumn("dbo.OperadorOperacao", "Funcao", c => c.Int(nullable: false));
-      AddColumn("dbo.OperadorOperacao", "Viatura", c => c.Int(nullable: false));
-      AddColumn("dbo.Operador", "Telefone", c => c.String(maxLength: 500, unicode: false));
-      AddColumn("dbo.Viatura", "Equipe", c => c.String(maxLength: 500, unicode: false));
+      // Rename table Equipe -> Sessao
+      migrationBuilder.RenameTable(
+          name: "Equipe",
+          newName: "Sessao");
+
+      // OperadorOperacao
+      migrationBuilder.AddColumn<int>(
+          name: "Funcao",
+          table: "OperadorOperacao",
+          type: "int",
+          nullable: false,
+          defaultValue: 0);
+
+      migrationBuilder.AddColumn<int>(
+          name: "Viatura",
+          table: "OperadorOperacao",
+          type: "int",
+          nullable: false,
+          defaultValue: 0);
+
+      // Operador
+      migrationBuilder.AddColumn<string>(
+          name: "Telefone",
+          table: "Operador",
+          type: "varchar(500)",
+          nullable: true);
+
+      // Viatura
+      migrationBuilder.AddColumn<string>(
+          name: "Equipe",
+          table: "Viatura",
+          type: "varchar(500)",
+          nullable: true);
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
-      DropColumn("dbo.Viatura", "Equipe");
-      DropColumn("dbo.Operador", "Telefone");
-      DropColumn("dbo.OperadorOperacao", "Viatura");
-      DropColumn("dbo.OperadorOperacao", "Funcao");
-      RenameTable(name: "dbo.Sessao", newName: "Equipe");
+      migrationBuilder.DropColumn(
+          name: "Equipe",
+          table: "Viatura");
+
+      migrationBuilder.DropColumn(
+          name: "Telefone",
+          table: "Operador");
+
+      migrationBuilder.DropColumn(
+          name: "Viatura",
+          table: "OperadorOperacao");
+
+      migrationBuilder.DropColumn(
+          name: "Funcao",
+          table: "OperadorOperacao");
+
+      migrationBuilder.RenameTable(
+          name: "Sessao",
+          newName: "Equipe");
     }
   }
 }

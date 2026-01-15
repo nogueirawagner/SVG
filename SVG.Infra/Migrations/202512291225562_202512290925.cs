@@ -1,13 +1,13 @@
 ﻿namespace SVG.Infra.Migrations
 {
   using System;
-  using System.Data.Entity.Migrations;
+  using Microsoft.EntityFrameworkCore.Migrations;
 
-  public partial class _202512290925 : DbMigration
+  public partial class _202512290925 : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      Sql(@"
+      migrationBuilder.Sql(@"
         WHILE 1=1
         BEGIN
             UPDATE TOP (100) dbo.Operacao
@@ -18,7 +18,7 @@
         END
         ");
 
-      Sql(@"
+      migrationBuilder.Sql(@"
         IF NOT EXISTS (SELECT 1 FROM dbo.Operacao WHERE TipoOperacaoID = 5)
         BEGIN
             DELETE FROM dbo.TipoOperacao WHERE ID = 5;
@@ -26,7 +26,7 @@
       ");
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
     }
   }

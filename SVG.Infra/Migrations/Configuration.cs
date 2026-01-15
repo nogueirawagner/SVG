@@ -2,10 +2,10 @@
 {
     using System;
     using System.Data.Entity;
-    using System.Data.Entity.Migrations;
+    using Microsoft.EntityFrameworkCore.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<SVG.Infra.Context.SQLServer.SQLServerContext>
+    internal sealed class Configuration : MigrationsConfiguration<SVG.Infra.Context.SQLServer.SQLServerContext>
     {
         public Configuration()
         {

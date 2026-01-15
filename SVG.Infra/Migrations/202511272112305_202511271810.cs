@@ -1,18 +1,27 @@
 ﻿namespace SVG.Infra.Migrations
 {
   using System;
-  using System.Data.Entity.Migrations;
+  using Microsoft.EntityFrameworkCore.Migrations;
 
-  public partial class _202511271810 : DbMigration
+  public partial class _202511271810 : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      AddColumn("dbo.Operacao", "DataHoraCriacao", c => c.DateTime(nullable: false));
+      migrationBuilder.AddColumn<DateTime>(
+          name: "DataHoraCriacao",
+          table: "Operacao",
+          type: "datetime2",
+          nullable: false,
+          defaultValueSql: "GETDATE()"
+      );
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
-      DropColumn("dbo.Operacao", "DataHoraCriacao");
+      migrationBuilder.DropColumn(
+          name: "DataHoraCriacao",
+          table: "Operacao"
+      );
     }
   }
 }

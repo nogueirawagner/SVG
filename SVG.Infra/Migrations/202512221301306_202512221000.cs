@@ -1,20 +1,44 @@
 ﻿namespace SVG.Infra.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
-    public partial class _202512221000 : DbMigration
+  using System;
+  using Microsoft.EntityFrameworkCore.Migrations;
+
+  public partial class _202512221000 : Migration
+  {
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        public override void Up()
-        {
-            AddColumn("dbo.Operacao", "DataHoraInicio", c => c.DateTime(nullable: false));
-            AddColumn("dbo.Operacao", "DataHoraFim", c => c.DateTime(nullable: false));
-        }
-        
-        public override void Down()
-        {
-            DropColumn("dbo.Operacao", "DataHoraFim");
-            DropColumn("dbo.Operacao", "DataHoraInicio");
-        }
+      migrationBuilder.AddColumn<DateTime>(
+        name: "DataHoraInicio",
+        table: "Operacao",
+        schema: "dbo",
+        type: "datetime2",
+        nullable: false,
+        defaultValue: new DateTime(1, 1, 1, 0, 0, 0, DateTimeKind.Unspecified)
+      );
+
+      migrationBuilder.AddColumn<DateTime>(
+        name: "DataHoraFim",
+        table: "Operacao",
+        schema: "dbo",
+        type: "datetime2",
+        nullable: false,
+        defaultValue: new DateTime(1, 1, 1, 0, 0, 0, DateTimeKind.Unspecified)
+      );
     }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+      migrationBuilder.DropColumn(
+        name: "DataHoraFim",
+        table: "Operacao",
+        schema: "dbo"
+      );
+
+      migrationBuilder.DropColumn(
+        name: "DataHoraInicio",
+        table: "Operacao",
+        schema: "dbo"
+      );
+    }
+  }
 }

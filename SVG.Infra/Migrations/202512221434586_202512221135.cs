@@ -1,20 +1,54 @@
 ﻿namespace SVG.Infra.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
-    public partial class _202512221135 : DbMigration
+  using System;
+  using Microsoft.EntityFrameworkCore.Migrations;
+
+  public partial class _202512221135 : Migration
+  {
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        public override void Up()
-        {
-            AlterColumn("dbo.Operacao", "DataHoraInicio", c => c.DateTime());
-            AlterColumn("dbo.Operacao", "DataHoraFim", c => c.DateTime());
-        }
-        
-        public override void Down()
-        {
-            AlterColumn("dbo.Operacao", "DataHoraFim", c => c.DateTime(nullable: false));
-            AlterColumn("dbo.Operacao", "DataHoraInicio", c => c.DateTime(nullable: false));
-        }
+      migrationBuilder.AlterColumn<DateTime?>(
+          name: "DataHoraInicio",
+          table: "Operacao",
+          schema: "dbo",
+          type: "datetime2",
+          nullable: true,
+          oldClrType: typeof(DateTime),
+          oldType: "datetime2",
+          oldNullable: false);
+
+      migrationBuilder.AlterColumn<DateTime?>(
+          name: "DataHoraFim",
+          table: "Operacao",
+          schema: "dbo",
+          type: "datetime2",
+          nullable: true,
+          oldClrType: typeof(DateTime),
+          oldType: "datetime2",
+          oldNullable: false);
     }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+      migrationBuilder.AlterColumn<DateTime>(
+          name: "DataHoraFim",
+          table: "Operacao",
+          schema: "dbo",
+          type: "datetime2",
+          nullable: false,
+          oldClrType: typeof(DateTime),
+          oldType: "datetime2",
+          oldNullable: true);
+
+      migrationBuilder.AlterColumn<DateTime>(
+          name: "DataHoraInicio",
+          table: "Operacao",
+          schema: "dbo",
+          type: "datetime2",
+          nullable: false,
+          oldClrType: typeof(DateTime),
+          oldType: "datetime2",
+          oldNullable: true);
+    }
+  }
 }

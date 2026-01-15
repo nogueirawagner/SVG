@@ -1,18 +1,18 @@
 ﻿namespace SVG.Infra.Migrations
 {
   using System;
-  using System.Data.Entity.Migrations;
+  using Microsoft.EntityFrameworkCore.Migrations;
 
-  public partial class _202512291825 : DbMigration
+  public partial class _202512291825 : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      Sql(@"CREATE UNIQUE INDEX UX_CandidatoSVGOperacao_Operador_Operacao
+      migrationBuilder.Sql(@"CREATE UNIQUE INDEX UX_CandidatoSVGOperacao_Operador_Operacao
             ON CandidatoSVGOperacao (OperadorID, OperacaoID);
         ");
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
     }
   }

@@ -1,31 +1,16 @@
-﻿using SVG.Domain.Entities;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.ModelConfiguration.Conventions;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using SVG.Domain.Entities;
 
 namespace SVG.Infra.Context.SQLServer
 {
-  public class SQLServerContext : DbContext, ISQLServerContext
+  public class SQLServerContext : DbContext, ISqlServerContext
   {
-    
-#if DEBUG
-    static string connectionName = "ConnectionLocal";
-#else
-        static string connectionName = "ConnectionProduction_Az";
-#endif
-
-    public SQLServerContext()
-      : base("name=" + connectionName)
+    public SQLServerContext(DbContextOptions<SQLServerContext> options)
+        : base(options)
     {
-      Configuration.ProxyCreationEnabled = false;
-      Configuration.LazyLoadingEnabled = true;
     }
 
-    // Add-Migration 202512161200 -Project SVG.Infra -StartupProject SVG.WebApp
-    // Update-Database -v -Project SVG.Infra -StartupProject SVG.WebApp
-
-    #region objetos
+    #region DbSets
     public DbSet<Operador> Operador { get; set; }
     public DbSet<Operacao> Operacao { get; set; }
     public DbSet<OperadorOperacao> OperadorOperacao { get; set; }
@@ -35,25 +20,36 @@ namespace SVG.Infra.Context.SQLServer
     public DbSet<TipoOperacao> TipoOperacoes { get; set; }
     public DbSet<CandidatoSVGOperacao> CandidatoSVGOperacao { get; set; }
     public DbSet<CalendarioPlantao> CalendarioPlantao { get; set; }
-
     #endregion
 
-
-    protected override void OnModelCreating(DbModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-      modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-      modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
-      modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>();
+      base.OnModelCreating(modelBuilder);
 
-      modelBuilder.Properties().Where(s => s.Name == s.ReflectedType.Name + "Id"
-          || s.Name == s.ReflectedType.Name + "ID")
-          .Configure(s => s.IsKey());
+      // 🔹 Remove pluralização (EF Core NÃO pluraliza por padrão)
+      // (não precisa fazer nada aqui)
 
-      modelBuilder.Properties<string>()
-          .Configure(p => p.HasColumnType("varchar"));
+      // 🔹 Remove cascade delete automático
+      foreach (var fk in modelBuilder.Model.GetEntityTypes()
+                   .SelectMany(e => e.GetForeignKeys()))
+      {
+        fk.DeleteBehavior = DeleteBehavior.Restrict;
+      }
 
-      modelBuilder.Properties<string>()
-          .Configure(p => p.HasMaxLength(500));
+      // 🔹 Convenção para chave primária: {EntityName}Id ou {EntityName}ID
+      foreach (var entity in modelBuilder.Model.GetEntityTypes())
+      {
+        var pkProperty = entity.ClrType.GetProperties()
+            .FirstOrDefault(p =>
+                p.Name == $"{entity.ClrType.Name}Id" ||
+                p.Name == $"{entity.ClrType.Name}ID");
+
+        if (pkProperty != null)
+        {
+          modelBuilder.Entity(entity.ClrType)
+              .HasKey(pkProperty.Name);
+        }
+      }
     }
   }
 }

@@ -1,28 +1,35 @@
 ﻿namespace SVG.Infra.Migrations
 {
   using System;
-  using System.Data.Entity.Migrations;
+  using Microsoft.EntityFrameworkCore.Migrations;
 
-  public partial class _202512291720 : DbMigration
+  public partial class _202512291720 : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      CreateTable(
-          "dbo.CandidatoSVGOperacao",
-          c => new
+      migrationBuilder.CreateTable(
+          name: "CandidatoSVGOperacao",
+          schema: "dbo",
+          columns: table => new
           {
-            ID = c.Int(nullable: false, identity: true),
-            OperadorID = c.Int(nullable: false),
-            OperacaoID = c.Int(nullable: false),
-            DataHoraCriacao = c.DateTime(nullable: false),
-          })
-          .PrimaryKey(t => t.ID);
+            ID = table.Column<int>(type: "int", nullable: false)
+              .Annotation("SqlServer:Identity", "1,1"),
+            OperadorID = table.Column<int>(type: "int", nullable: false),
+            OperacaoID = table.Column<int>(type: "int", nullable: false),
+            DataHoraCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
+          },
+          constraints: table =>
+          {
+            table.PrimaryKey("PK_CandidatoSVGOperacao", x => x.ID);
+          });
 
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
-      DropTable("dbo.CandidatoSVGOperacao");
+      migrationBuilder.DropTable(
+          name: "CandidatoSVGOperacao",
+          schema: "dbo");
     }
   }
 }

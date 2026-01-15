@@ -1,16 +1,16 @@
 ﻿namespace SVG.Infra.Migrations
 {
   using System;
-  using System.Data.Entity.Migrations;
+  using Microsoft.EntityFrameworkCore.Migrations;
 
-  public partial class _202511271820 : DbMigration
+  public partial class _202511271820 : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      Sql(@"UPDATE Operacao SET DataHoraCriacao = GETDATE()");
+      migrationBuilder.Sql(@"UPDATE Operacao SET DataHoraCriacao = GETDATE()");
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
     }
   }

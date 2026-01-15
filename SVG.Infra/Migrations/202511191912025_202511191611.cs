@@ -1,33 +1,68 @@
-﻿namespace SVG.Infra.Migrations
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace SVG.Infra.Migrations
 {
-  using System;
-  using System.Data.Entity.Migrations;
-
-  public partial class _202511191611 : DbMigration
+  public partial class _202511191611 : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      CreateTable(
-          "dbo.TipoOperacao",
-          c => new
+      // Create table TipoOperacao
+      migrationBuilder.CreateTable(
+          name: "TipoOperacao",
+          columns: table => new
           {
-            ID = c.Int(nullable: false, identity: true),
-            Nome = c.String(maxLength: 500, unicode: false),
-            Peso = c.Int(nullable: false),
-          })
-          .PrimaryKey(t => t.ID);
+            ID = table.Column<int>(type: "int", nullable: false)
+                  .Annotation("SqlServer:Identity", "1, 1"),
+            Nome = table.Column<string>(type: "varchar(500)", nullable: true),
+            Peso = table.Column<int>(type: "int", nullable: false)
+          },
+          constraints: table =>
+          {
+            table.PrimaryKey("PK_TipoOperacao", x => x.ID);
+          });
 
-      AddColumn("dbo.Operacao", "TipoOperacaoID", c => c.Int(nullable: false));
-      CreateIndex("dbo.Operacao", "TipoOperacaoID");
-      AddForeignKey("dbo.Operacao", "TipoOperacaoID", "dbo.TipoOperacao", "ID");
+      // Add column TipoOperacaoID to Operacao
+      migrationBuilder.AddColumn<int>(
+          name: "TipoOperacaoID",
+          table: "Operacao",
+          type: "int",
+          nullable: false,
+          defaultValue: 0);
+
+      // Create index
+      migrationBuilder.CreateIndex(
+          name: "IX_Operacao_TipoOperacaoID",
+          table: "Operacao",
+          column: "TipoOperacaoID");
+
+      // Add foreign key
+      migrationBuilder.AddForeignKey(
+          name: "FK_Operacao_TipoOperacao_TipoOperacaoID",
+          table: "Operacao",
+          column: "TipoOperacaoID",
+          principalTable: "TipoOperacao",
+          principalColumn: "ID",
+          onDelete: ReferentialAction.Restrict);
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
-      DropForeignKey("dbo.Operacao", "TipoOperacaoID", "dbo.TipoOperacao");
-      DropIndex("dbo.Operacao", new[] { "TipoOperacaoID" });
-      DropColumn("dbo.Operacao", "TipoOperacaoID");
-      DropTable("dbo.TipoOperacao");
+      migrationBuilder.DropForeignKey(
+          name: "FK_Operacao_TipoOperacao_TipoOperacaoID",
+          table: "Operacao");
+
+      migrationBuilder.DropIndex(
+          name: "IX_Operacao_TipoOperacaoID",
+          table: "Operacao");
+
+      migrationBuilder.DropColumn(
+          name: "TipoOperacaoID",
+          table: "Operacao");
+
+      migrationBuilder.DropTable(
+          name: "TipoOperacao");
     }
   }
 }

@@ -1,14 +1,13 @@
 ﻿using SVG.Domain.Entities;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace SVG.Infra.Context.SQLServer
 {
-  public interface ISQLServerContext
+  public interface ISqlServerContext
   {
-    DbEntityEntry Entry(object entity);
+    EntityEntry Entry(object entity);
     int SaveChanges();
     DbSet<T> Set<T>() where T : class;
-    DbSet<Operador> Operador { get; set; }
   }
 }

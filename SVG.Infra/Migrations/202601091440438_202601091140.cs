@@ -1,13 +1,13 @@
 ﻿namespace SVG.Infra.Migrations
 {
   using System;
-  using System.Data.Entity.Migrations;
+  using Microsoft.EntityFrameworkCore.Migrations;
 
-  public partial class _202601091140 : DbMigration
+  public partial class _202601091140 : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      Sql(@"
+      migrationBuilder.Sql(@"
         INSERT INTO CalendarioPlantao (SecaoID, UltimoPlantao)
           VALUES
               (1, '2026-01-03T00:00:00'), -- SOE I  (sábado)
@@ -17,7 +17,7 @@
           ");
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
     }
   }

@@ -1,13 +1,13 @@
 ﻿namespace SVG.Infra.Migrations
 {
   using System;
-  using System.Data.Entity.Migrations;
+  using Microsoft.EntityFrameworkCore.Migrations;
 
-  public partial class _202601051150 : DbMigration
+  public partial class _202601051150 : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      Sql(@"
+      migrationBuilder.Sql(@"
         IF NOT EXISTS (
             SELECT 1 
             FROM sys.fulltext_catalogs 
@@ -19,7 +19,7 @@
       ");
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
     }
   }

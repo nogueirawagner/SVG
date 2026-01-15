@@ -1,28 +1,33 @@
-﻿namespace SVG.Infra.Migrations
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace SVG.Infra.Migrations
 {
-  using System;
-  using System.Data.Entity.Migrations;
-
-  public partial class Initial : DbMigration
+  public partial class Initial : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      CreateTable(
-          "dbo.Operador",
-          c => new
+      migrationBuilder.CreateTable(
+          name: "Operador",
+          columns: table => new
           {
-            ID = c.Int(nullable: false, identity: true),
-            Matricula = c.String(maxLength: 500, unicode: false),
-            Nome = c.String(maxLength: 500, unicode: false),
-            Sessao = c.String(maxLength: 500, unicode: false),
-          })
-          .PrimaryKey(t => t.ID);
-
+            ID = table.Column<int>(type: "int", nullable: false)
+                  .Annotation("SqlServer:Identity", "1, 1"),
+            Matricula = table.Column<string>(type: "varchar(500)", nullable: true),
+            Nome = table.Column<string>(type: "varchar(500)", nullable: true),
+            Sessao = table.Column<string>(type: "varchar(500)", nullable: true)
+          },
+          constraints: table =>
+          {
+            table.PrimaryKey("PK_Operador", x => x.ID);
+          });
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
-      DropTable("dbo.Operador");
+      migrationBuilder.DropTable(
+          name: "Operador");
     }
   }
 }

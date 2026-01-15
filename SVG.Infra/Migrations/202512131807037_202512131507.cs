@@ -1,13 +1,13 @@
 ﻿namespace SVG.Infra.Migrations
 {
   using System;
-  using System.Data.Entity.Migrations;
+  using Microsoft.EntityFrameworkCore.Migrations;
 
-  public partial class _202512131507 : DbMigration
+  public partial class _202512131507 : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      Sql(@"
+      migrationBuilder.Sql(@"
         BEGIN TRAN;
 
         -- =========================================
@@ -2599,7 +2599,7 @@
       ");
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
     }
   }

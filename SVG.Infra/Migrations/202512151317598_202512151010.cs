@@ -1,13 +1,13 @@
 ﻿namespace SVG.Infra.Migrations
 {
   using System;
-  using System.Data.Entity.Migrations;
+  using Microsoft.EntityFrameworkCore.Migrations;
 
-  public partial class _202512151010 : DbMigration
+  public partial class _202512151010 : Migration
   {
-    public override void Up()
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-      Sql(@"
+      migrationBuilder.Sql(@"
       IF NOT EXISTS (SELECT 1 FROM [dbo].TipoOperacao WHERE Nome = 'Reforço Plantão')
        BEGIN
            insert into TipoOperacao (Nome, Peso) values ('Reforço Plantão', '3')
@@ -15,7 +15,7 @@
       ");
     }
 
-    public override void Down()
+    protected override void Down(MigrationBuilder migrationBuilder)
     {
     }
   }

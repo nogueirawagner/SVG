@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
+using SVG.Identity.Identity.Context;
 using SVG.IoC;
 using SVG.WebApp.AutoMapper;
-using Microsoft.AspNetCore.Identity;
-using SVG.Identity.Identity.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,14 +19,18 @@ var config = AutoMapperConfig.RegisterMappings();
 container.RegisterInstance(config.CreateMapper());
 BootStrapper.RegisterServices(container);
 
+#if DEBUG
+ string connectionName = "ConnectionLocal";
+#else
+        static string connectionName = "ConnectionProduction_Az";
+#endif
 
 // DbContext do Identity (vem da class library)
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString(connectionName)));
 
-//builder.Services
-//    .AddDefaultIdentity<IdentityUser>()
-//    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Cookie (rotas padrão do Identity UI)
 builder.Services.ConfigureApplicationCookie(opt =>

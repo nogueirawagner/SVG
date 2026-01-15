@@ -1,22 +1,53 @@
 ﻿namespace SVG.Infra.Migrations
 {
     using System;
-    using System.Data.Entity.Migrations;
+    using Microsoft.EntityFrameworkCore.Migrations;
     
-    public partial class _202512130935 : DbMigration
+    public partial class _202512130935 : Migration
     {
-        public override void Up()
+        protected override void Up(MigrationBuilder migrationBuilder)
         {
-            DropColumn("dbo.OperadorOperacao", "Equipe");
-            DropColumn("dbo.OperadorOperacao", "Funcao");
-            DropColumn("dbo.OperadorOperacao", "Viatura");
+            migrationBuilder.DropColumn(
+                name: "Equipe",
+                table: "OperadorOperacao",
+                schema: "dbo");
+
+            migrationBuilder.DropColumn(
+                name: "Funcao",
+                table: "OperadorOperacao",
+                schema: "dbo");
+
+            migrationBuilder.DropColumn(
+                name: "Viatura",
+                table: "OperadorOperacao",
+                schema: "dbo");
         }
         
-        public override void Down()
+        protected override void Down(MigrationBuilder migrationBuilder)
         {
-            AddColumn("dbo.OperadorOperacao", "Viatura", c => c.Int(nullable: false));
-            AddColumn("dbo.OperadorOperacao", "Funcao", c => c.Int(nullable: false));
-            AddColumn("dbo.OperadorOperacao", "Equipe", c => c.Int(nullable: false));
+            migrationBuilder.AddColumn<int>(
+                name: "Viatura",
+                table: "OperadorOperacao",
+                schema: "dbo",
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
+
+            migrationBuilder.AddColumn<int>(
+                name: "Funcao",
+                table: "OperadorOperacao",
+                schema: "dbo",
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
+
+            migrationBuilder.AddColumn<int>(
+                name: "Equipe",
+                table: "OperadorOperacao",
+                schema: "dbo",
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
         }
     }
 }

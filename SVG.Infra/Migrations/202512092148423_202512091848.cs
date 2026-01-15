@@ -1,18 +1,27 @@
 ﻿namespace SVG.Infra.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
-    public partial class _202512091848 : DbMigration
+  using System;
+  using Microsoft.EntityFrameworkCore.Migrations;
+
+  public partial class _202512091848 : Migration
+  {
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        public override void Up()
-        {
-            AddColumn("dbo.Operador", "Alcunha", c => c.String(maxLength: 500, unicode: false));
-        }
-        
-        public override void Down()
-        {
-            DropColumn("dbo.Operador", "Alcunha");
-        }
+      migrationBuilder.AddColumn<string>(
+          name: "Alcunha",
+          table: "Operador",
+          schema: "dbo",
+          type: "varchar(500)",
+          maxLength: 500,
+          nullable: true);
     }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+      migrationBuilder.DropColumn(
+          name: "Alcunha",
+          table: "Operador",
+          schema: "dbo");
+    }
+  }
 }
