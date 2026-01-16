@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +20,8 @@ namespace SVG.Domain.TiposEstruturados.TiposOperacao
     public string TipoOperacao { get; set; }
     public bool SvgAberto { get; set; }
     public int QtdVagasRestantes { get; set; }
-    public DateTime DataHoraEncerramentoSVG { get; set; }
+    [NotMapped]
+    public DateTime? DataHoraEncerramentoSVG { get; set; }
     public int QtdOperadores { get; set; }
   }
 }

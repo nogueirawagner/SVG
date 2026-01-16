@@ -35,7 +35,7 @@ namespace SVG.Infra.Repositories
       // EF Core pattern: map to a keyless entity and execute raw SQL via FromSqlRaw
       return _db.Set<XCandidatosOperacaoSVG>()
        .FromSqlRaw(sql, new SqlParameter("@pOperacaoID", pOperacaoID))
-       .AsNoTracking()
+       .AsNoTracking().ToList()
        ;
     }
 
@@ -86,7 +86,7 @@ namespace SVG.Infra.Repositories
         ";
       return _db.Set<XOperacoesSVGAberto>()
        .FromSqlRaw(sql)
-       .AsNoTracking()
+       .AsNoTracking().ToList()
        ;
     }
 
@@ -109,10 +109,11 @@ namespace SVG.Infra.Repositories
         order by DataHoraCriacao desc
         ";
 
-      return _db.Set<XOperacoesRealizadas>()
-       .FromSqlRaw(sql)
-       .AsNoTracking()
-       ;
+      return _db.Database
+    .SqlQueryRaw<XOperacoesRealizadas>(sql)
+    .ToList();
+
+
     }
 
     public IEnumerable<XOperacoesRealizadas> ListarOperacoesPorOrdemServico(string pOrdemServico)
@@ -138,7 +139,7 @@ namespace SVG.Infra.Repositories
 
       return _db.Set<XOperacoesRealizadas>()
        .FromSqlRaw(sql, new SqlParameter("@pOrdemServico", pOrdemServico))
-       .AsNoTracking()
+       .AsNoTracking().ToList()
        ;
     }
 
@@ -169,7 +170,7 @@ namespace SVG.Infra.Repositories
 
       var raw = _db.Set<XDetalhesOperacao>()
        .FromSqlRaw(sql, new SqlParameter("@pOperacaoID", pOperacaoID))
-       .AsNoTracking()
+       .AsNoTracking().ToList()
        ;
 
       foreach (var item in raw)
@@ -202,7 +203,7 @@ namespace SVG.Infra.Repositories
         ";
       return _db.Set<XEscalaPlantao>()
        .FromSqlRaw(sql, new SqlParameter("@pDataReferencia", pDataReferencia))
-       .AsNoTracking()
+       .AsNoTracking().ToList()
        ;
     }
 
@@ -229,7 +230,7 @@ namespace SVG.Infra.Repositories
 
       return _db.Set<XOperadorSelecionado>()
        .FromSqlRaw(sql, new SqlParameter("@pOperacaoID", pOperacaoID))
-       .AsNoTracking()
+       .AsNoTracking().ToList()
        ;
     }
 

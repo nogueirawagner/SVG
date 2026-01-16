@@ -72,7 +72,7 @@ namespace SVG.Infra.Repositories
 
       return _db.Set<XDetalhamentoOperadorOperacao>()
         .FromSqlRaw(sql, new SqlParameter("@pOperadorId", pOperadorId))
-        .AsNoTracking()
+        .AsNoTracking().ToList()
         ;
     }
 
@@ -140,7 +140,7 @@ namespace SVG.Infra.Repositories
 
       return _db.Set<XResumoOperadorOperacao>()
         .FromSqlRaw(sql)
-        .AsNoTracking()
+        .AsNoTracking().ToList()
         ;
     }
 

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
 using SVG.Identity.Identity.Context;
+using SVG.Infra.Context.SQLServer;
 using SVG.IoC;
 using SVG.WebApp.AutoMapper;
 
@@ -24,6 +25,16 @@ BootStrapper.RegisterServices(container);
 #else
         static string connectionName = "ConnectionProduction_Az";
 #endif
+
+container.Register(() =>
+{
+  var optionsBuilder = new DbContextOptionsBuilder<SQLServerContext>();
+
+  optionsBuilder.UseSqlServer(
+      builder.Configuration.GetConnectionString(connectionName));
+
+  return optionsBuilder.Options;
+}, Lifestyle.Singleton);
 
 // DbContext do Identity (vem da class library)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
