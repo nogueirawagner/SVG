@@ -84,10 +84,9 @@ namespace SVG.Infra.Repositories
           where SvgAberto = 1
           order by DataHoraCriacao desc, DataHoraInicio desc, DataHoraFim desc
         ";
-      return _db.Set<XOperacoesSVGAberto>()
-       .FromSqlRaw(sql)
-       .AsNoTracking().ToList()
-       ;
+      return _db.Database
+        .SqlQueryRaw<XOperacoesSVGAberto>(sql)
+        .ToList();
     }
 
     public IEnumerable<XOperacoesRealizadas> PegarOperacoesRealizadas()
@@ -110,10 +109,8 @@ namespace SVG.Infra.Repositories
         ";
 
       return _db.Database
-    .SqlQueryRaw<XOperacoesRealizadas>(sql)
-    .ToList();
-
-
+      .SqlQueryRaw<XOperacoesRealizadas>(sql)
+      .ToList();
     }
 
     public IEnumerable<XOperacoesRealizadas> ListarOperacoesPorOrdemServico(string pOrdemServico)
