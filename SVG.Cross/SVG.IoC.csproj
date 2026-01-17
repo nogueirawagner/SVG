@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SVG.App\SVG.App.csproj" />
     <ProjectReference Include="..\SVG.Domain\SVG.Domain.csproj" />
+    <ProjectReference Include="..\SVG.Identity\SVG.Identity.csproj" />
     <ProjectReference Include="..\SVG.Infra\SVG.Infra.csproj" />
   </ItemGroup>
 

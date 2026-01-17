@@ -16,16 +16,20 @@ builder.Services.AddSimpleInjector(container, options => options.AddAspNetCore()
 var config = AutoMapperConfig.RegisterMappings();
 container.RegisterInstance(config.CreateMapper());
 
-//var connectionString =
-//    builder.Configuration.GetConnectionString("ConnectionLocal");
-
-//#if DEBUG
-//var cs = builder.Configuration.GetConnectionString("ConnectionLocal");
-//# else
-//var cs =  builder.Configuration.GetConnectionString("ConnectionProduction_Az");
-//#endif
-
 BootStrapper.RegisterServices(container);
+
+builder.Services
+    .AddAuthentication("Cookies")
+    .AddCookie("Cookies", options =>
+    {
+      options.LoginPath = "/Auth/Login";
+      options.LogoutPath = "/Auth/Logout";
+      options.AccessDeniedPath = "/Auth/AcessoNegado";
+      options.ExpireTimeSpan = TimeSpan.FromHours(8);
+      options.SlidingExpiration = true;
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 app.Services.UseSimpleInjector(container);
@@ -35,6 +39,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Rotas MVC (controllers)

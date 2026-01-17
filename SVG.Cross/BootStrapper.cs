@@ -4,8 +4,11 @@ using SVG.App.Services;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.Interfaces.Services;
 using SVG.Domain.Services;
+using SVG.Identity.Configurations;
+using SVG.Identity.Configurations.Interface;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.Repositories;
+using System.Security.Claims;
 
 namespace SVG.IoC
 {
@@ -55,6 +58,9 @@ namespace SVG.IoC
       container.Register<ITipoOperacaoRepository, TipoOperacaoRepository>(Lifestyle.Scoped);
       container.Register<ITipoOperacaoService, TipoOperacaoService>(Lifestyle.Scoped);
       container.Register<ITipoOperacaoAppService, TipoOperacaoAppService>(Lifestyle.Scoped);
+
+      container.Register<IClaimsFactory, ClaimsFactory>(Lifestyle.Scoped);
+      container.Register<IPasswordService, PasswordService>(Lifestyle.Scoped);
 
     }
   }
