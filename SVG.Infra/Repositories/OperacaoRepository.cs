@@ -32,11 +32,11 @@ namespace SVG.Infra.Repositories
 	            join Operador o on o.ID = c.OperadorID
             where c.OperacaoID = @pOperacaoID";
 
-      // EF Core pattern: map to a keyless entity and execute raw SQL via FromSqlRaw
-      return _db.Set<XCandidatosOperacaoSVG>()
-       .FromSqlRaw(sql, new SqlParameter("@pOperacaoID", pOperacaoID))
-       .AsNoTracking().ToList()
-       ;
+      return _db.Database
+      .SqlQueryRaw<XCandidatosOperacaoSVG>(
+          sql,
+          new SqlParameter("@pOperacaoID", pOperacaoID)
+      ).ToList();
     }
 
     public void InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
@@ -101,7 +101,7 @@ namespace SVG.Infra.Repositories
           o.Coordenador,
           t.Nome TipoOperacao, 
           o.SvgAberto,
-          o.QtdVagasRestantes,
+          o.QtdVagasRestantes, 
           o.DataHoraFim
         from Operacao o
           join TipoOperacao t on t.ID = o.TipoOperacaoID
@@ -134,10 +134,12 @@ namespace SVG.Infra.Repositories
         order by DataHoraCriacao desc
         ";
 
-      return _db.Set<XOperacoesRealizadas>()
-       .FromSqlRaw(sql, new SqlParameter("@pOrdemServico", pOrdemServico))
-       .AsNoTracking().ToList()
-       ;
+      return _db.Database
+      .SqlQueryRaw<XOperacoesRealizadas>(
+          sql,
+          new SqlParameter("@pOrdemServico", pOrdemServico)
+      ).ToList();
+
     }
 
     public IEnumerable<XDetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
@@ -165,10 +167,11 @@ namespace SVG.Infra.Repositories
         where o.ID = @pOperacaoID
         ";
 
-      var raw = _db.Set<XDetalhesOperacao>()
-       .FromSqlRaw(sql, new SqlParameter("@pOperacaoID", pOperacaoID))
-       .AsNoTracking().ToList()
-       ;
+      var raw = _db.Database
+      .SqlQueryRaw<XDetalhesOperacao>(
+          sql,
+          new SqlParameter("@pOperacaoID", pOperacaoID)
+      ).ToList();
 
       foreach (var item in raw)
       {
@@ -198,10 +201,11 @@ namespace SVG.Infra.Repositories
 	        join Sessao s on s.ID = e.SecaoID
         order by dataPlantao
         ";
-      return _db.Set<XEscalaPlantao>()
-       .FromSqlRaw(sql, new SqlParameter("@pDataReferencia", pDataReferencia))
-       .AsNoTracking().ToList()
-       ;
+      return _db.Database
+        .SqlQueryRaw<XEscalaPlantao>(
+            sql,
+            new SqlParameter("@pDataReferencia", pDataReferencia)
+        ).ToList();
     }
 
     public void AlterarSVGOperador(int pOperadorId, bool pSvg)
@@ -225,10 +229,11 @@ namespace SVG.Infra.Repositories
 	      join OperadorOperacao oo on oo.OperadorID = o.ID
       where oo.OperacaoID = @pOperacaoID";
 
-      return _db.Set<XOperadorSelecionado>()
-       .FromSqlRaw(sql, new SqlParameter("@pOperacaoID", pOperacaoID))
-       .AsNoTracking().ToList()
-       ;
+      return _db.Database
+       .SqlQueryRaw<XOperadorSelecionado>(
+           sql,
+           new SqlParameter("@pOperacaoID", pOperacaoID)
+       ).ToList();
     }
 
     public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)

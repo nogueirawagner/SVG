@@ -70,10 +70,11 @@ namespace SVG.Infra.Repositories
 				select * from CTE_Resultado
 				order by TipoOperacao";
 
-      return _db.Set<XDetalhamentoOperadorOperacao>()
-        .FromSqlRaw(sql, new SqlParameter("@pOperadorId", pOperadorId))
-        .AsNoTracking().ToList()
-        ;
+      return _db.Database
+      .SqlQueryRaw<XDetalhamentoOperadorOperacao>(
+          sql,
+          new SqlParameter("@pOperadorId", pOperadorId)
+      ).ToList();
     }
 
     public IEnumerable<XResumoOperadorOperacao> PegarResumoOperador()
@@ -138,39 +139,38 @@ namespace SVG.Infra.Repositories
 				select * from CTE_Resultado r
 				order by OperadorNome";
 
-      return _db.Set<XResumoOperadorOperacao>()
-        .FromSqlRaw(sql)
-        .AsNoTracking().ToList()
-        ;
+      return _db.Database
+			.SqlQueryRaw<XResumoOperadorOperacao>(sql)
+			.ToList();
     }
 
     public IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId)
     {
-			var sql = @"select ID from OperadorOperacao where OperacaoID = @pOperacaoID";
-			var results = new List<int>();
+      var sql = @"select ID from OperadorOperacao where OperacaoID = @pOperacaoID";
+      var results = new List<int>();
 
-			var conn = _db.Database.GetDbConnection();
-			try
-			{
-				if (conn.State != System.Data.ConnectionState.Open)
-					conn.Open();
+      var conn = _db.Database.GetDbConnection();
+      try
+      {
+        if (conn.State != System.Data.ConnectionState.Open)
+          conn.Open();
 
-				using var cmd = conn.CreateCommand();
-				cmd.CommandText = sql;
-				cmd.Parameters.Add(new SqlParameter("@pOperacaoID", pOperacaoId));
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = sql;
+        cmd.Parameters.Add(new SqlParameter("@pOperacaoID", pOperacaoId));
 
-				using var reader = cmd.ExecuteReader();
-				while (reader.Read())
-				{
-					if (!reader.IsDBNull(0)) results.Add(reader.GetInt32(0));
-				}
-			}
-			finally
-			{
-				try { if (conn.State == System.Data.ConnectionState.Open) conn.Close(); } catch { }
-			}
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+          if (!reader.IsDBNull(0)) results.Add(reader.GetInt32(0));
+        }
+      }
+      finally
+      {
+        try { if (conn.State == System.Data.ConnectionState.Open) conn.Close(); } catch { }
+      }
 
-			return results;
+      return results;
     }
   }
 }

@@ -52,17 +52,6 @@ namespace SVG.Infra.Context.SQLServer
               .HasKey(pkProperty.Name);
         }
       }
-
-      //// Register keyless types used for raw SQL queries
-      //modelBuilder.Entity<XCandidatosOperacaoSVG>().HasNoKey();
-      //modelBuilder.Entity<XOperacoesSVGAberto>().HasNoKey();
-      ////modelBuilder.Entity<XOperacoesRealizadas>().HasNoKey();
-      //modelBuilder.Entity<XDetalhesOperacao>().HasNoKey();
-      //modelBuilder.Entity<XEscalaPlantao>().HasNoKey();
-      //modelBuilder.Entity<XOperadorSelecionado>().HasNoKey();
-      //// additional DTOs used by repositories
-      //modelBuilder.Entity<XDetalhamentoOperadorOperacao>().HasNoKey();
-      //modelBuilder.Entity<XResumoOperadorOperacao>().HasNoKey();
     }
   }
 }
