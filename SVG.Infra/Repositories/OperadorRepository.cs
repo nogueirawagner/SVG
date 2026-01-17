@@ -6,6 +6,8 @@ using SVG.Infra.Context.SQLServer;
 using SVG.Infra.FunctionsDB;
 using SVG.Infra.Repositories;
 using Microsoft.Data.SqlClient;
+using System.Data;
+using System.Collections.Generic;
 
 namespace SVG.Infra.Repositories
 {
@@ -14,7 +16,7 @@ namespace SVG.Infra.Repositories
     private readonly SQLServerContext _db;
 
     public OperadorRepository(SQLServerContext dbContext)
-        : base(dbContext)
+    : base(dbContext)
     {
       _db = dbContext;
     }
@@ -70,17 +72,45 @@ namespace SVG.Infra.Repositories
 				select * from CTE_Resultado
 				order by TipoOperacao";
 
-      return _db.Database
-      .SqlQueryRaw<XDetalhamentoOperadorOperacao>(
-          sql,
-          new SqlParameter("@pOperadorId", pOperadorId)
-      ).ToList();
+      var results = new List<XDetalhamentoOperadorOperacao>();
+
+      using var conn = _db.Database.GetDbConnection();
+      using var cmd = conn.CreateCommand();
+      cmd.CommandText = sql;
+      cmd.CommandType = CommandType.Text;
+
+      var param = cmd.CreateParameter();
+      param.ParameterName = "@pOperadorId";
+      param.Value = pOperadorId;
+      cmd.Parameters.Add(param);
+
+      if (conn.State != ConnectionState.Open)
+        conn.Open();
+
+      using var reader = cmd.ExecuteReader();
+      while (reader.Read())
+      {
+        results.Add(new XDetalhamentoOperadorOperacao
+        {
+          ID = reader.IsDBNull(reader.GetOrdinal("ID")) ? 0 : reader.GetInt32(reader.GetOrdinal("ID")),
+          Matricula = reader.IsDBNull(reader.GetOrdinal("Matricula")) ? null : reader.GetString(reader.GetOrdinal("Matricula")),
+          Nome = reader.IsDBNull(reader.GetOrdinal("Nome")) ? null : reader.GetString(reader.GetOrdinal("Nome")),
+          Telefone = reader.IsDBNull(reader.GetOrdinal("Telefone")) ? null : reader.GetString(reader.GetOrdinal("Telefone")),
+          Sessao = reader.IsDBNull(reader.GetOrdinal("Sessao")) ? null : reader.GetString(reader.GetOrdinal("Sessao")),
+          TipoOperacao = reader.IsDBNull(reader.GetOrdinal("TipoOperacao")) ? null : reader.GetString(reader.GetOrdinal("TipoOperacao")),
+          Peso = reader.IsDBNull(reader.GetOrdinal("Peso")) ? 0 : reader.GetInt32(reader.GetOrdinal("Peso")),
+          QtdOperacoes = reader.IsDBNull(reader.GetOrdinal("QtdOperacoes")) ? 0 : reader.GetInt32(reader.GetOrdinal("QtdOperacoes")),
+          SVG = reader.IsDBNull(reader.GetOrdinal("SVG")) ? false : reader.GetBoolean(reader.GetOrdinal("SVG"))
+        });
+      }
+
+      return results;
     }
 
     public IEnumerable<XResumoOperadorOperacao> PegarResumoOperador()
     {
       var sql = @"
-				WITH CTE_Operacao AS (
+			WITH CTE_Operacao AS (
 				select 
 					op.ID,
 					op.TipoOperacaoID
@@ -114,8 +144,8 @@ namespace SVG.Infra.Repositories
 					SUM(CASE WHEN qtd.SVG =1 THEN QtdOperacoes ELSE0 END) AS QtdOperacoesSVG,
 					SUM(QtdOperacoes) QtdOperacoes,
 					CEILING(
-								(CAST(SUM(QtdOperacoes * Peso) AS FLOAT) / NULLIF(SUM(Peso),0)) *100
-						) /100.0 AS MediaPonderada
+						(CAST(SUM(QtdOperacoes * Peso) AS FLOAT) / NULLIF(SUM(Peso),0)) *100
+					) /100.0 AS MediaPonderada
 				FROM CTE_QtdOperacoesOperadores qtd
 					join Operador op on op.ID = qtd.OperadorID
 				GROUP BY OperadorID
@@ -139,9 +169,33 @@ namespace SVG.Infra.Repositories
 				select * from CTE_Resultado r
 				order by OperadorNome";
 
-      return _db.Database
-			.SqlQueryRaw<XResumoOperadorOperacao>(sql)
-			.ToList();
+      var results = new List<XResumoOperadorOperacao>();
+
+      using var conn = _db.Database.GetDbConnection();
+      using var cmd = conn.CreateCommand();
+      cmd.CommandText = sql;
+      cmd.CommandType = CommandType.Text;
+
+      if (conn.State != ConnectionState.Open)
+        conn.Open();
+
+      using var reader = cmd.ExecuteReader();
+      while (reader.Read())
+      {
+        results.Add(new XResumoOperadorOperacao
+        {
+          OperadorID = reader.IsDBNull(reader.GetOrdinal("OperadorID")) ? 0 : reader.GetInt32(reader.GetOrdinal("OperadorID")),
+          OperadorNome = reader.IsDBNull(reader.GetOrdinal("OperadorNome")) ? null : reader.GetString(reader.GetOrdinal("OperadorNome")),
+          Matricula = reader.IsDBNull(reader.GetOrdinal("Matricula")) ? null : reader.GetString(reader.GetOrdinal("Matricula")),
+          Telefone = reader.IsDBNull(reader.GetOrdinal("Telefone")) ? null : reader.GetString(reader.GetOrdinal("Telefone")),
+          Sessao = reader.IsDBNull(reader.GetOrdinal("Sessao")) ? null : reader.GetString(reader.GetOrdinal("Sessao")),
+          QtdOperacoes = reader.IsDBNull(reader.GetOrdinal("QtdOperacoes")) ? 0 : reader.GetInt32(reader.GetOrdinal("QtdOperacoes")),
+          QtdOperacoesSVG = reader.IsDBNull(reader.GetOrdinal("QtdOperacoesSVG")) ? 0 : reader.GetInt32(reader.GetOrdinal("QtdOperacoesSVG")),
+          MediaPonderada = reader.IsDBNull(reader.GetOrdinal("MediaPonderada")) ? 0.0 : Convert.ToDouble(reader.GetValue(reader.GetOrdinal("MediaPonderada")))
+        });
+      }
+
+      return results;
     }
 
     public IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId)

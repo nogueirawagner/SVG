@@ -1,11 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
+using SVG.Domain.TiposEstruturados.Enums;
 using SVG.Domain.TiposEstruturados.TiposOperacao;
 using SVG.Domain.TiposEstruturados.TiposOperador;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.Repositories;
-using Microsoft.Data.SqlClient;
+using System.Data;
 using System.Linq;
 
 namespace SVG.Infra.Repositories
@@ -32,11 +34,34 @@ namespace SVG.Infra.Repositories
 	            join Operador o on o.ID = c.OperadorID
             where c.OperacaoID = @pOperacaoID";
 
-      return _db.Database
-      .SqlQueryRaw<XCandidatosOperacaoSVG>(
-          sql,
-          new SqlParameter("@pOperacaoID", pOperacaoID)
-      ).ToList();
+      var result = new List<XCandidatosOperacaoSVG>();
+
+      using var conn = _db.Database.GetDbConnection();
+      using var cmd = conn.CreateCommand();
+      cmd.CommandText = sql;
+      cmd.CommandType = CommandType.Text;
+
+      var p = cmd.CreateParameter();
+      p.ParameterName = "@pOperacaoID";
+      p.Value = pOperacaoID;
+      cmd.Parameters.Add(p);
+
+      if (conn.State != ConnectionState.Open)
+        conn.Open();
+
+      using var reader = cmd.ExecuteReader();
+      while (reader.Read())
+      {
+        result.Add(new XCandidatosOperacaoSVG
+        {
+          OperacaoID = reader.GetInt32(reader.GetOrdinal("OperacaoID")),
+          OperadorID = reader.GetInt32(reader.GetOrdinal("OperadorID")),
+          Nome = reader.IsDBNull(reader.GetOrdinal("Nome")) ? null : reader.GetString(reader.GetOrdinal("Nome")),
+          Matricula = reader.IsDBNull(reader.GetOrdinal("Matricula")) ? null : reader.GetString(reader.GetOrdinal("Matricula"))
+        });
+      }
+
+      return result;
     }
 
     public void InsereCandidatoSVG(int pOperacaoID, int pOperadorID)
@@ -62,7 +87,7 @@ namespace SVG.Infra.Repositories
       _db.Database.ExecuteSqlRaw(@"
           DELETE FROM CandidatoSVGOperacao 
           WHERE OperacaoID = @pOperacaoID 
-            and OperadorID = @pOperadorID", 
+            and OperadorID = @pOperadorID",
         new SqlParameter("@pOperacaoID", pOperacaoID),
         new SqlParameter("@pOperadorID", pOperadorID)
       );
@@ -84,9 +109,33 @@ namespace SVG.Infra.Repositories
           where SvgAberto = 1
           order by DataHoraCriacao desc, DataHoraInicio desc, DataHoraFim desc
         ";
-      return _db.Database
-        .SqlQueryRaw<XOperacoesSVGAberto>(sql)
-        .ToList();
+
+      var result = new List<XOperacoesSVGAberto>();
+
+      using var conn = _db.Database.GetDbConnection();
+      using var cmd = conn.CreateCommand();
+      cmd.CommandText = sql;
+      cmd.CommandType = CommandType.Text;
+
+      if (conn.State != ConnectionState.Open)
+        conn.Open();
+
+      using var reader = cmd.ExecuteReader();
+      while (reader.Read())
+      {
+        result.Add(new XOperacoesSVGAberto
+        {
+          ID = reader.GetInt32(reader.GetOrdinal("ID")),
+          DataHoraCriacao = reader.GetDateTime(reader.GetOrdinal("DataHoraCriacao")),
+          DataHora = reader.GetDateTime(reader.GetOrdinal("DataHora")),
+          DataHoraInicio = reader.IsDBNull(reader.GetOrdinal("DataHoraInicio")) ? null : reader.GetDateTime(reader.GetOrdinal("DataHoraInicio")),
+          DataHoraFim = reader.IsDBNull(reader.GetOrdinal("DataHoraFim")) ? null : reader.GetDateTime(reader.GetOrdinal("DataHoraFim")),
+          TipoOperacao = reader.IsDBNull(reader.GetOrdinal("TipoOperacao")) ? null : reader.GetString(reader.GetOrdinal("TipoOperacao")),
+          QtdVagasRestantes = reader.GetInt32(reader.GetOrdinal("QtdVagasRestantes"))
+        });
+      }
+
+      return result;
     }
 
     public IEnumerable<XOperacoesRealizadas> PegarOperacoesRealizadas()
@@ -108,9 +157,35 @@ namespace SVG.Infra.Repositories
         order by DataHoraCriacao desc
         ";
 
-      return _db.Database
-      .SqlQueryRaw<XOperacoesRealizadas>(sql)
-      .ToList();
+      var result = new List<XOperacoesRealizadas>();
+
+      using var conn = _db.Database.GetDbConnection();
+      using var cmd = conn.CreateCommand();
+      cmd.CommandText = sql;
+      cmd.CommandType = CommandType.Text;
+
+      if (conn.State != ConnectionState.Open)
+        conn.Open();
+
+      using var reader = cmd.ExecuteReader();
+      while (reader.Read())
+      {
+        result.Add(new XOperacoesRealizadas
+        {
+          ID = reader.GetInt32(reader.GetOrdinal("ID")),
+          DataHoraCriacao = reader.GetDateTime(reader.GetOrdinal("DataHoraCriacao")),
+          DataHora = reader.GetDateTime(reader.GetOrdinal("DataHora")),
+          Objeto = reader.IsDBNull(reader.GetOrdinal("Objeto")) ? null : reader.GetString(reader.GetOrdinal("Objeto")),
+          OrdemServico = reader.IsDBNull(reader.GetOrdinal("OrdemServico")) ? null : reader.GetString(reader.GetOrdinal("OrdemServico")),
+          Coordenador = reader.IsDBNull(reader.GetOrdinal("Coordenador")) ? null : reader.GetString(reader.GetOrdinal("Coordenador")),
+          TipoOperacao = reader.IsDBNull(reader.GetOrdinal("TipoOperacao")) ? null : reader.GetString(reader.GetOrdinal("TipoOperacao")),
+          SvgAberto = reader.GetBoolean(reader.GetOrdinal("SvgAberto")),
+          QtdVagasRestantes = reader.GetInt32(reader.GetOrdinal("QtdVagasRestantes")),
+          DataHoraFim = reader.IsDBNull(reader.GetOrdinal("DataHoraFim")) ? null : reader.GetDateTime(reader.GetOrdinal("DataHoraFim")),
+        });
+      }
+
+      return result;
     }
 
     public IEnumerable<XOperacoesRealizadas> ListarOperacoesPorOrdemServico(string pOrdemServico)
@@ -134,12 +209,42 @@ namespace SVG.Infra.Repositories
         order by DataHoraCriacao desc
         ";
 
-      return _db.Database
-      .SqlQueryRaw<XOperacoesRealizadas>(
-          sql,
-          new SqlParameter("@pOrdemServico", pOrdemServico)
-      ).ToList();
+      var result = new List<XOperacoesRealizadas>();
 
+      using var conn = _db.Database.GetDbConnection();
+      using var cmd = conn.CreateCommand();
+      cmd.CommandText = sql;
+      cmd.CommandType = CommandType.Text;
+
+      var param = cmd.CreateParameter();
+      param.ParameterName = "@pOrdemServico";
+      param.Value = pOrdemServico ?? (object)DBNull.Value;
+      cmd.Parameters.Add(param);
+
+      if (conn.State != ConnectionState.Open)
+        conn.Open();
+
+      using var reader = cmd.ExecuteReader();
+      while (reader.Read())
+      {
+        result.Add(new XOperacoesRealizadas
+        {
+          ID = reader.GetInt32(reader.GetOrdinal("ID")),
+          DataHoraCriacao = reader.GetDateTime(reader.GetOrdinal("DataHoraCriacao")),
+          DataHora = reader.IsDBNull(reader.GetOrdinal("DataHora")) ? default : reader.GetDateTime(reader.GetOrdinal("DataHora")),
+          DataHoraInicio = reader.IsDBNull(reader.GetOrdinal("DataHoraInicio")) ? default : reader.GetDateTime(reader.GetOrdinal("DataHoraInicio")),
+          Objeto = reader.IsDBNull(reader.GetOrdinal("Objeto")) ? null : reader.GetString(reader.GetOrdinal("Objeto")),
+          OrdemServico = reader.IsDBNull(reader.GetOrdinal("OrdemServico")) ? null : reader.GetString(reader.GetOrdinal("OrdemServico")),
+          QtdOperadores = reader.IsDBNull(reader.GetOrdinal("QtdOperadores")) ? 0 : reader.GetInt32(reader.GetOrdinal("QtdOperadores")),
+          Coordenador = reader.IsDBNull(reader.GetOrdinal("Coordenador")) ? null : reader.GetString(reader.GetOrdinal("Coordenador")),
+          TipoOperacao = reader.IsDBNull(reader.GetOrdinal("TipoOperacao")) ? null : reader.GetString(reader.GetOrdinal("TipoOperacao")),
+          SvgAberto = reader.IsDBNull(reader.GetOrdinal("SvgAberto")) ? false : reader.GetBoolean(reader.GetOrdinal("SvgAberto")),
+          QtdVagasRestantes = reader.IsDBNull(reader.GetOrdinal("QtdVagasRestantes")) ? 0 : reader.GetInt32(reader.GetOrdinal("QtdVagasRestantes")),
+          DataHoraFim = reader.IsDBNull(reader.GetOrdinal("DataHoraFim")) ? null : reader.GetDateTime(reader.GetOrdinal("DataHoraFim")),
+        });
+      }
+
+      return result;
     }
 
     public IEnumerable<XDetalhesOperacao> PegarDetalhesOperacao(int pOperacaoID)
@@ -167,31 +272,43 @@ namespace SVG.Infra.Repositories
         where o.ID = @pOperacaoID
         ";
 
-      var raw = _db.Database
-      .SqlQueryRaw<XDetalhesOperacao>(
-          sql,
-          new SqlParameter("@pOperacaoID", pOperacaoID)
-      ).ToList();
+      var result = new List<XDetalhesOperacao>();
 
-      foreach (var item in raw)
+      using var conn = _db.Database.GetDbConnection();
+      using var cmd = conn.CreateCommand();
+      cmd.CommandText = sql;
+      cmd.CommandType = CommandType.Text;
+
+      var p = cmd.CreateParameter();
+      p.ParameterName = "@pOperacaoID";
+      p.Value = pOperacaoID;
+      cmd.Parameters.Add(p);
+
+      if (conn.State != ConnectionState.Open)
+        conn.Open();
+
+      using var reader = cmd.ExecuteReader();
+      while (reader.Read())
       {
-        yield return new XDetalhesOperacao
+        result.Add(new XDetalhesOperacao
         {
-          ID = item.ID,
-          DataHoraCriacao = item.DataHoraCriacao,
-          DataHora = item.DataHora,
-          Objeto = item.Objeto,
-          OrdemServico = item.OrdemServico,
-          Coordenador = item.Coordenador,
-          TipoOperacao = item.TipoOperacao,
-          OperadorID = item.OperadorID,
-          NomeOperador = item.NomeOperador,
-          Matricula = item.Matricula,
-          Telefone = item.Telefone,
-          SVG = item.SVG,
-          Sessao = item.Sessao
-        };
+          ID = reader.GetInt32(reader.GetOrdinal("ID")),
+          DataHoraCriacao = reader.GetDateTime(reader.GetOrdinal("DataHoraCriacao")),
+          DataHora = reader.GetDateTime(reader.GetOrdinal("DataHora")),
+          Objeto = reader.IsDBNull(reader.GetOrdinal("Objeto")) ? null : reader.GetString(reader.GetOrdinal("Objeto")),
+          OrdemServico = reader.IsDBNull(reader.GetOrdinal("OrdemServico")) ? null : reader.GetString(reader.GetOrdinal("OrdemServico")),
+          Coordenador = reader.IsDBNull(reader.GetOrdinal("Coordenador")) ? null : reader.GetString(reader.GetOrdinal("Coordenador")),
+          TipoOperacao = reader.IsDBNull(reader.GetOrdinal("TipoOperacao")) ? null : reader.GetString(reader.GetOrdinal("TipoOperacao")),
+          OperadorID = reader.IsDBNull(reader.GetOrdinal("OperadorID")) ? 0 : reader.GetInt32(reader.GetOrdinal("OperadorID")),
+          NomeOperador = reader.IsDBNull(reader.GetOrdinal("NomeOperador")) ? null : reader.GetString(reader.GetOrdinal("NomeOperador")),
+          Matricula = reader.IsDBNull(reader.GetOrdinal("Matricula")) ? null : reader.GetString(reader.GetOrdinal("Matricula")),
+          Telefone = reader.IsDBNull(reader.GetOrdinal("Telefone")) ? null : reader.GetString(reader.GetOrdinal("Telefone")),
+          SVG = reader.IsDBNull(reader.GetOrdinal("SVG")) ? false : reader.GetBoolean(reader.GetOrdinal("SVG")),
+          Sessao = reader.IsDBNull(reader.GetOrdinal("Sessao")) ? null : reader.GetString(reader.GetOrdinal("Sessao"))
+        });
       }
+
+      return result;
     }
 
     public IEnumerable<XEscalaPlantao> PegarEscalaPlantao(DateTime pDataReferencia)
@@ -201,11 +318,35 @@ namespace SVG.Infra.Repositories
 	        join Sessao s on s.ID = e.SecaoID
         order by dataPlantao
         ";
-      return _db.Database
-        .SqlQueryRaw<XEscalaPlantao>(
-            sql,
-            new SqlParameter("@pDataReferencia", pDataReferencia)
-        ).ToList();
+
+      var result = new List<XEscalaPlantao>();
+
+      using var conn = _db.Database.GetDbConnection();
+      using var cmd = conn.CreateCommand();
+      cmd.CommandText = sql;
+      cmd.CommandType = CommandType.Text;
+
+      var p = cmd.CreateParameter();
+      p.ParameterName = "@pDataReferencia";
+      p.Value = pDataReferencia;
+      cmd.Parameters.Add(p);
+
+      _db.Database.OpenConnection();
+
+      using var reader = cmd.ExecuteReader();
+      while (reader.Read())
+      {
+        result.Add(new XEscalaPlantao
+        {
+          SecaoID = reader.GetInt32(reader.GetOrdinal("SecaoID")),
+          Nome = reader.IsDBNull(reader.GetOrdinal("Nome")) ? null : reader.GetString(reader.GetOrdinal("Nome")),
+          DataPlantao = reader.GetDateTime(reader.GetOrdinal("dataPlantao")),
+          Situacao = (XSituacaoPlantao)reader.GetInt32(reader.GetOrdinal("Situacao"))
+        });
+      }
+
+      _db.Database.CloseConnection();
+      return result;
     }
 
     public void AlterarSVGOperador(int pOperadorId, bool pSvg)
@@ -229,11 +370,32 @@ namespace SVG.Infra.Repositories
 	      join OperadorOperacao oo on oo.OperadorID = o.ID
       where oo.OperacaoID = @pOperacaoID";
 
-      return _db.Database
-       .SqlQueryRaw<XOperadorSelecionado>(
-           sql,
-           new SqlParameter("@pOperacaoID", pOperacaoID)
-       ).ToList();
+      var result = new List<XOperadorSelecionado>();
+
+      using var conn = _db.Database.GetDbConnection();
+      using var cmd = conn.CreateCommand();
+      cmd.CommandText = sql;
+      cmd.CommandType = CommandType.Text;
+
+      var p = cmd.CreateParameter();
+      p.ParameterName = "@pOperacaoID";
+      p.Value = pOperacaoID;
+      cmd.Parameters.Add(p);
+
+      if (conn.State != ConnectionState.Open)
+        conn.Open();
+
+      using var reader = cmd.ExecuteReader();
+      while (reader.Read())
+      {
+        result.Add(new XOperadorSelecionado
+        {
+          Nome = reader.IsDBNull(reader.GetOrdinal("Nome")) ? null : reader.GetString(reader.GetOrdinal("Nome")),
+          Matricula = reader.IsDBNull(reader.GetOrdinal("Matricula")) ? null : reader.GetString(reader.GetOrdinal("Matricula"))
+        });
+      }
+
+      return result;
     }
 
     public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)
