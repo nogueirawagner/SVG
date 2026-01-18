@@ -1,9 +1,9 @@
 ﻿using SVG.Domain.Entities.Identity;
 using System.Security.Claims;
 
-namespace SVG.Identity.Configurations.Interface
+namespace SVG.Domain.Configurations.Interface
 {
-  public interface _IClaimsFactory
+  public interface IClaimsFactory
   {
     ClaimsPrincipal CriarPrincipal(Usuario usuario);
   }

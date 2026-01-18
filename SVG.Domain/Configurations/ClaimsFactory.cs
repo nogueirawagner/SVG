@@ -1,22 +1,16 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using SVG.Domain.Configurations.Interface;
 using SVG.Domain.Entities.Identity;
-using SVG.Identity.Configurations.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SVG.Identity.Configurations
+namespace SVG.Domain.Configurations
 {
-  public class _ClaimsFactory : _IClaimsFactory
+  public class ClaimsFactory : IClaimsFactory
   {
     public ClaimsPrincipal CriarPrincipal(Usuario usuario)
     {
       var claims = new List<Claim>
     {
-        new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+        new Claim(ClaimTypes.NameIdentifier, usuario.ID.ToString()),
         new Claim(ClaimTypes.Name, usuario.Login),
         new Claim("Nome", usuario.Nome)
     };

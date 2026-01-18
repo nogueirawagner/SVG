@@ -27,8 +27,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SVG.Console", "SVG.Console\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SVG.Utilities", "SVG.Utilities\SVG.Utilities.csproj", "{7CD64CFB-9D57-4385-914F-334509A06EE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SVG.Identity", "SVG.Identity\SVG.Identity.csproj", "{9CA10CD5-26E1-4210-8F5C-8A56B934E22C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,10 +61,6 @@ Global
 		{7CD64CFB-9D57-4385-914F-334509A06EE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CD64CFB-9D57-4385-914F-334509A06EE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CD64CFB-9D57-4385-914F-334509A06EE1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9CA10CD5-26E1-4210-8F5C-8A56B934E22C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9CA10CD5-26E1-4210-8F5C-8A56B934E22C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9CA10CD5-26E1-4210-8F5C-8A56B934E22C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9CA10CD5-26E1-4210-8F5C-8A56B934E22C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,7 +73,6 @@ Global
 		{160896EA-F42A-480F-83A6-9C5905700B51} = {82847258-26E4-4A34-800A-1F095EBE5FA0}
 		{D06A927A-5BA8-4F97-9136-C5CA6E1AEB1C} = {05F758C6-4C19-4558-A097-F19EC0EA5204}
 		{7CD64CFB-9D57-4385-914F-334509A06EE1} = {82847258-26E4-4A34-800A-1F095EBE5FA0}
-		{9CA10CD5-26E1-4210-8F5C-8A56B934E22C} = {82847258-26E4-4A34-800A-1F095EBE5FA0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4FDB0B66-5739-4D3E-9888-4067F94BF2B8}

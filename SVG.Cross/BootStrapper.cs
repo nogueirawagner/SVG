@@ -1,14 +1,13 @@
 ﻿using SimpleInjector;
 using SVG.App.Interface;
 using SVG.App.Services;
+using SVG.Domain.Configurations;
+using SVG.Domain.Configurations.Interface;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.Interfaces.Services;
 using SVG.Domain.Services;
-using SVG.Identity.Configurations;
-using SVG.Identity.Configurations.Interface;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.Repositories;
-using System.Security.Claims;
 
 namespace SVG.IoC
 {
@@ -45,12 +44,12 @@ namespace SVG.IoC
       container.Register<ISessaoAppService, SessaoAppService>(Lifestyle.Scoped);
       container.Register<ISessaoService, SessaoService>(Lifestyle.Scoped);
 
-      // Viatura
+      // [REMOVER] Viatura
       container.Register<IViaturaRepository, ViaturaRepository>(Lifestyle.Scoped);
       container.Register<IViaturaAppService, ViaturaAppService>(Lifestyle.Scoped);
       container.Register<IViaturaService, ViaturaService>(Lifestyle.Scoped);
 
-      // ViaturaOperacao
+      // [REMOVER] ViaturaOperacao
       container.Register<IViaturaOperacaoRepository, ViaturaOperacaoRepository>(Lifestyle.Scoped);
       container.Register<IViaturaOperacaoAppService, ViaturaOperacaoAppService>(Lifestyle.Scoped);
       container.Register<IViaturaOperacaoService, ViaturaOperacaoService>(Lifestyle.Scoped);
@@ -59,9 +58,12 @@ namespace SVG.IoC
       container.Register<ITipoOperacaoService, TipoOperacaoService>(Lifestyle.Scoped);
       container.Register<ITipoOperacaoAppService, TipoOperacaoAppService>(Lifestyle.Scoped);
 
+      container.Register<IUsuarioRepository, UsuarioRepository>(Lifestyle.Scoped);
+      container.Register<IUsuarioService, UsuarioService>(Lifestyle.Scoped);
+      container.Register<IUsuarioRepository, UsuarioRepository>(Lifestyle.Scoped);
+
       container.Register<IClaimsFactory, ClaimsFactory>(Lifestyle.Scoped);
       container.Register<IPasswordService, PasswordService>(Lifestyle.Scoped);
-
     }
   }
 }

@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SVG.Domain\SVG.Domain.csproj" />
-    <ProjectReference Include="..\SVG.Identity\SVG.Identity.csproj" />
     <ProjectReference Include="..\SVG.Utilities\SVG.Utilities.csproj" />
   </ItemGroup>
 

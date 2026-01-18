@@ -1,15 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SVG.Domain.Configurations.Interface;
 using SVG.Domain.Entities.Identity;
-using SVG.Identity.Configurations.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SVG.Identity.Configurations
+namespace SVG.Domain.Configurations
 {
-  public class _PasswordService : _IPasswordService
+  public class PasswordService : IPasswordService
   {
     private readonly PasswordHasher<Usuario> _hasher = new();
 

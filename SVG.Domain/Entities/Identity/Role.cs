@@ -9,6 +9,6 @@ namespace SVG.Domain.Entities.Identity
   public class Role
   {
     public int ID { get; set; }
-    public string Nome { get; set; } = null!;
+    public string Nome { get; set; } 
   }
 }

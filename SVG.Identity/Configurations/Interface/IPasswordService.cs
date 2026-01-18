@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SVG.Identity.Configurations.Interface
 {
-  public interface IPasswordService
+  public interface _PasswordService
   {
     string Hash(Usuario user, string senha);
     bool Verificar(Usuario user, string senha);

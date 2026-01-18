@@ -3,6 +3,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using Microsoft.Extensions.Configuration;
+using SVG.Domain.Entities.Identity;
 
 namespace SVG.Infra.Context.SQLServer
 {
@@ -35,6 +36,9 @@ namespace SVG.Infra.Context.SQLServer
     public DbSet<TipoOperacao> TipoOperacoes { get; set; }
     public DbSet<CandidatoSVGOperacao> CandidatoSVGOperacao { get; set; }
     public DbSet<CalendarioPlantao> CalendarioPlantao { get; set; }
+    public DbSet<Usuario> Usuario { get; set; }
+    public DbSet<Role> Role { get; set; }
+    public DbSet<UsuarioRole> UsuarioRole { get; set; }
 
     #endregion
 
@@ -54,6 +58,10 @@ namespace SVG.Infra.Context.SQLServer
 
       modelBuilder.Properties<string>()
           .Configure(p => p.HasMaxLength(500));
+
+      modelBuilder.Entity<Usuario>()
+        .HasOptional(u => u.Operador)      // Usuario pode NÃO ter Operador
+        .WithOptionalDependent(o => o.Usuario); // Operador é dependente
     }
   }
 }

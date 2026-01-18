@@ -8,11 +8,12 @@ namespace SVG.Domain.Entities.Identity
 {
   public class UsuarioRole
   {
+    public int ID { get; set; }
     public int UsuarioID { get; set; }
-    public Usuario Usuario { get; set; } = null!;
+    public Usuario? Usuario { get; set; }
 
     public int RoleID { get; set; }
-    public Role Role { get; set; } = null!;
+    public Role? Role { get; set; }
   }
 
 }

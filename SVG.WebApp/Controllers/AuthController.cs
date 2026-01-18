@@ -1,15 +1,20 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using SVG.App.Interface;
+using SVG.Domain.Configurations.Interface;
+using SVG.Domain.Interfaces.Services;
 
 namespace SVG.WebApp.Controllers
 {
   public class AuthController : Controller
   {
-    private readonly IUsuarioService _service;
+    private readonly IUsuarioService _usuarioAppService;
+    private readonly IClaimsFactory _claimsFactory;
 
-    public AuthController(IUsuarioService service)
+    public AuthController(IUsuarioService usuarioAppService, IClaimsFactory claimsFactory)
     {
-      _service = service;
+      _usuarioAppService = usuarioAppService;
+      _claimsFactory = claimsFactory;
     }
 
     [HttpGet]
@@ -18,14 +23,14 @@ namespace SVG.WebApp.Controllers
     [HttpPost]
     public async Task<IActionResult> Login(string login, string senha)
     {
-      var usuario = await _service.ValidarLogin(login, senha);
+      var usuario = await _usuarioAppService.ValidarLogin(login, senha);
       if (usuario == null)
       {
         ModelState.AddModelError("", "Login inválido");
         return View();
       }
 
-      var principal = CriarPrincipal(usuario);
+      var principal = _claimsFactory.CriarPrincipal(usuario);
 
       await HttpContext.SignInAsync("Cookies", principal);
 
