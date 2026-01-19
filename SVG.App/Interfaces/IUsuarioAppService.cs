@@ -1,8 +1,9 @@
-﻿using SVG.Domain.Entities.Identity;
+﻿using SVG.App.Interface;
+using SVG.Domain.Entities.Identity;
 
-namespace SVG.Domain.Interfaces.Services
+namespace SVG.App.Interfaces
 {
-  public interface IUsuarioService : IServiceBase<Usuario>
+  public interface IUsuarioAppService : IAppServiceBase<Usuario>
   {
     Task<Usuario?> ValidarLogin(string pLogin, string pSenha);
     Task CriarSenhaAsync(int pUsuarioID, string pNovaSenha);

@@ -1,5 +1,6 @@
 ﻿using SimpleInjector;
 using SVG.App.Interface;
+using SVG.App.Interfaces;
 using SVG.App.Services;
 using SVG.Domain.Configurations;
 using SVG.Domain.Configurations.Interface;
@@ -60,7 +61,11 @@ namespace SVG.IoC
 
       container.Register<IUsuarioRepository, UsuarioRepository>(Lifestyle.Scoped);
       container.Register<IUsuarioService, UsuarioService>(Lifestyle.Scoped);
-      container.Register<IUsuarioRepository, UsuarioRepository>(Lifestyle.Scoped);
+      container.Register<IUsuarioAppService, UsuarioAppService>(Lifestyle.Scoped);
+
+      container.Register<IRoleRepository, RoleRepository>(Lifestyle.Scoped);
+      container.Register<IRoleService, RoleService>(Lifestyle.Scoped);
+      container.Register<IRoleAppService, RoleAppService>(Lifestyle.Scoped);
 
       container.Register<IClaimsFactory, ClaimsFactory>(Lifestyle.Scoped);
       container.Register<IPasswordService, PasswordService>(Lifestyle.Scoped);

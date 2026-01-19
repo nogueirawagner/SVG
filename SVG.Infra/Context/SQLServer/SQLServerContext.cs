@@ -61,7 +61,8 @@ namespace SVG.Infra.Context.SQLServer
 
       modelBuilder.Entity<Usuario>()
         .HasOptional(u => u.Operador)      // Usuario pode NÃO ter Operador
-        .WithOptionalDependent(o => o.Usuario); // Operador é dependente
+        .WithOptionalDependent(o => o.Usuario)
+        .Map(m => m.MapKey("OperadorID")); // Operador é dependente
     }
   }
 }

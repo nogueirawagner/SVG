@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Criar Usuário";
+}
+
+<div class="container mt-5" style="max-width: 450px;">
+    <h3 class="text-center mb-4">Criar novo usuário</h3>
+
+    <form asp-action="CriarUsuario" method="post">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label class="form-label">Login</label>
+            <input type="text"
+                   name="login"
+                   class="form-control"
+                   required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Nome</label>
+            <input type="text"
+                   name="nome"
+                   class="form-control"
+                   required />
+        </div>
+
+        <button type="submit" class="btn btn-success w-100">
+            Criar Usuário
+        </button>
+    </form>
+
+    <div class="text-center mt-3">
+        <a asp-action="Login">Voltar para o login</a>
+    </div>
+</div>

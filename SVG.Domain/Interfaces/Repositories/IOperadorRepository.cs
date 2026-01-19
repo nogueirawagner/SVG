@@ -10,7 +10,7 @@ namespace SVG.Domain.Interfaces.Repositories
 {
   public interface IOperadorRepository : IRepositoryBase<Operador>
   {
-    public IEnumerable<XResumoOperadorOperacao> PegarResumoOperador();
+    IEnumerable<XResumoOperadorOperacao> PegarResumoOperador();
     IEnumerable<XDetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId);
     IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId);
   }

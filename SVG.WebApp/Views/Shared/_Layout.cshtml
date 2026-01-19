@@ -22,7 +22,7 @@
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
 
-                <!-- Brand ou logo (opcional) -->
+                <!-- Brand -->
                 <a class="navbar-brand" asp-controller="Operacao" asp-action="Index">
                     SVG
                 </a>
@@ -39,7 +39,9 @@
 
                 <!-- Links -->
                 <div class="collapse navbar-collapse" id="navbarMenu">
-                    <ul class="navbar-nav">
+
+                    <!-- LADO ESQUERDO -->
+                    <ul class="navbar-nav me-auto">
 
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle"
@@ -86,6 +88,7 @@
                                         Detalhes da Operação
                                     </a>
                                 </li>
+
                                 <li>
                                     <a class="dropdown-item"
                                        asp-controller="Operacao"
@@ -97,15 +100,51 @@
                             </ul>
                         </li>
 
+                    </ul>
+
+                    <!-- LADO DIREITO (LOGIN) -->
+                    <ul class="navbar-nav ms-auto">
+
+                        @if (!User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Auth"
+                                   asp-action="Login">
+                                    Entrar
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle"
+                                   href="#"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false">
+                                    @User.Identity.Name
+                                </a>
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Auth"
+                                           asp-action="Logout">
+                                            Sair
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
 
                     </ul>
+
                 </div>
-
-
-
             </div>
         </nav>
     </header>
+
 
 
     <main role="main" class="pb-3">

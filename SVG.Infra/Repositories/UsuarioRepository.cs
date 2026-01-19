@@ -66,5 +66,14 @@ namespace SVG.Infra.Repositories
       _db.Usuario.Remove(usuario);
       await _db.SaveChangesAsync();
     }
+
+    public async Task CriarUsuarioAsync(Usuario usuario)
+    {
+      if (usuario == null)
+        throw new ArgumentNullException(nameof(usuario));
+
+      _db.Usuario.Add(usuario);
+      await _db.SaveChangesAsync();
+    }
   }
 }

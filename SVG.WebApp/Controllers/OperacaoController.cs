@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
@@ -95,6 +96,7 @@ namespace SVG.WebApp.Controllers
     }
 
     // GET: Operacao
+    [Authorize(Roles = "Admin")]
     public IActionResult Index(string search)
     {
       var escala = _operacaoAppService.PegarEscalaPlantao(DateTime.Now).ToList();

@@ -15,7 +15,6 @@ namespace SVG.Domain.Entities.Identity
     public bool Ativo { get; set; }
 
     // 🔹 FK opcional
-    public int? OperadorID { get; set; }
     public Operador? Operador { get; set; }
 
     public ICollection<UsuarioRole> Roles { get; set; } = new List<UsuarioRole>();
