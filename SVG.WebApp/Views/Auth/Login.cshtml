@@ -1,23 +1,32 @@
 ﻿@{
     ViewData["Title"] = "Login";
+    var operadoresJson = (string)ViewBag.OperadoresJson;
 }
 
 <div class="container mt-5" style="max-width: 400px;">
     <h3 class="text-center mb-4">Entrar no Sistema</h3>
 
-    <form asp-action="Login" method="post">
+    <form asp-action="Login" method="post" id="loginForm">
         @Html.AntiForgeryToken()
 
         <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
+        <!-- 🔹 Login / Matrícula -->
         <div class="mb-3">
-            <label class="form-label">Login</label>
+            <label class="form-label">Matrícula</label>
             <input type="text"
+                   id="login"
                    name="login"
                    class="form-control"
+                   autocomplete="off"
                    required />
+
+            <div id="loginErro" class="text-danger small mt-1 d-none">
+                Matrícula não encontrada.
+            </div>
         </div>
 
+        <!-- 🔹 Senha -->
         <div class="mb-3">
             <label class="form-label">Senha</label>
             <input type="password"
@@ -26,7 +35,10 @@
                    required />
         </div>
 
-        <button type="submit" class="btn btn-primary w-100">
+        <button type="submit"
+                id="btnEntrar"
+                class="btn btn-primary w-100"
+                disabled>
             Entrar
         </button>
     </form>
@@ -40,3 +52,44 @@
         </a>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // 🔹 Lista de operadores válidos (mesma da tela Create)
+         const operadores = @Html.Raw(operadoresJson);
+
+        const inputLogin = document.getElementById("login");
+        const btnEntrar = document.getElementById("btnEntrar");
+        const loginErro = document.getElementById("loginErro");
+
+        function normalizar(valor) {
+            return valor
+                .trim()
+                .toUpperCase();
+        }
+
+        function matriculaExiste(matricula) {
+            return operadores.some(o =>
+                normalizar(o.Matricula) === normalizar(matricula)
+            );
+        }
+
+        inputLogin.addEventListener("input", function () {
+            const valor = inputLogin.value;
+
+            if (!valor) {
+                btnEntrar.disabled = true;
+                loginErro.classList.add("d-none");
+                return;
+            }
+
+            if (matriculaExiste(valor)) {
+                btnEntrar.disabled = false;
+                loginErro.classList.add("d-none");
+            } else {
+                btnEntrar.disabled = true;
+                loginErro.classList.remove("d-none");
+            }
+        });
+    </script>
+}

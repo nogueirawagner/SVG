@@ -10,6 +10,6 @@ namespace SVG.App.Interface
     public IEnumerable<XResumoOperadorOperacao> PegarResumoOperador();
     IEnumerable<XDetalhamentoOperadorOperacao> PegarDetalhamentoOperador(int pOperadorId);
     IEnumerable<int> PegarOperadoresOperacao(int pOperacaoId);
-
+    XOperadorSelecionado ObterPorMatriculaNormalizada(string matriculaNormalizada);
   }
 }

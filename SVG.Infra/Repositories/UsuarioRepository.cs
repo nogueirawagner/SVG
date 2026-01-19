@@ -44,36 +44,5 @@ namespace SVG.Infra.Repositories
           .OrderBy(u => u.Login)
           .ToListAsync();
     }
-
-    public async Task AdicionarAsync(Usuario usuario)
-    {
-      _db.Usuario.Add(usuario);
-      await _db.SaveChangesAsync();
-    }
-
-    public async Task AtualizarAsync(Usuario usuario)
-    {
-      _db.Entry(usuario).State = EntityState.Modified;
-      await _db.SaveChangesAsync();
-    }
-
-    public async Task RemoverAsync(int id)
-    {
-      var usuario = await _db.Usuario.FindAsync(id);
-      if (usuario == null)
-        return;
-
-      _db.Usuario.Remove(usuario);
-      await _db.SaveChangesAsync();
-    }
-
-    public async Task CriarUsuarioAsync(Usuario usuario)
-    {
-      if (usuario == null)
-        throw new ArgumentNullException(nameof(usuario));
-
-      _db.Usuario.Add(usuario);
-      await _db.SaveChangesAsync();
-    }
   }
 }

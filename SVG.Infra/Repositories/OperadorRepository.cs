@@ -5,6 +5,7 @@ using SVG.Infra.Context.SQLServer;
 using SVG.Infra.FunctionsDB;
 using SVG.Infra.Repositories;
 using System.CodeDom;
+using System.Data.Entity;
 using System.Data.SqlClient;
 
 namespace SVG.Infra.Repositories
@@ -146,6 +147,21 @@ namespace SVG.Infra.Repositories
 
       return _db.Database.SqlQuery<int>(sql, 
 				new SqlParameter("@pOperacaoID", pOperacaoId));
+    }
+
+    public XOperadorSelecionado ObterPorMatriculaNormalizada(string matriculaNormalizada)
+    {
+      const string sql = @"
+        SELECT *
+        FROM Operador
+        WHERE REPLACE(REPLACE(Matricula, '.', ''), '-', '') = @matricula";
+
+      return _db.Database
+          .SqlQuery<XOperadorSelecionado>(
+              sql,
+              new SqlParameter("@matricula", matriculaNormalizada)
+          )
+          .FirstOrDefault();
     }
   }
 }

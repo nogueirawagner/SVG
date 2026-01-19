@@ -1,4 +1,5 @@
 ﻿using SVG.App.Interfaces;
+using SVG.Domain.Entities;
 using SVG.Domain.Entities.Identity;
 using SVG.Domain.Interfaces.Services;
 
@@ -8,7 +9,8 @@ namespace SVG.App.Services
   {
     private readonly IUsuarioService _usuarioService;
 
-    public UsuarioAppService(IUsuarioService usuarioService)
+    public UsuarioAppService(
+      IUsuarioService usuarioService)
         : base(usuarioService)
     {
       _usuarioService = usuarioService;
@@ -27,6 +29,11 @@ namespace SVG.App.Services
     public Task CriarUsuarioAsync(Usuario usuario)
     {
       return _usuarioService.CriarUsuarioAsync(usuario);
+    }
+
+    public Task CriarUsuarioComSenhaAsync(Usuario usuario, string senha)
+    {
+      return _usuarioService.CriarUsuarioComSenhaAsync(usuario, senha);
     }
 
     public Task<Usuario?> ValidarLogin(string pLogin, string pSenha)

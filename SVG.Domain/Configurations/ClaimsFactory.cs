@@ -9,11 +9,11 @@ namespace SVG.Domain.Configurations
     public ClaimsPrincipal CriarPrincipal(Usuario usuario)
     {
       var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, usuario.ID.ToString()),
-        new Claim(ClaimTypes.Name, usuario.Login),
-        new Claim("Nome", usuario.Nome)
-    };
+        {
+            new Claim(ClaimTypes.NameIdentifier, usuario.ID.ToString()),
+            new Claim(ClaimTypes.Name, usuario.Nome),
+            new Claim("Nome", usuario.Nome)
+        };
 
       foreach (var role in usuario.Roles)
         claims.Add(new Claim(ClaimTypes.Role, role.Role.Nome));

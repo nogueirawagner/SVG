@@ -1,4 +1,5 @@
 ﻿using SVG.Domain.Configurations.Interface;
+using SVG.Domain.Entities;
 using SVG.Domain.Entities.Identity;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.Services;
@@ -36,10 +37,6 @@ namespace SVG.Domain.Interfaces.Services
       if (!_passwordService.Verificar(usuario, pSenha))
         return null;
 
-      GarantirRolePadrao(usuario); // 🔒 regra centralizada
-
-      await _usuarioRepository.AtualizarAsync(usuario);
-
       return usuario;
     }
 
@@ -49,9 +46,8 @@ namespace SVG.Domain.Interfaces.Services
       if (existente != null)
         throw new Exception("Já existe um usuário com este login.");
 
-      await _usuarioRepository.AdicionarAsync(usuario);
+      _usuarioRepository.Add(usuario);
     }
-
 
     public async Task CriarSenhaAsync(int pUsuarioID, string pSenha)
     {
@@ -59,10 +55,6 @@ namespace SVG.Domain.Interfaces.Services
         ?? throw new Exception("Usuário não encontrado");
 
       usuario.PasswordHash = _passwordService.Hash(usuario, pSenha);
-
-      GarantirRolePadrao(usuario);
-
-      await _usuarioRepository.AtualizarAsync(usuario);
     }
 
     public async Task AlterarSenhaAsync(int pUsuarioId, string pSenhaAtual, string pNovaSenha)
@@ -75,11 +67,15 @@ namespace SVG.Domain.Interfaces.Services
 
       usuario.PasswordHash = _passwordService.Hash(usuario, pNovaSenha);
 
-      GarantirRolePadrao(usuario);
-
-      await _usuarioRepository.AtualizarAsync(usuario);
+      _usuarioRepository.Update(usuario);
     }
 
+    public async Task CriarUsuarioComSenhaAsync(Usuario usuario, string senha)
+    {
+      usuario.PasswordHash = _passwordService.Hash(usuario, senha);
+      GarantirRolePadrao(usuario);
+      _usuarioRepository.Add(usuario);
+    }
 
     private void GarantirRolePadrao(Usuario usuario)
     {
@@ -95,11 +91,10 @@ namespace SVG.Domain.Interfaces.Services
           role.ID = roleResult.ID;
           role.Nome = roleResult.Nome;
 
-
           usuario.Roles.Add(new UsuarioRole
           {
-            Role = role
-          }); 
+            RoleID = role.ID
+          });
         }
       }
       else
@@ -113,7 +108,7 @@ namespace SVG.Domain.Interfaces.Services
 
           usuario.Roles.Add(new UsuarioRole
           {
-            Role = role
+            RoleID = role.ID
           });
         }
       }

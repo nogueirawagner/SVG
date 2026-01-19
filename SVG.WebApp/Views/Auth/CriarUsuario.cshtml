@@ -1,32 +1,85 @@
 ﻿@{
     ViewData["Title"] = "Criar Usuário";
+    var operadoresJson = (string)ViewBag.OperadoresJson;
 }
 
 <div class="container mt-5" style="max-width: 450px;">
     <h3 class="text-center mb-4">Criar novo usuário</h3>
 
-    <form asp-action="CriarUsuario" method="post">
+    <form asp-action="CriarUsuario" method="post" id="formCriarUsuario">
         @Html.AntiForgeryToken()
 
         <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
+        <!-- Matrícula -->
         <div class="mb-3">
-            <label class="form-label">Login</label>
+            <label class="form-label">Matrícula</label>
             <input type="text"
+                   id="matricula"
                    name="login"
                    class="form-control"
+                   autocomplete="off"
                    required />
+
+            <div id="matriculaErro" class="text-danger mt-1 d-none">
+                Matrícula não encontrada entre os operadores.
+            </div>
         </div>
 
+        <!-- Nome -->
         <div class="mb-3">
-            <label class="form-label">Nome</label>
+            <label class="form-label">Nome de Guerra</label>
             <input type="text"
+                   id="nome"
                    name="nome"
                    class="form-control"
                    required />
         </div>
 
-        <button type="submit" class="btn btn-success w-100">
+        <!-- Senha -->
+        <div class="mb-3">
+            <label class="form-label">Senha</label>
+            <input type="password"
+                   id="senha"
+                   name="senha"
+                   class="form-control"
+                   required />
+
+            <div id="senhaRegras" class="mt-2 small">
+                <div id="regraMaiuscula" class="text-danger">
+                    • Pelo menos uma letra maiúscula
+                </div>
+                <div id="regraMinuscula" class="text-danger">
+                    • Pelo menos uma letra minúscula
+                </div>
+                <div id="regraNumero" class="text-danger">
+                    • Pelo menos um número
+                </div>
+                <div id="regraEspecial" class="text-danger">
+                    • Pelo menos um caractere especial
+                </div>
+            </div>
+        </div>
+
+        <!-- Repetir Senha -->
+        <div class="mb-3">
+            <label class="form-label">Repetir Senha</label>
+            <input type="password"
+                   id="senhaConfirmacao"
+                   name="senhaConfirmacao"
+                   class="form-control"
+                   required />
+
+            <div id="senhaIgualErro" class="text-danger mt-1 d-none">
+                As senhas não conferem.
+            </div>
+
+        </div>
+
+        <button type="submit"
+                id="btnCriar"
+                class="btn btn-success w-100"
+                disabled>
             Criar Usuário
         </button>
     </form>
@@ -35,3 +88,94 @@
         <a asp-action="Login">Voltar para o login</a>
     </div>
 </div>
+
+<script>
+    const operadores = @Html.Raw(operadoresJson);
+
+    const matriculaInput = document.getElementById("matricula");
+    const nomeInput = document.getElementById("nome");
+    const senhaInput = document.getElementById("senha");
+    const senhaConfirmacaoInput = document.getElementById("senhaConfirmacao");
+
+    const erroMatricula = document.getElementById("matriculaErro");
+    const erroSenhaIgual = document.getElementById("senhaIgualErro");
+    const botao = document.getElementById("btnCriar");
+
+    const regraMaiuscula = document.getElementById("regraMaiuscula");
+    const regraMinuscula = document.getElementById("regraMinuscula");
+    const regraNumero = document.getElementById("regraNumero");
+    const regraEspecial = document.getElementById("regraEspecial");
+
+    function normalizar(valor) {
+        return valor.replace(/\D/g, "");
+    }
+
+    function primeiroEUltimoNome(nomeCompleto) {
+        if (!nomeCompleto) return "";
+        const partes = nomeCompleto.trim().split(/\s+/);
+        if (partes.length === 1) return partes[0];
+        return partes[0] + " " + partes[partes.length - 1];
+    }
+
+    function validarSenha(senha) {
+        return {
+            maiuscula: /[A-Z]/.test(senha),
+            minuscula: /[a-z]/.test(senha),
+            numero: /\d/.test(senha),
+            especial: /[^A-Za-z0-9]/.test(senha)
+        };
+    }
+
+    function atualizarRegra(elemento, valida) {
+        if (valida) {
+            elemento.classList.remove("text-danger");
+            elemento.classList.add("text-success");
+        } else {
+            elemento.classList.remove("text-success");
+            elemento.classList.add("text-danger");
+        }
+    }
+
+    function validarFormulario() {
+        const matricula = normalizar(matriculaInput.value);
+        const senha = senhaInput.value;
+        const confirmacao = senhaConfirmacaoInput.value;
+
+        const operador = operadores.find(o => o.Matricula === matricula);
+        const matriculaValida = !!operador;
+
+        erroMatricula.classList.toggle("d-none", matriculaValida || !matricula);
+
+        if (operador) {
+            nomeInput.value = primeiroEUltimoNome(operador.Nome);
+        } else {
+            nomeInput.value = "";
+        }
+
+        const regras = validarSenha(senha);
+
+        atualizarRegra(regraMaiuscula, regras.maiuscula);
+        atualizarRegra(regraMinuscula, regras.minuscula);
+        atualizarRegra(regraNumero, regras.numero);
+        atualizarRegra(regraEspecial, regras.especial);
+
+        const senhaForte =
+            regras.maiuscula &&
+            regras.minuscula &&
+            regras.numero &&
+            regras.especial;
+
+        const senhaIgual = senha && confirmacao && senha === confirmacao;
+
+        erroSenhaIgual.classList.toggle("d-none", senhaIgual || !confirmacao);
+
+        botao.disabled = !(matriculaValida && senhaForte && senhaIgual);
+    }
+
+    matriculaInput.addEventListener("input", validarFormulario);
+    senhaInput.addEventListener("input", validarFormulario);
+    senhaConfirmacaoInput.addEventListener("input", validarFormulario);
+</script>
+
+
+

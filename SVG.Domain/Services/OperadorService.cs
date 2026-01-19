@@ -29,5 +29,10 @@ namespace SVG.Domain.Services
     {
       return _operadorRepository.PegarOperadoresOperacao(pOperacaoId);
     }
+
+    public XOperadorSelecionado ObterPorMatriculaNormalizada(string matriculaNormalizada)
+    {
+      return _operadorRepository.ObterPorMatriculaNormalizada(matriculaNormalizada);
+    }
   }
 }

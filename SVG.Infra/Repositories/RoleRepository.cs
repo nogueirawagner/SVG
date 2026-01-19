@@ -26,7 +26,7 @@ namespace SVG.Infra.Repositories
     public XRole ObterPorNome(string pNome)
     {
       var sql = @"
-          select ID, Nome from Roles
+          select ID, Nome from Role
           where Nome = @pNome";
 
       return _db.Database.
