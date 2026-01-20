@@ -126,6 +126,7 @@ namespace SVG.Infra.Repositories
         from Operacao o
           join TipoOperacao t on t.ID = o.TipoOperacaoID
         where contains(OrdemServico, @pOrdemServico)
+          and YEAR(DataHora) = YEAR(GETDATE())
         order by DataHoraCriacao desc
         ";
 

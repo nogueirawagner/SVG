@@ -226,7 +226,6 @@ namespace SVG.WebApp.Controllers
     [HttpGet]
     public ActionResult ListarOperacoesPorOrdemServico(string pOrdemServico)
     {
-
       var lista = _operacaoAppService
           .ListarOperacoesPorOrdemServico(pOrdemServico).ToList();
 

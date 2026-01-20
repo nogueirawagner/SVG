@@ -113,6 +113,9 @@
                         <div class="card-header py-2 d-flex justify-content-between align-items-center">
                             <span>Operadores selecionados</span>
                             <span class="badge bg-secondary">Total: <span id="operadoresCount">0</span></span>
+                            <span class="badge bg-success ms-2">
+                                SVG: <span id="totalSvg">0</span>
+                            </span>
                         </div>
                         <div class="card-body p-2">
                             <ul id="listaOperadoresSelecionados" class="list-group">
@@ -134,7 +137,7 @@
 
                 <!-- Vagas -->
                 <div class="col-md-2">
-                    <label asp-for="QtdVagasVoluntarios" class="form-label">Vagas</label>
+                    <label asp-for="QtdVagasVoluntarios" class="form-label">Vagas Totais</label>
                     <input asp-for="QtdVagasVoluntarios"
                            id="QtdVagasVoluntarios"
                            type="number"
@@ -173,7 +176,9 @@
     <div class="card mt-3">
         <div class="card-header py-2 d-flex justify-content-between align-items-center">
             <span>Operações criadas para a OS <strong id="osAtual">—</strong></span>
-            <span class="badge bg-secondary">Total: <span id="totalOps">0</span></span>
+            <span class="badge bg-secondary">
+                Total: <span id="totalOps">0</span>
+            </span>
         </div>
 
         <div class="card-body p-0">
@@ -323,17 +328,35 @@
             }
 
             function atualizarOperadoresCount() {
-                operadoresCount.textContent = listaOperadoresSelecionados.querySelectorAll("li").length;
-            }
+              const itens = listaOperadoresSelecionados.querySelectorAll("li");
+              document.getElementById("operadoresCount").textContent = itens.length;
 
-            function reindexarOperadoresHidden() {
+              let svgCount = 0;
+
+              itens.forEach(li => {
+                  const inputSvg = li.querySelector(".inputSvgFlag");
+                  if (inputSvg && inputSvg.value === "true") {
+                      svgCount++;
+                  }
+              });
+
+              document.getElementById("totalSvg").textContent = svgCount;
+          }
+
+          function reindexarOperadoresHidden() {
                 const itens = listaOperadoresSelecionados.querySelectorAll("li");
+
                 itens.forEach((li, idx) => {
-                    const hid = li.querySelector("input[type=hidden]");
-                    if (hid) hid.name = `OperadoresSelecionados[${idx}].OperadorID`;
+                    const inputId = li.querySelector(".inputOperadorId");
+                    const inputSvg = li.querySelector(".inputSvgFlag");
+
+                    if (inputId) inputId.name = `OperadoresSelecionados[${idx}].OperadorID`;
+                    if (inputSvg) inputSvg.name = `OperadoresSelecionados[${idx}].SVG`;
                 });
+
                 atualizarOperadoresCount();
             }
+
 
             function limparOperadoresUI() {
                 if (operadorBusca) operadorBusca.value = "";
@@ -347,36 +370,73 @@
                 atualizarOperadoresCount();
             }
 
-            function addOperadorSelecionado(op) {
-                const id = op.ID;
-                if (!id) return;
+          function addOperadorSelecionado(op) {
+            const id = op.ID;
+            if (!id) return;
 
-                // evita duplicado
-                if (listaOperadoresSelecionados.querySelector(`li[data-id="${id}"]`)) return;
+            // evita duplicado
+            if (listaOperadoresSelecionados.querySelector(`li[data-id="${id}"]`)) return;
 
-                const li = document.createElement("li");
-                li.className = "list-group-item d-flex justify-content-between align-items-center";
-                li.dataset.id = id;
+            const li = document.createElement("li");
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.dataset.id = id;
 
-                li.innerHTML = `
-                    <div>
-                        <strong>${op.Nome}</strong>
-                        <span class="text-muted">(${op.Matricula})</span>
-                    </div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <button type="button" class="btn btn-sm btn-outline-danger btnRemoverOperador">Remover</button>
-                    </div>
-                    <input type="hidden" value="${id}" />
-                `;
+            // padrão inicial
+            const svgInicial = true;
 
-                li.querySelector(".btnRemoverOperador").addEventListener("click", function () {
-                    li.remove();
-                    reindexarOperadoresHidden();
-                });
+            const svgText = svgInicial ? "SVG: Sim" : "SVG: Não";
+            const svgBtnClass = svgInicial ? "btn-outline-success" : "btn-outline-secondary";
 
-                listaOperadoresSelecionados.appendChild(li);
-                reindexarOperadoresHidden();
-            }
+            li.innerHTML = `
+                <div>
+                    <strong>${op.Nome}</strong>
+                    <span class="text-muted">(${op.Matricula})</span>
+                </div>
+
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button"
+                            class="btn ${svgBtnClass} btnToggleSvg">
+                        ${svgText}
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-outline-danger btnRemoverOperador">
+                        Remover
+                    </button>
+                </div>
+
+                <input type="hidden" value="${id}" class="inputOperadorId" />
+                <input type="hidden" value="${svgInicial ? "true" : "false"}"
+                       class="inputSvgFlag" />
+            `;
+
+            // 🔴 remover operador
+            li.querySelector(".btnRemoverOperador").addEventListener("click", function () {
+                li.remove();
+                reindexarOperadoresHidden(); // já atualiza os contadores
+            });
+
+            // 🟢 toggle SVG (AQUI estava o problema)
+            li.querySelector(".btnToggleSvg").addEventListener("click", function () {
+                const inputSvg = li.querySelector(".inputSvgFlag");
+
+                const atual = (inputSvg.value ?? "").toString().toLowerCase() === "true";
+                const novo = !atual;
+
+                inputSvg.value = novo ? "true" : "false";
+
+                this.textContent = novo ? "SVG: Sim" : "SVG: Não";
+                this.classList.toggle("btn-outline-success", novo);
+                this.classList.toggle("btn-outline-secondary", !novo);
+
+                atualizarOperadoresCount(); // ⭐ ESSENCIAL
+            });
+
+            listaOperadoresSelecionados.appendChild(li);
+
+            reindexarOperadoresHidden(); // indexa + atualiza contadores
+        }
+
 
             // init
             renderOperadorOptions("");
@@ -413,95 +473,196 @@
             // ==========================
             // Tabela por OS (serviço)
             // ==========================
-            async function carregarOperacoesPorOS() {
-                osAtual.textContent = osSelecionada || "—";
+                  async function carregarOperacoesPorOS({ silent = false } = {}) {
+            osAtual.textContent = osSelecionada || "—";
 
-                if (!osSelecionada) {
+            if (!osSelecionada) {
+                if (!silent) {
                     setInfo("Informe uma OS e clique em <strong>Carregar por OS</strong>.");
-                    return;
+                }
+                return false;
+            }
+
+            if (!silent) {
+                setLoading("Carregando operações...");
+            }
+
+            try {
+                const url = `/Operacao/ListarOperacoesPorOrdemServico?pOrdemServico=${encodeURIComponent(osSelecionada)}`;
+                const resp = await fetch(url, { method: "GET", cache: "no-store" });
+
+                if (!resp.ok) {
+                    if (!silent) {
+                        setError(`Falha ao carregar lista. Status: <strong>${resp.status} ${resp.statusText}</strong>`);
+                    }
+                    return false;
                 }
 
-                setLoading("Carregando operações...");
+                const itens = await resp.json();
 
-                try {
-                    // espera: string (nvarch) no controller
-                    const url = `/Operacao/ListarOperacoesPorOrdemServico?pOrdemServico=${encodeURIComponent(osSelecionada)}`;
-                    const resp = await fetch(url, {
-                        method: "GET",
-                        cache: "no-store"
-                    });
-
-                    if (!resp.ok) {
-                        setError(`Falha ao carregar lista. Status: <strong>${resp.status} ${resp.statusText}</strong>`);
-                        return;
-                    }
-
-                    const itens = await resp.json();
-
-                    totalOps.textContent = (itens || []).length;
-
-                    if (!Array.isArray(itens) || itens.length === 0) {
+                if (!Array.isArray(itens) || itens.length === 0) {
+                    if (!silent) {
                         setInfo("Nenhuma operação encontrada para esta OS.");
-                        return;
                     }
+                    return false;
+                }
 
-                    tbodyOps.innerHTML = "";
+                // 🔹 SOMENTE AQUI renderiza
+                totalOps.textContent = itens.length;
+                tbodyOps.innerHTML = "";
 
-                    itens.forEach(op => {
-                        const tr = document.createElement("tr");
+                itens.forEach(op => {
+                    const tr = document.createElement("tr");
 
-                        const id = pick(op, "ID", "Id", "id");
-                        const inicio = pick(op, "DataHoraInicio", "dataHoraInicio", "DataHora", "dataHora");
-                        const fim = pick(op, "DataHoraFim", "dataHoraFim");
-                        const objeto = pick(op, "Objeto", "objeto") || "";
-                        const qtdOperadores = pick(op, "QtdOperadores", "qtdOperadores") ?? 0;
-                        const vagas = pick(op, "QtdVagasRestantes", "qtdVagasRestantes") ?? 0;
-                        const svgAberto = pick(op, "SvgAberto", "svgAberto") === true;
+                    const id = pick(op, "ID", "Id", "id");
+                    const inicio = pick(op, "DataHoraInicio", "dataHoraInicio", "DataHora", "dataHora");
+                    const fim = pick(op, "DataHoraFim", "dataHoraFim");
+                    const objeto = pick(op, "Objeto", "objeto") || "";
+                    const qtdOperadores = pick(op, "QtdOperadores", "qtdOperadores") ?? 0;
+                    const vagas = pick(op, "QtdVagasRestantes", "qtdVagasRestantes") ?? 0;
+                    const svgAberto = pick(op, "SvgAberto", "svgAberto") === true;
 
-                        const idValido = id !== null && id !== undefined && id !== "" && !isNaN(Number(id));
+                    const idValido = id && !isNaN(Number(id));
 
-                        tr.innerHTML = `
-                            <td class="text-center"><strong>#${idValido ? id : "—"}</strong></td>
-                            <td class="text-center small text-muted">${formatarDataHora(inicio)}</td>
-                            <td class="text-center small text-muted">${formatarDataHora(fim)}</td>
-                            <td class="text-center">${objeto}</td>
-                            <td class="text-center">
-                            <span class="badge bg-secondary  op-ops-popover"
-                                    style="cursor: help;"
-                                    data-opid="${id}">
+                    tr.innerHTML = `
+                        <td class="text-center"><strong>#${idValido ? id : "—"}</strong></td>
+                        <td class="text-center small text-muted">${formatarDataHora(inicio)}</td>
+                        <td class="text-center small text-muted">${formatarDataHora(fim)}</td>
+                        <td class="text-center">${objeto}</td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary op-ops-popover" data-opid="${id}">
                                 ${qtdOperadores}
                             </span>
-                            </td>
-                            <td class="text-center">${vagas}</td>
-                            <td class="text-center">
+                        </td>
+                        <td class="text-center">${vagas}</td>
+                        <td class="text-center">
                             <span class="badge ${svgAberto ? "bg-success" : "bg-secondary"}">
                                 ${svgAberto ? "Sim" : "Não"}
                             </span>
-                            </td>
-                            <td class="text-center">
+                        </td>
+                        <td class="text-center">
                             ${
                                 idValido
-                                ? `<button type="button"
-                                            class="btn btn-sm btn-danger btn-remover"
-                                            data-id="${id}">
-                                        Remover
-                                    </button>`
-                                : `<span class="text-muted">—</span>`
+                                    ? `<button type="button" class="btn btn-sm btn-danger btn-remover" data-id="${id}">
+                                           Remover
+                                       </button>`
+                                    : `<span class="text-muted">—</span>`
                             }
-                            </td>
-                        `;
+                        </td>
+                    `;
 
-                        tbodyOps.appendChild(tr);
-                    });
+                    tbodyOps.appendChild(tr);
+                });
 
-                    estadoLista.style.display = "none";
-                    wrapTabela.style.display = "block";
+                estadoLista.style.display = "none";
+                wrapTabela.style.display = "block";
 
-                } catch (e) {
-                    console.error(e);
-                    setError("Erro ao carregar. Verifique sua conexão e o endpoint.");
+                return true;
+
+            } catch (e) {
+                console.error(e);
+                if (!silent) {
+                    setError("Erro ao carregar. Verifique sua conexão.");
                 }
+                return false;
             }
+        }
+
+                function renderizarOperacoes(itens) {
+            totalOps.textContent = itens.length;
+            tbodyOps.innerHTML = "";
+
+            itens.forEach(op => {
+                const tr = document.createElement("tr");
+
+                const id = pick(op, "ID", "Id", "id");
+                const inicio = pick(op, "DataHoraInicio", "dataHoraInicio", "DataHora", "dataHora");
+                const fim = pick(op, "DataHoraFim", "dataHoraFim");
+                const objeto = pick(op, "Objeto", "objeto") || "";
+                const qtdOperadores = pick(op, "QtdOperadores", "qtdOperadores") ?? 0;
+                const vagas = pick(op, "QtdVagasRestantes", "qtdVagasRestantes") ?? 0;
+                const svgAberto = pick(op, "SvgAberto", "svgAberto") === true;
+
+                const idValido = id && !isNaN(Number(id));
+
+                tr.innerHTML = `
+                    <td class="text-center"><strong>#${idValido ? id : "—"}</strong></td>
+                    <td class="text-center small text-muted">${formatarDataHora(inicio)}</td>
+                    <td class="text-center small text-muted">${formatarDataHora(fim)}</td>
+                    <td class="text-center">${objeto}</td>
+                    <td class="text-center">
+                        <span class="badge bg-secondary op-ops-popover" data-opid="${id}">
+                            ${qtdOperadores}
+                        </span>
+                    </td>
+                    <td class="text-center">${vagas}</td>
+                    <td class="text-center">
+                        <span class="badge ${svgAberto ? "bg-success" : "bg-secondary"}">
+                            ${svgAberto ? "Sim" : "Não"}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        ${
+                            idValido
+                                ? `<button type="button" class="btn btn-sm btn-danger btn-remover" data-id="${id}">
+                                       Remover
+                                   </button>`
+                                : `<span class="text-muted">—</span>`
+                        }
+                    </td>
+                `;
+
+                tbodyOps.appendChild(tr);
+            });
+
+            estadoLista.style.display = "none";
+            wrapTabela.style.display = "block";
+        }
+
+
+        async function buscarOperacoesPorOS() {
+            if (!osSelecionada) return null;
+
+            const url = `/Operacao/ListarOperacoesPorOrdemServico?pOrdemServico=${encodeURIComponent(osSelecionada)}`;
+
+            try {
+                const resp = await fetch(url, { method: "GET", cache: "no-store" });
+                if (!resp.ok) return null;
+
+                const itens = await resp.json();
+                return Array.isArray(itens) ? itens : null;
+
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
+        }
+
+
+        function delay(ms) {
+            return new Promise(r => setTimeout(r, ms));
+        }
+
+        async function carregarOperacoesPorOSComRetry(tentativas = 6, intervaloMs = 300) {
+
+            // 🔹 Mostra loading UMA VEZ
+            setLoading("Aguardando confirmação da operação...");
+
+            for (let i = 1; i <= tentativas; i++) {
+                const itens = await buscarOperacoesPorOS();
+
+                if (itens && itens.length > 0) {
+                    renderizarOperacoes(itens); // 🔥 UMA ÚNICA RENDERIZAÇÃO
+                    return;
+                }
+
+                await delay(intervaloMs);
+            }
+
+            setInfo("A operação ainda está sendo processada. Aguarde alguns instantes.");
+        }
+
+
 
             // Remover via AJAX (mantém estado e não sai da página)
             tbodyOps.addEventListener("click", async function (e) {
@@ -604,7 +765,7 @@
             btnCarregar.addEventListener("click", function () {
                 const os = getOs();
                 osSelecionada = os || "";
-                carregarOperacoesPorOS();
+                carregarOperacoesPorOSComRetry();
             });
 
             btnAdicionar.addEventListener("click", async function () {
@@ -666,14 +827,14 @@
                     limparOperadoresUI();
 
                     // recarrega lista do serviço (mantém estado)
-                    await carregarOperacoesPorOS();
+                    await carregarOperacoesPorOSComRetry();
 
                 } catch (e) {
                     console.error(e);
                     setError("Erro ao adicionar. Verifique sua conexão e o endpoint de criação.");
                 }
                 // recarrega lista do serviço (mantém estado)
-                await carregarOperacoesPorOS();
+                await carregarOperacoesPorOSComRetry();
             });
         });
 
