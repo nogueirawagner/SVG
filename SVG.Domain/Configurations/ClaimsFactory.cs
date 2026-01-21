@@ -15,6 +15,12 @@ namespace SVG.Domain.Configurations
             new Claim("Nome", usuario.Nome)
         };
 
+      if (usuario.Operador != null)
+      {
+        claims.Add(new Claim("OperadorId", usuario.Operador.ID.ToString()));
+        claims.Add(new Claim("Matricula", usuario.Operador.Matricula));
+      }
+
       foreach (var role in usuario.Roles)
         claims.Add(new Claim(ClaimTypes.Role, role.Role.Nome));
 

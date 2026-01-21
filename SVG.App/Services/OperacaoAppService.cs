@@ -70,5 +70,10 @@ namespace SVG.App.Services
     {
       _operacaoService.RemoveCandidatoSVG(pOperacaoID, pOperadorID);
     }
+
+    public IEnumerable<XOperacoesSVGAberto> PegarOperacoesSVGAbertoOperador(int pOperadorID)
+    {
+      return _operacaoService.PegarOperacoesSVGAbertoOperador(pOperadorID);
+    }
   }
 }

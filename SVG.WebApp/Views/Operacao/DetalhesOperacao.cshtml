@@ -6,6 +6,7 @@
 
     // Pega o primeiro item da lista para exibir o cabeçalho da operação
     var op = Model.FirstOrDefault();
+    var svgAberto = op.SVG; // bool
 }
 
 <div class="container mt-4">
@@ -31,6 +32,16 @@
     <div class="card mb-4">
         <div class="card-header fw-bold">
             Informações da Operação
+            <div class="mb-3 fw-semibold">
+                Plantão:
+                <span class="text-primary">@ViewBag.PlantaoHoje</span>
+                |
+                Amanhã:
+                <span class="text-success">@ViewBag.PlantaoAmanha</span>
+                |
+                Fantasma:
+                <span class="text-muted">@ViewBag.PlantaoFantasma</span>
+            </div>
         </div>
         <div class="card-body">
 
@@ -53,6 +64,23 @@
                 <div class="col-md-3">
                     <label class="fw-bold">Tipo de Operação:</label>
                     <div>@op.TipoOperacao</div>
+                </div>
+
+                <div class="mb-3 p-3 border rounded bg-light">
+                    <span class="fw-bold me-2">SVG Aberto:</span>
+
+                    @if (svgAberto)
+                    {
+                        <span class="fw-bold text-success fs-5">
+                            SIM
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="fw-bold text-dark fs-5">
+                            NÃO
+                        </span>
+                    }
                 </div>
             </div>
 
@@ -77,17 +105,6 @@
 
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
         <h4 class="mb-0">Operadores da Operação</h4>
-        <div class="mb-3 fw-semibold">
-            Equipe Plantão:
-            <span class="text-primary">@ViewBag.PlantaoHoje</span>
-            |
-            Próxima Equipe:
-            <span class="text-success">@ViewBag.PlantaoAmanha</span>
-            |
-            Fantasma:
-            <span class="text-muted">@ViewBag.PlantaoFantasma</span>
-        </div>
-
         <div class="d-flex align-items-center gap-2">
             <span class="badge bg-secondary">Total <span id="cntTotal">@total</span></span>
             <span class="badge bg-dark">Ordinário <span id="cntOrdinario">@ordinarios</span></span>

@@ -1,0 +1,313 @@
+﻿@using SVG.Domain.TiposEstruturados.TiposOperacao
+@model IEnumerable<XOperacoesSVGAberto>
+
+@{
+    ViewData["Title"] = "Operações com SVG Aberto (Operador)";
+
+    // ViewBag.GruposTipoOperacao esperado: coleção de objetos com { TipoOperacao, Operacoes (List<...>) }
+    var gruposDyn = ViewBag.GruposTipoOperacao as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var grupos = gruposDyn.ToList();
+
+    // Helpers (dynamic-safe) para ler propriedades sem quebrar a view
+    bool GetBool(dynamic obj, string prop)
+    {
+        try
+        {
+            if (obj == null) return false;
+            var pi = obj.GetType().GetProperty(prop);
+            if (pi == null) return false;
+            var v = pi.GetValue(obj);
+            if (v == null) return false;
+            if (v is bool b) return b;
+            return Convert.ToBoolean(v);
+        }
+        catch { return false; }
+    }
+
+    int GetInt(dynamic obj, string prop)
+    {
+        try
+        {
+            if (obj == null) return 0;
+            var pi = obj.GetType().GetProperty(prop);
+            if (pi == null) return 0;
+            var v = pi.GetValue(obj);
+            if (v == null) return 0;
+            if (v is int i) return i;
+            return Convert.ToInt32(v);
+        }
+        catch { return 0; }
+    }
+
+    string GetString(dynamic obj, string prop)
+    {
+        try
+        {
+            if (obj == null) return "";
+            var pi = obj.GetType().GetProperty(prop);
+            if (pi == null) return "";
+            var v = pi.GetValue(obj);
+            return v?.ToString() ?? "";
+        }
+        catch { return ""; }
+    }
+}
+
+<!-- Anti-forgery: usado no fetch -->
+<form id="antiForgeryForm" method="post" class="d-none">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="container mt-4">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="mb-0">SVG Aberto</h3>
+    </div>
+
+    <!-- =======================
+         LISTA DE OPERAÇÕES (AGRUPADAS)
+         ======================= -->
+    @if (grupos == null || grupos.Count == 0)
+    {
+        <div class="alert alert-info mb-0">
+            Nenhuma operação com SVG aberto no momento.
+        </div>
+    }
+    else
+    {
+        <div class="accordion" id="accSvgAberto">
+            @{
+                int gi = 0;
+            }
+            @foreach (var g in grupos)
+            {
+                gi++;
+                var collapseId = $"collapseSvg_{gi}";
+                var headingId = $"headingSvg_{gi}";
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="@headingId">
+                        <button class="accordion-button collapsed"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#@collapseId"
+                                aria-expanded="false"
+                                aria-controls="@collapseId">
+                            <span class="fw-semibold">@g.TipoOperacao</span>
+                            <span class="badge bg-secondary ms-2">@g.Operacoes.Count</span>
+                        </button>
+                    </h2>
+
+                    <div class="collapse mt-1" id="@collapseId">
+                        <ul class="list-group">
+                            @foreach (var op in g.Operacoes)
+                            {
+                                var textoFiltro = $"{g.TipoOperacao} {op.ID} {op.DataHora:dd/MM/yyyy HH:mm} {op.QtdVagasRestantes}".ToLower();
+
+                                // Regras por operação
+                                bool voluntario = GetBool(op, "OperadorVoluntario");
+                                int qtdVol = GetInt(op, "QtdOperadoresVoluntarios");
+
+                                <li class="list-group-item list-group-item-action py-2 operacao-item"
+                                    style="cursor:pointer;"
+                                    data-id="@op.ID"
+                                    data-filtro="@textoFiltro">
+
+                                    <!-- ===== LINHA PRINCIPAL ===== -->
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="me-2">
+
+                                            @if (op.TipoOperacao == "Apoio")
+                                            {
+                                                <div class="fw-semibold">ID: @op.ID |  @g.TipoOperacao</div>
+                                                <div class="text-muted small mt-1">
+                                                    Objeto:
+                                                    <strong>@op.Objeto</strong>
+                                                </div>
+                                                <div class="text-muted small mt-1">
+                                                    Coordenador:
+                                                    <strong>@op.Coordenador</strong>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="fw-semibold">ID: @op.ID |  @g.TipoOperacao</div>
+                                            }
+
+                                            @{
+                                                string fimFormatado = null;
+
+                                                try
+                                                {
+                                                    DateTime? fimN = (DateTime?)op.DataHoraFim;
+                                                    if (fimN.HasValue)
+                                                        fimFormatado = fimN.Value.ToString("dd/MM HH:mm");
+                                                }
+                                                catch
+                                                {
+                                                    try
+                                                    {
+                                                        DateTime fim = (DateTime)op.DataHoraFim;
+                                                        if (fim != default(DateTime))
+                                                            fimFormatado = fim.ToString("dd/MM HH:mm");
+                                                    }
+                                                    catch { }
+                                                }
+                                            }
+
+                                            @if (!string.IsNullOrEmpty(fimFormatado))
+                                            {
+                                                <div class="text-muted small mt-1">
+                                                    Início:
+                                                    <strong>@op.DataHoraInicio.ToString("dd/MM HH:mm")</strong>
+                                                </div>
+                                                <div class="text-muted small mt-1">
+                                                    Fim:
+                                                    <strong>@fimFormatado</strong>
+                                                </div>
+                                            }
+
+                                            @if (op.TipoOperacao == "Apoio")
+                                            {
+                                                <div class="text-muted small mt-1">
+                                                    Início:
+                                                    <strong>@op.DataHoraInicio.ToString("dd/MM HH:mm")</strong>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div class="text-end">
+                                            <div class="d-flex flex-column align-items-end gap-1">
+                                                <span class="badge border border-secondary text-secondary bg-white small">
+                                                    Vagas: @op.QtdVagasRestantes | Voluntários: <strong id="qtd-vol-@op.ID">@qtdVol</strong>
+                                                </span>
+                                                <button type="button"
+                                                        class="btn btn-sm fw-bold @(voluntario ? "btn-outline-danger" : "btn-outline-success") btn-voluntariar mt-1"
+                                                        data-operacao-id="@op.ID"
+                                                        data-voluntario="@(voluntario.ToString().ToLower())">
+                                                    @(voluntario ? "Desistir" : "Voluntariar")
+                                                </button>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // ===== Endpoints
+        const URL_INSERE = '@Url.Action("InsereCandidatoSVG", "Operacao")';
+        const URL_REMOVE = '@Url.Action("RemoveCandidatoSVG", "Operacao")';
+
+        // ===== Anti-forgery
+        function getAntiForgeryToken() {
+            const el = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]');
+            return el ? el.value : null;
+        }
+
+        async function postForm(url, dataObj) {
+            const token = getAntiForgeryToken();
+            const form = new URLSearchParams();
+
+            Object.keys(dataObj || {}).forEach(k => form.append(k, dataObj[k]));
+
+            const headers = { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" };
+            if (token) headers["RequestVerificationToken"] = token;
+
+            return fetch(url, { method: "POST", headers, body: form.toString() });
+        }
+
+        document.querySelectorAll(".btn-voluntariar").forEach(btn => {
+            btn.addEventListener("click", async function () {
+
+                const operacaoId = this.dataset.operacaoId;
+                const jaVoluntario = this.dataset.voluntario === "true";
+                const url = jaVoluntario ? URL_REMOVE : URL_INSERE;
+
+                const qtdSpan = document.getElementById(`qtd-vol-${operacaoId}`);
+                const qtdAtual = qtdSpan ? parseInt(qtdSpan.innerText || "0") : 0;
+
+                // UI lock
+                this.disabled = true;
+                const textoOriginal = this.innerText;
+                this.innerText = "Processando...";
+
+                try {
+                    // Enviando ambos os nomes de parâmetro para ser compatível com ações diferentes
+                    const resp = await postForm(url, { pOperacaoID: operacaoId, id: operacaoId });
+
+                    if (!resp.ok) {
+                        alert("Falha ao processar solicitação.");
+                        return;
+                    }
+
+                    // Alterna estado local (sem reload)
+                    if (jaVoluntario) {
+                        this.innerText = "Voluntariar";
+                        this.classList.remove("btn-outline-danger");
+                        this.classList.add("btn-success");
+                        this.dataset.voluntario = "false";
+
+                        if (qtdSpan) qtdSpan.innerText = Math.max(0, qtdAtual - 1);
+                    } else {
+                        this.innerText = "Desistir";
+                        this.classList.remove("btn-success");
+                        this.classList.add("btn-outline-danger");
+                        this.dataset.voluntario = "true";
+
+                        if (qtdSpan) qtdSpan.innerText = qtdAtual + 1;
+                    }
+
+                } catch (e) {
+                    alert("Erro inesperado.");
+                    this.innerText = textoOriginal;
+                } finally {
+                    this.disabled = false;
+                    if (this.innerText === "Processando...") this.innerText = textoOriginal;
+                }
+            });
+        });
+
+        tbodyOps.addEventListener("click", async (e) => {
+          const btn = e.target.closest(".btn-voluntariar");
+          if (!btn) return;
+
+          const id = btn.dataset.operacaoId;
+          const voluntarioAtual = btn.dataset.voluntario === "true";
+
+          // ... chama seu endpoint aqui e pega o novo estado (ou faz toggle local)
+          const novoVoluntario = !voluntarioAtual;
+
+          setVoluntarioButtonState(btn, novoVoluntario);
+        
+        });
+
+        function setVoluntarioButtonState(btn, isVoluntario) {
+          // limpa tudo que pode conflitar
+          btn.classList.remove("btn-success", "btn-outline-success", "btn-danger", "btn-outline-danger");
+
+          if (isVoluntario) {
+            btn.classList.add("btn-outline-danger");
+            btn.textContent = "Desistir";
+            btn.dataset.voluntario = "true";
+          } else {
+            btn.classList.add("btn-outline-success");
+            btn.textContent = "Voluntariar";
+            btn.dataset.voluntario = "false";
+          }
+        }
+
+    </script>
+
+}

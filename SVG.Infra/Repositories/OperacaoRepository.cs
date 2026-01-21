@@ -65,6 +65,41 @@ namespace SVG.Infra.Repositories
       );
     }
 
+    public IEnumerable<XOperacoesSVGAberto> PegarOperacoesSVGAbertoOperador(int pOperadorID)
+    {
+      var sql = @"
+          select 
+            o.ID, 
+            o.DataHoraCriacao,
+            o.DataHora,
+            COALESCE(o.DataHoraInicio, o.DataHora) DataHoraInicio,
+            o.DataHoraFim,
+            o.Objeto,
+            o.Coordenador,
+            t.Nome TipoOperacao,
+            o.QtdVagasRestantes,
+            CAST(
+	            (CASE	
+		          WHEN cand.ID is null THEN 0
+		          ELSE 1
+	            END) 
+            as bit) OperadorVoluntario,
+            (select COUNT(*) from CandidatoSVGOperacao csvg  where OperacaoID = o.ID) QtdOperadoresVoluntarios
+          from Operacao o
+            join TipoOperacao t on t.ID = o.TipoOperacaoID
+            left join OperadorOperacao oop on oop.OperacaoID = o.ID
+	          and oop.OperadorID = @pOperadorID
+            left join CandidatoSVGOperacao cand on cand.OperacaoID = o.ID
+	          and cand.OperadorID = @pOperadorID
+          where SvgAberto = 1
+	          and oop.ID is null
+          order by DataHoraCriacao desc, DataHoraInicio desc, DataHoraFim desc
+        ";
+      return _db.Database.
+       SqlQuery<XOperacoesSVGAberto>(sql,
+        new SqlParameter("@pOperadorID", pOperadorID));
+    }
+
     public IEnumerable<XOperacoesSVGAberto> PegarOperacoesSVGAberto()
     {
       var sql = @"

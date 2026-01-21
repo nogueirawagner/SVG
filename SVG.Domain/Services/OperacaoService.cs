@@ -56,6 +56,11 @@ namespace SVG.Domain.Services
       return _operacaoRepository.PegarOperacoesSVGAberto();
     }
 
+    public IEnumerable<XOperacoesSVGAberto> PegarOperacoesSVGAbertoOperador(int pOperadorID)
+    {
+      return _operacaoRepository.PegarOperacoesSVGAbertoOperador(pOperadorID);
+    }
+
     public IEnumerable<XOperadorSelecionado> PegarOperadoresOperacaoResumido(int pOperacaoID)
     {
       return _operacaoRepository.PegarOperadoresOperacaoResumido(pOperacaoID);

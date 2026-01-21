@@ -102,7 +102,7 @@ namespace SVG.WebApp.Controllers
       if (isOperador)
       {
         return RedirectToAction(
-            "PegarOperacoesSVGAberto",
+            "OperacoesSVGAbertoOperador",
             "Operacao"
         );
       }

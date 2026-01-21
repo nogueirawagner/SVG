@@ -3,6 +3,7 @@ using SimpleInjector.Lifestyles;
 using SVG.Infra.Context.SQLServer;
 using SVG.IoC;
 using SVG.WebApp.AutoMapper;
+using SVG.WebApp.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,12 +25,14 @@ builder.Services
     {
       options.LoginPath = "/Auth/Login";
       options.LogoutPath = "/Auth/Logout";
-      options.AccessDeniedPath = "/Auth/AcessoNegado";
+      options.AccessDeniedPath = "/Auth/Login";
       options.ExpireTimeSpan = TimeSpan.FromHours(8);
       options.SlidingExpiration = true;
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, UserContext>(); // Específico do projeto Web.
 
 var app = builder.Build();
 app.Services.UseSimpleInjector(container);
@@ -38,6 +41,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+
 
 app.UseAuthentication();
 app.UseAuthorization();

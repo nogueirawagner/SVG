@@ -9,6 +9,7 @@ using SVG.App.ViewModels;
 using SVG.Domain.Entities;
 using SVG.Domain.TiposEstruturados.Enums;
 using SVG.Domain.TiposEstruturados.TiposOperador;
+using SVG.WebApp.Configurations;
 
 namespace SVG.WebApp.Controllers
 {
@@ -20,6 +21,7 @@ namespace SVG.WebApp.Controllers
     private readonly ISessaoAppService _sessaoAppService;
     private readonly ITipoOperacaoAppService _tipoOperacaoAppService;
     private readonly IMapper _mapper;
+    private readonly IUserContext _userContext;
 
     public OperacaoController(
       IOperacaoAppService operacaoAppService,
@@ -27,7 +29,8 @@ namespace SVG.WebApp.Controllers
       ITipoOperacaoAppService tipoOperacaoAppService,
       ISessaoAppService sessaoAppService,
       IOperadorOperacaoAppService operadorOperacaoAppService,
-      IMapper mapper)
+      IMapper mapper,
+      IUserContext userContext)
     {
       _operacaoAppService = operacaoAppService;
       _operadorAppService = operadorAppService;
@@ -35,6 +38,7 @@ namespace SVG.WebApp.Controllers
       _sessaoAppService = sessaoAppService;
       _operadorOperacaoAppService = operadorOperacaoAppService;
       _mapper = mapper;
+      _userContext = userContext;
     }
 
     private void PopularCombos(int? tipoOperacaoId = null, int? coordenadorId = null)
@@ -105,7 +109,18 @@ namespace SVG.WebApp.Controllers
       ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
 
       var operacoes = _operacaoAppService.PegarOperacoesRealizadas().ToList();
-      return View(operacoes);
+      if (User.IsInRole("Admin"))
+      {
+        return View(operacoes);
+      }
+      else if (User.IsInRole("Operador"))
+      {
+        return RedirectToAction("Index", "OperacaoOperador");
+      }
+      else
+      {
+        return RedirectToAction("Login", "Auth");
+      }
     }
 
     [HttpPost]
@@ -143,19 +158,58 @@ namespace SVG.WebApp.Controllers
       oper.QtdVagasRestantes = 0;
 
       _operacaoAppService.Update(oper);
-      return RedirectToAction("Index"); ;
+
+      if (_userContext.IsOperador)
+        return RedirectToAction("Detalhes", new { id = oper.ID });
+
+      return RedirectToAction("Index");
+
     }
 
+    [Authorize(Roles = "Admin")]
     // GET: Operacao/Details/5
     public IActionResult DetalhesOperacao(int pOperacaoID)
     {
+      var escala = _operacaoAppService.PegarEscalaPlantao(DateTime.Now).ToList();
+      ViewBag.PlantaoHoje = escala.First(s => s.Situacao == XSituacaoPlantao.Atual).Nome;
+      ViewBag.PlantaoAmanha = escala.First(s => s.Situacao == XSituacaoPlantao.Proxima).Nome;
+      ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
+
       var detalhes = _operacaoAppService.PegarDetalhesOperacao(pOperacaoID).ToList();
 
       return View(detalhes);
     }
 
+    [Authorize(Roles = "Operador")]
+    public IActionResult OperacoesSVGAbertoOperador()
+    {
+      var escala = _operacaoAppService.PegarEscalaPlantao(DateTime.Now).ToList();
+      ViewBag.PlantaoHoje = escala.First(s => s.Situacao == XSituacaoPlantao.Atual).Nome;
+      ViewBag.PlantaoAmanha = escala.First(s => s.Situacao == XSituacaoPlantao.Proxima).Nome;
+      ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
+
+      var operador = _userContext.OperadorId.HasValue
+         ? _operadorAppService.GetById(_userContext.OperadorId.Value)
+         : null;
+
+      var operacoesSVG = _operacaoAppService.PegarOperacoesSVGAbertoOperador(operador.ID).ToList();
+      var grupos = operacoesSVG
+        .GroupBy(o => o.TipoOperacao)
+        .Select(g => new
+        {
+          TipoOperacao = g.Key,
+          Operacoes = g.ToList()
+        })
+        .ToList();
+
+      ViewBag.GruposTipoOperacao = grupos;
+
+
+      return View(operacoesSVG);
+    }
+
     [Authorize(Roles = "Admin, Operador")]
-    public IActionResult PegarOperacoesSVGAberto()
+    public IActionResult OperacoesSVGAberto()
     {
       PopularCombos();
 
