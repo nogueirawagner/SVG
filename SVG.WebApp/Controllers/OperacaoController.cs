@@ -203,6 +203,7 @@ namespace SVG.WebApp.Controllers
         .ToList();
 
       ViewBag.GruposTipoOperacao = grupos;
+      ViewBag.OperadorId = operador.ID;
 
 
       return View(operacoesSVG);
