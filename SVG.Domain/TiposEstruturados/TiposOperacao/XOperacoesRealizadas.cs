@@ -21,5 +21,6 @@ namespace SVG.Domain.TiposEstruturados.TiposOperacao
     public int QtdVagasRestantes { get; set; }
     public DateTime DataHoraEncerramentoSVG { get; set; }
     public int QtdOperadores { get; set; }
+    public int QtdOperadoresVoluntarios { get; set; }
   }
 }

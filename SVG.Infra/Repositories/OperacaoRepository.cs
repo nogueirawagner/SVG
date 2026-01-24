@@ -133,7 +133,8 @@ namespace SVG.Infra.Repositories
           t.Nome TipoOperacao, 
           o.SvgAberto,
           o.QtdVagasRestantes,
-          o.DataHoraFim
+          o.DataHoraFim,
+          (select COUNT(*) from CandidatoSVGOperacao csvg  where OperacaoID = o.ID) QtdOperadoresVoluntarios
         from Operacao o
           join TipoOperacao t on t.ID = o.TipoOperacaoID
         order by DataHoraCriacao desc
