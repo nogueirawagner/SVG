@@ -50,7 +50,7 @@ app.UseAuthorization();
 // Rotas MVC (controllers)
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Operacao}/{action=Index}/{id?}");
+    pattern: "{controller=Auth}/{action=Login}/{id?}");
 app.MapControllers();
 
 //app.MapRazorPages();
