@@ -229,6 +229,13 @@
 
     <style>
 
+        input[type="datetime-local"] {
+            line-height: 1.25;
+            padding-top: 0.45rem;
+            padding-bottom: 0.45rem;
+        }
+
+
         /* Bootstrap modal: garante que o modal fique acima do backdrop */
         .modal-backdrop {
             z-index: 1990 !important;
@@ -239,17 +246,17 @@
         }
 
         /* =========================
-   DROPDOWN SUBMENU
-   ========================= */
-.dropdown-submenu {
-    position: relative;
-}
+           DROPDOWN SUBMENU
+           ========================= */
+        .dropdown-submenu {
+            position: relative;
+        }
 
-.dropdown-submenu > .dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: -0.25rem;
-}
+            .dropdown-submenu > .dropdown-menu {
+                top: 0;
+                left: 100%;
+                margin-top: -0.25rem;
+            }
 
         /* melhora no mobile: submenu abre "para baixo" */
         @@media (max-width: 991.98px) {
@@ -293,19 +300,19 @@
             z-index: 10;
         }
 
-/* Dropdown acima do header */
-.dropdown-menu {
-    z-index: 20;
-}
+        /* Dropdown acima do header */
+        .dropdown-menu {
+            z-index: 20;
+        }
 
-/* Modal e backdrop (garantia total) */
-.modal {
-    z-index: 1050;
-}
+        /* Modal e backdrop (garantia total) */
+        .modal {
+            z-index: 1050;
+        }
 
-.modal-backdrop {
-    z-index: 1040;
-}
+        .modal-backdrop {
+            z-index: 1040;
+        }
 
     </style>
 
