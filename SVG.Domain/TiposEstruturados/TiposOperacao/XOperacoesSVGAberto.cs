@@ -15,6 +15,7 @@ namespace SVG.Domain.TiposEstruturados.TiposOperacao
     public DateTime? DataHoraFim { get; set; }
     public string TipoOperacao { get; set; }
     public string Objeto { get; set; }
+    public string OS { get; set; }
     public string Coordenador { get; set; }
     public int QtdVagasRestantes { get; set; }
     public bool OperadorVoluntario { get; set; }

@@ -75,6 +75,7 @@ namespace SVG.Infra.Repositories
             COALESCE(o.DataHoraInicio, o.DataHora) DataHoraInicio,
             o.DataHoraFim,
             o.Objeto,
+            o.OrdemServico OS,
             o.Coordenador,
             t.Nome TipoOperacao,
             o.QtdVagasRestantes,

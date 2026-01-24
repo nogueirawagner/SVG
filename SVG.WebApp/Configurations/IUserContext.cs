@@ -2,6 +2,7 @@
 {
   public interface IUserContext
   {
+    bool IsAuthenticated { get; }
     bool IsAdmin { get; }
     bool IsOperador { get; }
     int? OperadorId { get; }

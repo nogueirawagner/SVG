@@ -121,7 +121,7 @@
 
                                             @if (op.TipoOperacao == "Apoio" || op.TipoOperacao == "Alvorada")
                                             {
-                                                <div class="fw-semibold">ID: @op.ID |  @g.TipoOperacao</div>
+                                                <div class="fw-semibold">@op.OS | @g.TipoOperacao</div>
                                                 <div class="text-muted small mt-1">
                                                     Objeto:
                                                     <strong>@op.Objeto</strong>
@@ -133,7 +133,11 @@
                                             }
                                             else
                                             {
-                                                <div class="fw-semibold">ID: @op.ID |  @g.TipoOperacao</div>
+                                                <div class="fw-semibold">@op.OS | @g.TipoOperacao</div>
+                                                <div class="text-muted small mt-1">
+                                                    Objeto:
+                                                    <strong>@op.Objeto</strong>
+                                                </div>
                                             }
 
                                             @{
@@ -168,14 +172,14 @@
                                                     <strong>@fimFormatado</strong>
                                                 </div>
                                             }
-
-                                            @if (op.TipoOperacao == "Apoio")
+                                            else
                                             {
                                                 <div class="text-muted small mt-1">
                                                     Início:
                                                     <strong>@op.DataHoraInicio.ToString("dd/MM HH:mm")</strong>
                                                 </div>
                                             }
+                                        
                                         </div>
 
                                         <div class="text-end">

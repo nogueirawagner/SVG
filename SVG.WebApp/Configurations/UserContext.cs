@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Net.Http;
 using System.Security.Claims;
 
 namespace SVG.WebApp.Configurations
@@ -20,6 +21,9 @@ namespace SVG.WebApp.Configurations
         User?.Identity?.IsAuthenticated == true
             ? User.Identity.Name
             : null;
+
+    public bool IsAuthenticated =>
+        _httpContext.HttpContext?.User?.Identity?.IsAuthenticated == true;
 
     public int? OperadorId
     {

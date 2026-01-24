@@ -8,6 +8,7 @@ using SVG.Domain.Configurations.Interface;
 using SVG.Domain.Entities;
 using SVG.Domain.Entities.Identity;
 using SVG.Infra.Context.SQLServer;
+using SVG.WebApp.Configurations;
 using System.Text.RegularExpressions;
 
 namespace SVG.WebApp.Controllers
@@ -17,15 +18,19 @@ namespace SVG.WebApp.Controllers
     private readonly IUsuarioAppService _usuarioAppService;
     private readonly IOperadorAppService _operadorAppService;
     private readonly IClaimsFactory _claimsFactory;
+    private readonly IUserContext _userContext;
 
     public AuthController(
       IUsuarioAppService usuarioAppService,
       IClaimsFactory claimsFactory,
-      IOperadorAppService operadorAppService)
+      IOperadorAppService operadorAppService,
+      IUserContext userContext
+      )
     {
       _usuarioAppService = usuarioAppService;
       _claimsFactory = claimsFactory;
       _operadorAppService = operadorAppService;
+      _userContext = userContext;
     }
 
     private void PopularCombos()
@@ -53,6 +58,14 @@ namespace SVG.WebApp.Controllers
     [HttpGet]
     public IActionResult Login()
     {
+      if (_userContext.IsAuthenticated)
+      {
+        if (User.IsInRole("Admin"))
+          return RedirectToAction("Index", "Operacao");
+
+        if (User.IsInRole("Operador"))
+          return RedirectToAction("OperacoesSVGAbertoOperador", "Operacao");
+      }
       PopularCombos();
       return View();
     }
