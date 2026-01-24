@@ -58,10 +58,18 @@
                 <div class="col-md-4">
                     <label class="form-label">Tipo de Operação</label>
                     <select class="form-select" id="TipoOperacaoID" name="TipoOperacaoID">
+                        <option value="">Selecione...</option>
+
                         @foreach (var t in tipos)
                         {
-                            var selected = (Model.TipoOperacaoID == t.ID) ? "selected" : "";
-                            <option value="@t.ID" selected="@selected">@t.Nome</option>
+                            if (Model.TipoOperacaoID == t.ID)
+                            {
+                                <option value="@t.ID" selected="selected">@t.Nome</option>
+                            }
+                            else
+                            {
+                                <option value="@t.ID">@t.Nome</option>
+                            }
                         }
                     </select>
                 </div>
@@ -259,7 +267,7 @@
 
                 if (valor === TIPO_DELTA) {
                     grupoDataHoraFim.style.display = "none";
-                    inputDataHoraFim.value = "";
+                    inputDataHoraFim.value = null;
                     inputObjeto.value = "Operação DELTA";
                     
                 }

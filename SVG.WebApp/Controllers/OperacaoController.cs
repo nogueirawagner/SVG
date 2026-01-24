@@ -325,6 +325,8 @@ namespace SVG.WebApp.Controllers
       var entidade = _mapper.Map<Operacao>(model);
       entidade.DataHoraCriacao = DateTime.Now;
       entidade.DataHora = model.DataHoraInicio;
+      if (entidade.TipoOperacaoID == 3)
+        entidade.DataHoraFim = null;
 
       entidade.OrdemServico = string.Concat("OS ", model.OrdemServico);
 
