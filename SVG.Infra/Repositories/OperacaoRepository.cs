@@ -278,6 +278,7 @@ namespace SVG.Infra.Repositories
         , CTE_QtdOperacoesOperadores AS (
         select 
 	        oo.OperadorID,
+          o.SessaoID,
 	        COUNT(*) QtdOperacoes,
 	        op.TipoOperacaoID,
 	        tp.Peso,
@@ -287,17 +288,20 @@ namespace SVG.Infra.Repositories
 		        on oo.OperacaoID = op.ID 
 			        and oo.SVG = 1
 	        join TipoOperacao tp on tp.ID = op.TipoOperacaoID
-	        where oo.OperadorID in ({0})
+          join Operador o on o.ID = oo.OperadorID
+	      where oo.OperadorID in ({0})
         group by 
 	        oo.OperadorID,
 	        op.TipoOperacaoID,
 	        tp.Peso,
-	        tp.Nome	
+	        tp.Nome,
+          o.SessaoID
         )
 
         , CTE_OperadoresNaoOperou AS (
 	        select 
             o.ID as OperadorID,
+            o.SessaoID,
 	        0 QtdOperacoes, 
 	        NULL TipoOperacaoID,
 	        0 Peso,
@@ -310,7 +314,9 @@ namespace SVG.Infra.Repositories
             on op.ID = oo.OperacaoID
             and op.DataHora >= @pDataLimite
         where o.ID in ({0})
-        group by o.ID
+        group by 
+          o.ID,
+          o.SessaoID
         having count(op.ID) = 0
         )
 
@@ -320,19 +326,34 @@ namespace SVG.Infra.Repositories
         select * from CTE_OperadoresNaoOperou
         )
 
+        , SecaoPlantaoProximoDia AS (
+	        select 
+		        SecaoID 
+	        from fn_Escala_Plantao_PorData(@pDataLimite) 
+	        where Situacao = 1
+        )
+
         , CTE_MediaOperadores AS (
 
-        SELECT 
-            OperadorID,
-            SUM(QtdOperacoes * Peso) AS SomaPonderada,
-            SUM(Peso) AS SomaPesos,
-	        COALESCE(
-	        CEILING(
-                (CAST(SUM(QtdOperacoes * Peso) AS FLOAT) / NULLIF(SUM(Peso), 0)) * 100
-            ) / 100.0, 0) AS MediaPonderada
-        FROM CTE_QuantitativoOperacoes
-        GROUP BY OperadorID
-        )
+          SELECT 
+              OperadorID,
+              SUM(QtdOperacoes * Peso) AS SomaPonderada,
+              SUM(Peso) AS SomaPesos,
+	          COALESCE(
+		          (CASE 
+			          WHEN c.SessaoID = s.SecaoID THEN (CEILING(
+				          (CAST(SUM(QtdOperacoes * Peso) AS FLOAT) / NULLIF(SUM(Peso), 0)) * 100
+			          ) / 100.0) + 10
+		          ELSE
+			          (CEILING(
+				          (CAST(SUM(QtdOperacoes * Peso) AS FLOAT) / NULLIF(SUM(Peso), 0)) * 100
+			          ) / 100.0)
+		          END)
+	          , 0) AS MediaPonderada
+          FROM CTE_QuantitativoOperacoes c
+	          left join SecaoPlantaoProximoDia s on s.SecaoID = c.SessaoID
+          GROUP BY OperadorID, c.SessaoID, s.SecaoID
+          )
 
         , CTE_Resultado AS (
         select OperadorID from CTE_MediaOperadores
