@@ -108,11 +108,18 @@
                             </li>
 
                         </ul>
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Bi" asp-action="Dashboard">
+                                    BI / Dashboard
+                                </a>
+                            </li>
+                        </ul>
                     }
                     else
                     {
                         <ul class="navbar-nav me-auto">
-
+                            
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle"
                                    href="#"
@@ -134,6 +141,14 @@
                                 </ul>
                             </li>
 
+                        </ul>
+
+                        <ul class="navbar-nav me-auto">
+                          <li class="nav-item">
+                                <a class="nav-link" asp-controller="Bi" asp-action="Dashboard">
+                                    BI / Dashboard
+                                </a>
+                            </li>
                         </ul>
                     }
 
@@ -185,7 +200,7 @@
     </main>
 
     <footer class="border-top footer text-muted mt-4">
-        <div class="container py-2">
+        <div class="container py-2 text-center">
             <span>&copy; Op. 73 - @DateTime.Now.Year - Divisão de Operações Especiais.</span>
         </div>
     </footer>

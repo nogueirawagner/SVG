@@ -67,6 +67,10 @@ namespace SVG.IoC
       container.Register<IRoleService, RoleService>(Lifestyle.Scoped);
       container.Register<IRoleAppService, RoleAppService>(Lifestyle.Scoped);
 
+      container.Register<IBIRepository, BIRepository>(Lifestyle.Scoped);
+      container.Register<IBIService, BIService>(Lifestyle.Scoped);
+      container.Register<IBIAppService, BIAppService>(Lifestyle.Scoped);
+
       container.Register<IClaimsFactory, ClaimsFactory>(Lifestyle.Scoped);
       container.Register<IPasswordService, PasswordService>(Lifestyle.Scoped);
     }

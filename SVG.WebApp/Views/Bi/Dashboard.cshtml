@@ -1,0 +1,180 @@
+﻿@{
+    ViewData["Title"] = "BI - Dashboard SVG";
+}
+
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">Dashboard SVG</h3>
+
+        <select id="periodoSelect" class="form-select w-auto">
+            <option value="mensal">Mensal</option>
+            <option value="bimestral">Bimestral</option>
+            <option value="trimestral">Trimestral</option>
+            <option value="semestral">Semestral</option>
+        </select>
+    </div>
+
+    <!-- Operações -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h6 class="text-muted mb-3">Operações</h6>
+            <canvas id="graficoOperacoes" height="90"></canvas>
+        </div>
+    </div>
+
+    <!-- Participações -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted mb-3">Participação de Operadores</h6>
+                    <canvas id="graficoOperadores" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted mb-3">Participação SVG</h6>
+                    <canvas id="graficoSvg" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let chartOperacoes;
+        let chartOperadores;
+        let chartSvg;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            carregarDashboard("mensal");
+
+            document.getElementById("periodoSelect")
+                .addEventListener("change", e => {
+                    carregarDashboard(e.target.value);
+                });
+        });
+
+        async function carregarDashboard(periodo) {
+
+            const [operacoes, operadores, svg] = await Promise.all([
+                fetch(`/bi/operacoes?periodo=${periodo}`).then(r => r.json()),
+                fetch(`/bi/participacao-operador?periodo=${periodo}`).then(r => r.json()),
+                fetch(`/bi/adesao-svg?periodo=${periodo}`).then(r => r.json())
+            ]);
+
+            const labels = svg.map(d => formatarPeriodo(d.dataSK, periodo));
+
+            renderGraficoOperacoes(labels, operacoes);
+            renderGraficoOperadores(labels, operadores);
+            renderGraficoSvg(labels, svg);
+        }
+
+        /* ==========================
+           GRÁFICO 1 - OPERAÇÕES
+           ========================== */
+        function renderGraficoOperacoes(labels, dados) {
+
+            const valores = dados.map(d => d.totalOperacoes);
+            const ctx = document.getElementById("graficoOperacoes");
+
+            if (chartOperacoes) chartOperacoes.destroy();
+
+            chartOperacoes = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels,
+                    datasets: [{
+                        label: "Total de Operações",
+                        data: valores
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        /* ==========================
+           GRÁFICO 2 - OPERADORES
+           ========================== */
+        function renderGraficoOperadores(labels, dados) {
+
+            const valores = dados.map(d => d.mediaOperadoresPorOperacao);
+            const ctx = document.getElementById("graficoOperadores");
+
+            if (chartOperadores) chartOperadores.destroy();
+
+            chartOperadores = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels,
+                    datasets: [{
+                        label: "Média de Operadores",
+                        data: valores,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        /* ==========================
+           GRÁFICO 3 - SVG
+           ========================== */
+        function renderGraficoSvg(labels, dados) {
+
+            const valores = dados.map(d => d.mediaSVGPorOperacao);
+            const ctx = document.getElementById("graficoSvg");
+
+            if (chartSvg) chartSvg.destroy();
+
+            chartSvg = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels,
+                    datasets: [{
+                        label: "Média SVG",
+                        data: valores,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        /* ==========================
+           FORMATADOR DE PERÍODO
+           ========================== */
+        function formatarPeriodo(dataSK, periodo) {
+            const data = new Date(dataSK);
+
+            switch (periodo) {
+                case "mensal":
+                    return data.toLocaleDateString("pt-BR", { month: "short", year: "numeric" });
+
+                case "bimestral":
+                    return `B${Math.ceil((data.getMonth() + 1) / 2)}/${data.getFullYear()}`;
+
+                case "trimestral":
+                    return `T${Math.ceil((data.getMonth() + 1) / 3)}/${data.getFullYear()}`;
+
+                case "semestral":
+                    return `S${data.getMonth() < 6 ? 1 : 2}/${data.getFullYear()}`;
+            }
+        }
+    </script>
+}
