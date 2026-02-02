@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "BI / Operadores";
+}
+
+<div class="container mt-4">
+    <h4 class="mb-3">Top 10 Operadores</h4>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <canvas id="graficoTopOperadores" height="140"></canvas>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let chartTop;
+        let dadosTop = [];
+
+        document.addEventListener("bi:changed", async e => {
+
+            const qs = new URLSearchParams({
+                ano: biState.ano,
+                periodo: biState.periodo,
+                secaoId: biState.secaoId
+            });
+
+            dadosTop = await fetch(`/api/bi/top-operadores?${qs}`)
+                .then(r => r.json());
+
+            if (chartTop) chartTop.destroy();
+
+            chartTop = new Chart(
+                document.getElementById("graficoTopOperadores"),
+                {
+                    type: "bar",
+                    data: {
+                        labels: dadosTop.map(d => d.operador),
+                        datasets: [{
+                            data: dadosTop.map(d => d.totalParticipacoes)
+                        }]
+                    },
+                    options: {
+                        indexAxis: "y",
+
+                        // 👇 AQUI NASCE O CROSS-FILTER
+                        onClick: (evt, elements) => {
+                            if (!elements.length) return;
+
+                            const idx = elements[0].index;
+                            const operadorSelecionado = dadosTop[idx];
+
+                            biState.operadorId = operadorSelecionado.operadorId;
+                            biReload();
+                        }
+                    }
+                }
+            );
+        });
+
+    </script>
+}

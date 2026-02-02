@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SVG.App.Interface;
 using SVG.App.Interfaces;
+using SVG.App.Services;
 using SVG.Domain.Configurations.Interface;
 using SVG.WebApp.Configurations;
 using System.Data.Entity.Infrastructure;
@@ -29,37 +30,93 @@ namespace SVG.WebApp.Controllers
       _biAppService = biAppService;
     }
 
-    [HttpGet("dashboard")]
-    public IActionResult Dashboard()
+    /*
+      GET /api/bi/dashboard
+      GET /api/bi/adesao-svg
+      GET /api/bi/operacoes
+      GET /api/bi/operadores
+      GET /api/bi/top-operadores
+     */
+
+
+    public IActionResult Index()
+        => View();
+
+    public IActionResult Svg()
+        => View();
+
+    [HttpGet("operacoes")]
+    public async Task<IActionResult> Operacoes(
+        int? ano,
+        string periodo = "mensal",
+        int? secaoId = null,
+        int? operadorId = null)
     {
-      return View();
+      return Ok(await _biAppService.ObterOperacoesAsync(
+          NormalizarPeriodo(periodo),
+          ano,
+          secaoId,
+          operadorId
+      ));
     }
 
-    [HttpGet("adesao-svg")]
-    public async Task<IActionResult> AdesaoSvg([FromQuery] string? periodo)
+    [HttpGet("operadores")]
+    public async Task<IActionResult> Operadores(
+        int? ano,
+        string periodo = "mensal",
+        int? secaoId = null,
+        int? operadorId = null)
     {
-      try
-      {
-        var periodoNormalizado = NormalizarPeriodo(periodo);
+      return Ok(await _biAppService.ObterParticipacaoOperadorAsync(
+          NormalizarPeriodo(periodo),
+          ano,
+          secaoId,
+          operadorId
+      ));
+    }
 
-        return periodoNormalizado switch
-        {
-          "mensal" => Ok(await _biAppService.ObterMensalAsync()),
-          "bimestral" => Ok(await _biAppService.ObterBimestralAsync()),
-          "trimestral" => Ok(await _biAppService.ObterTrimestralAsync()),
-          "semestral" => Ok(await _biAppService.ObterSemestralAsync()),
+    [HttpGet("top-operadores")]
+    public async Task<IActionResult> TopOperadores(
+        int? ano,
+        string periodo = "mensal",
+        int? secaoId = null)
+    {
+      return Ok(await _biAppService.ObterTopOperadoresAsync(
+          NormalizarPeriodo(periodo),
+          ano,
+          secaoId
+      ));
+    }
 
-          _ => BadRequest() // nunca cai aqui
-        };
-      }
-      catch (ArgumentException ex)
-      {
-        return BadRequest(new
-        {
-          erro = ex.Message,
-          valoresAceitos = PeriodosValidos
-        });
-      }
+    [HttpGet("dashboard")]
+    public async Task<IActionResult> Dashboard(
+         int? ano,
+         string periodo = "mensal",
+         int? secaoId = null,
+         int? operadorId = null)
+    {
+      return Ok(await _biAppService.ObterDashboardAsync(
+          NormalizarPeriodo(periodo),
+          ano,
+          secaoId,
+          operadorId
+      ));
+    }
+
+
+    [HttpGet("adesao-svg")]
+    public async Task<IActionResult> AdesaoSvg(
+        int? ano,
+        string periodo = "mensal",
+        int? secaoId = null,
+        int? operadorId = null)
+    {
+      return Ok(await _biAppService.ObterAdesaoSvgAsync(
+          NormalizarPeriodo(periodo),
+          ano,
+          secaoId,
+          operadorId
+      ));
     }
 
     [HttpGet("operacoes")]

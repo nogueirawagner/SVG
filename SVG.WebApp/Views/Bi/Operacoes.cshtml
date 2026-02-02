@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "BI / Operações";
+}
+
+<div class="container mt-4">
+    <h4 class="mb-3">Operações</h4>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <canvas id="graficoOperacoes" height="90"></canvas>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const qs = new URLSearchParams({
+            ano: biState.ano,
+            periodo: biState.periodo,
+            secaoId: biState.secaoId,
+            operadorId: biState.operadorId
+        });
+
+        let chartOperacoes;
+
+        document.addEventListener("bi:changed", async e => {
+
+            const qs = new URLSearchParams({
+                ano: biState.ano,
+                periodo: biState.periodo,
+                secaoId: biState.secaoId,
+                operadorId: biState.operadorId
+            });
+
+            const dados = await fetch(`/api/bi/operacoes?${qs}`)
+                .then(r => r.json());
+
+            renderGraficoOperacoes(dados);
+        });
+
+    </script>
+}
