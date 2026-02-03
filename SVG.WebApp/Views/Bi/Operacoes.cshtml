@@ -1,42 +1,38 @@
 ﻿@{
+    Layout = "_LayoutBi";
     ViewData["Title"] = "BI / Operações";
 }
 
 <div class="container mt-4">
-    <h4 class="mb-3">Operações</h4>
-
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <canvas id="graficoOperacoes" height="90"></canvas>
-        </div>
-    </div>
+    <canvas id="graficoOperacoes"></canvas>
 </div>
 
 @section Scripts {
     <script>
-        const qs = new URLSearchParams({
-            ano: biState.ano,
-            periodo: biState.periodo,
-            secaoId: biState.secaoId,
-            operadorId: biState.operadorId
-        });
-
         let chartOperacoes;
 
-        document.addEventListener("bi:changed", async e => {
+        document.addEventListener("bi:changed", async () => {
 
-            const qs = new URLSearchParams({
-                ano: biState.ano,
-                periodo: biState.periodo,
-                secaoId: biState.secaoId,
-                operadorId: biState.operadorId
-            });
+            const qs = buildBiQuery();
 
             const dados = await fetch(`/api/bi/operacoes?${qs}`)
                 .then(r => r.json());
 
-            renderGraficoOperacoes(dados);
-        });
+            if (chartOperacoes) chartOperacoes.destroy();
 
+            chartOperacoes = new Chart(
+                document.getElementById("graficoOperacoes"),
+                {
+                    type: "line",
+                    data: {
+                        labels: dados.map(d => d.label),
+                        datasets: [{
+                            label: "Operações",
+                            data: dados.map(d => d.total)
+                        }]
+                    }
+                }
+            );
+        });
     </script>
 }

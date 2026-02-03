@@ -1,62 +1,44 @@
 ﻿@{
+    Layout = "_LayoutBi";
     ViewData["Title"] = "BI / Dashboard";
 }
 
-<div class="container mt-4">
+<div class="row text-center mt-4">
 
-    <h4 class="mb-3">Visão Geral</h4>
-
-    <div class="row g-3">
-
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <div class="text-muted small">Operações</div>
-                    <h3 id="kpiOperacoes">–</h3>
-                </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Total Operações</h6>
+                <h3 id="kpiOperacoes">0</h3>
             </div>
         </div>
+    </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <div class="text-muted small">Operadores</div>
-                    <h3 id="kpiOperadores">–</h3>
-                </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Total SVG</h6>
+                <h3 id="kpiSvg">0</h3>
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <div class="text-muted small">SVG</div>
-                    <h3 id="kpiSvg">–</h3>
-                </div>
-            </div>
-        </div>
-
     </div>
 
 </div>
 
 @section Scripts {
     <script>
-        document.addEventListener("bi:changed", async e => {
+        document.addEventListener("bi:changed", async () => {
 
-            const qs = new URLSearchParams({
-                ano: biState.ano,
-                periodo: biState.periodo,
-                secaoId: biState.secaoId,
-                operadorId: biState.operadorId
-            });
+            const qs = buildBiQuery();
 
-            const d = await fetch(`/api/bi/dashboard?${qs}`)
+            const dados = await fetch(`/api/bi/dashboard?${qs}`)
                 .then(r => r.json());
 
-            kpiOperacoes.innerText = d.totalOperacoes;
-            kpiOperadores.innerText = d.totalOperadores;
-            kpiSvg.innerText = `${d.percentualSvg}%`;
-        });
+            document.getElementById("kpiOperacoes").textContent =
+                dados.totalOperacoes;
 
+            document.getElementById("kpiSvg").textContent =
+                dados.totalSvg;
+        });
     </script>
 }

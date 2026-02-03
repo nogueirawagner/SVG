@@ -30,6 +30,7 @@ builder.Services
       options.SlidingExpiration = true;
     });
 
+builder.Services.AddMemoryCache();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, UserContext>(); // Específico do projeto Web.

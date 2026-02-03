@@ -1,62 +1,38 @@
 ﻿@{
+    Layout = "_LayoutBi";
     ViewData["Title"] = "BI / Operadores";
 }
 
 <div class="container mt-4">
-    <h4 class="mb-3">Top 10 Operadores</h4>
-
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <canvas id="graficoTopOperadores" height="140"></canvas>
-        </div>
-    </div>
+    <canvas id="graficoOperadores"></canvas>
 </div>
 
 @section Scripts {
     <script>
-        let chartTop;
-        let dadosTop = [];
+        let chartOperadores;
 
-        document.addEventListener("bi:changed", async e => {
+        document.addEventListener("bi:changed", async () => {
 
-            const qs = new URLSearchParams({
-                ano: biState.ano,
-                periodo: biState.periodo,
-                secaoId: biState.secaoId
-            });
+            const qs = buildBiQuery();
 
-            dadosTop = await fetch(`/api/bi/top-operadores?${qs}`)
+            const dados = await fetch(`/api/bi/operadores?${qs}`)
                 .then(r => r.json());
 
-            if (chartTop) chartTop.destroy();
+            if (chartOperadores) chartOperadores.destroy();
 
-            chartTop = new Chart(
-                document.getElementById("graficoTopOperadores"),
+            chartOperadores = new Chart(
+                document.getElementById("graficoOperadores"),
                 {
                     type: "bar",
                     data: {
-                        labels: dadosTop.map(d => d.operador),
+                        labels: dados.map(d => d.label),
                         datasets: [{
-                            data: dadosTop.map(d => d.totalParticipacoes)
+                            label: "Participações",
+                            data: dados.map(d => d.total)
                         }]
-                    },
-                    options: {
-                        indexAxis: "y",
-
-                        // 👇 AQUI NASCE O CROSS-FILTER
-                        onClick: (evt, elements) => {
-                            if (!elements.length) return;
-
-                            const idx = elements[0].index;
-                            const operadorSelecionado = dadosTop[idx];
-
-                            biState.operadorId = operadorSelecionado.operadorId;
-                            biReload();
-                        }
                     }
                 }
             );
         });
-
     </script>
 }

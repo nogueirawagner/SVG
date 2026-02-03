@@ -3,7 +3,7 @@ using SVG.App.Interfaces;
 using SVG.Domain.TiposEstruturados.BI;
 
 [ApiController]
-[Route("api/bi")]
+[Route("bi")]
 public class BIController : Controller
 {
   private readonly IBIAppService _biAppService;

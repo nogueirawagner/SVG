@@ -1,41 +1,38 @@
 ﻿@{
-    ViewData["Title"] = "BI / SVG";
+    Layout = "_LayoutBi";
+    ViewData["Title"] = "BI / Adesão SVG";
 }
 
 <div class="container mt-4">
-    <h4 class="mb-3">Adesão SVG</h4>
-
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <canvas id="graficoSvg" height="90"></canvas>
-        </div>
-    </div>
+    @Html.Partial("_GraficoSvg")
 </div>
 
 @section Scripts {
     <script>
         let chartSvg;
-        const qs = new URLSearchParams({
-            ano: biState.ano,
-            periodo: biState.periodo,
-            secaoId: biState.secaoId,
-            operadorId: biState.operadorId
-        });
 
-        document.addEventListener("bi:changed", async e => {
+        document.addEventListener("bi:changed", async () => {
 
-            const qs = new URLSearchParams({
-                ano: biState.ano,
-                periodo: biState.periodo,
-                secaoId: biState.secaoId,
-                operadorId: biState.operadorId   // 👈 RECEBE O FILTRO
-            });
+            const qs = buildBiQuery();
 
             const dados = await fetch(`/api/bi/adesao-svg?${qs}`)
                 .then(r => r.json());
 
-            renderGraficoSvg(dados);
-        });
+            if (chartSvg) chartSvg.destroy();
 
+            chartSvg = new Chart(
+                document.getElementById("graficoSvg"),
+                {
+                    type: "bar",
+                    data: {
+                        labels: dados.map(d => d.label),
+                        datasets: [{
+                            label: "SVG",
+                            data: dados.map(d => d.total)
+                        }]
+                    }
+                }
+            );
+        });
     </script>
 }

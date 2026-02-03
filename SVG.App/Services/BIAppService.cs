@@ -1,4 +1,5 @@
-﻿using SVG.App.Interfaces;
+﻿using Microsoft.Extensions.Caching.Memory;
+using SVG.App.Interfaces;
 using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.Interfaces.Services;
@@ -15,40 +16,35 @@ namespace SVG.App.Services
     public BIAppService(
       IBIService biService,
       IOperacaoService operacaoService
-    ): base(operacaoService)
+    ) : base(operacaoService)
     {
       _biService = biService;
       _operacaoService = operacaoService;
     }
 
-    public Task<IEnumerable<XAdesaoSvg>> ObterBimestralAsync()
+    public Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(string periodo, int? ano, int? secaoId, int? operadorId)
     {
-      return _biService.ObterBimestralAsync();
+      return _biService.ObterAdesaoSvgAsync(periodo, ano, secaoId, operadorId);
     }
 
-    public Task<IEnumerable<XAdesaoSvg>> ObterMensalAsync()
+    public Task<XBiDashboard> ObterDashboardAsync(string periodo, int? ano, int? secaoId, int? operadorId)
     {
-       return _biService.ObterMensalAsync();
+      return _biService.ObterDashboardAsync(periodo, ano, secaoId, operadorId);
     }
 
-    public Task<IEnumerable<XOperacaoBi>> ObterOperacoesPeriodo(string periodo)
+    public Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(string periodo, int? ano, int? secaoId, int? operadorId)
     {
-      return _biService.ObterOperacoesPeriodo(periodo);
+      return _biService.ObterOperacoesAsync(periodo, ano, secaoId, operadorId);
     }
 
-    public Task<IEnumerable<XParticipacaoOperador>> ObterParticipacaoOperadorPeriodo(string periodo)
+    public Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(string periodo, int? ano, int? secaoId, int? operadorId)
     {
-      return _biService.ObterParticipacaoOperadorPeriodo(periodo);  
+      return _biService.ObterParticipacaoOperadorAsync(periodo, ano, secaoId, operadorId);
     }
 
-    public Task<IEnumerable<XAdesaoSvg>> ObterSemestralAsync()
+    public Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(string periodo, int? ano, int? secaoId)
     {
-      return _biService.ObterSemestralAsync();
-    }
-
-    public Task<IEnumerable<XAdesaoSvg>> ObterTrimestralAsync()
-    {
-      return _biService.ObterTrimestralAsync();
+      return _biService.ObterTopOperadoresAsync(periodo, ano, secaoId);
     }
   }
 }

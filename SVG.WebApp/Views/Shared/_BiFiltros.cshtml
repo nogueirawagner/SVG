@@ -1,0 +1,38 @@
+﻿<section class="border-bottom bg-light">
+    <div class="container py-3">
+        <div class="row g-2 align-items-end">
+
+            <div class="col-md-3">
+                <label class="form-label mb-1">Ano</label>
+                <select class="form-select" data-bi-filter="ano" id="biAno">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label mb-1">Período</label>
+                <select class="form-select" data-bi-filter="periodo" id="biPeriodo">
+                    <option value="mensal">Mensal</option>
+                    <option value="bimestral">Bimestral</option>
+                    <option value="trimestral">Trimestral</option>
+                    <option value="semestral">Semestral</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label mb-1">Seção</label>
+                <select class="form-select" data-bi-filter="secaoId" id="biSecao">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 text-end">
+                <button class="btn btn-outline-primary w-100"
+                        onclick="biReload()">
+                    Aplicar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</section>

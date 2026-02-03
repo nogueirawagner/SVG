@@ -1,0 +1,64 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+@Html.Partial("_BiFiltros")
+
+<main class="container-fluid mt-3">
+    @RenderBody()
+</main>
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+
+    <!-- JS GLOBAL DO BI -->
+    <script>
+        const biState = {
+            ano: null,
+            periodo: "mensal",
+            secaoId: null,
+            operadorId: null
+        };
+
+          function buildBiQuery() {
+            const qs = new URLSearchParams();
+
+            if (biState.ano)        qs.append("ano", biState.ano);
+            if (biState.periodo)    qs.append("periodo", biState.periodo);
+            if (biState.secaoId)    qs.append("secaoId", biState.secaoId);
+            if (biState.operadorId) qs.append("operadorId", biState.operadorId);
+
+            return qs.toString();
+        }
+
+        function biLoadState() {
+            const s = sessionStorage.getItem("biState");
+            if (s) Object.assign(biState, JSON.parse(s));
+        }
+
+        function biSaveState() {
+            sessionStorage.setItem("biState", JSON.stringify(biState));
+        }
+
+        function biReload() {
+            biSaveState();
+            document.dispatchEvent(
+                new CustomEvent("bi:changed", { detail: biState })
+            );
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            biLoadState();
+
+            document.querySelectorAll("[data-bi-filter]").forEach(el => {
+                el.value = biState[el.dataset.biFilter] ?? "";
+
+                el.addEventListener("change", e => {
+                    biState[el.dataset.biFilter] = e.target.value || null;
+                });
+            });
+
+            biReload();
+        });
+    </script>
+}
