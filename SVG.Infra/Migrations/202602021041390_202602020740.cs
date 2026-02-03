@@ -7,6 +7,158 @@
   {
     public override void Up()
     {
+      // Alterações de views anteriores:
+
+      Sql(@"
+      CREATE OR ALTER VIEW [dbo].[vw_dm_adesao_svg_mensal] AS
+      SELECT
+          dt.Data AS DataSK,
+          CONCAT(dt.MesNome, '/', dt.Ano) AS Label,
+          SUM(p.TotalOperadoresSVG) AS Total
+      FROM vw_dm_participacao_svg p
+      JOIN DimTempo dt
+        ON dt.Data = p.DataSK
+      GROUP BY
+          dt.Data,
+          dt.MesNome,
+          dt.Ano;
+      ");
+
+      Sql(@"
+      CREATE OR ALTER VIEW [dbo].[vw_dm_adesao_svg_trimestral] AS
+      SELECT
+          dt_tri.Data AS DataSK,
+          CONCAT('T', ((dt_m.MesNumero - 1) / 3) + 1, '/', dt_tri.Ano) AS Label,
+          SUM(p.TotalOperadoresSVG) AS Total
+      FROM vw_dm_participacao_svg p
+      JOIN DimTempo dt_m
+        ON dt_m.Data = p.DataSK
+      JOIN DimTempo dt_tri
+        ON dt_tri.Ano = dt_m.Ano
+       AND dt_tri.MesNumero = ((dt_m.MesNumero - 1) / 3) * 3 + 1
+       AND dt_tri.Dia = 1
+      GROUP BY
+          dt_tri.Data,
+          dt_tri.Ano,
+          dt_m.MesNumero;
+      ");
+
+      Sql(@"
+      CREATE OR ALTER VIEW [dbo].[vw_dm_adesao_svg_bimestral] AS
+      SELECT
+          dt_bi.Data AS DataSK,
+          CONCAT('B', dt_bi.Bimestre, '/', dt_bi.Ano) AS Label,
+          SUM(p.TotalOperadoresSVG) AS Total
+      FROM vw_dm_participacao_svg p
+      JOIN DimTempo dt_m
+        ON dt_m.Data = p.DataSK
+      JOIN DimTempo dt_bi
+        ON dt_bi.Ano = dt_m.Ano
+        AND dt_bi.Bimestre = dt_m.Bimestre
+        AND dt_bi.Dia = 1
+        AND dt_bi.MesNumero IN (1,3,5,7,9,11)
+      GROUP BY
+          dt_bi.Data,
+          dt_bi.Bimestre,
+          dt_bi.Ano;
+      ");
+
+      Sql(@"
+      CREATE OR ALTER VIEW [dbo].[vw_dm_adesao_svg_semestral] AS
+      SELECT
+          dt_sem.Data AS DataSK,
+          CONCAT('S', dt_sem.Semestre, '/', dt_sem.Ano) AS Label,
+          SUM(p.TotalOperadoresSVG) AS Total
+      FROM vw_dm_participacao_svg p
+      JOIN DimTempo dt_m
+        ON dt_m.Data = p.DataSK
+      JOIN DimTempo dt_sem
+        ON dt_sem.Ano = dt_m.Ano
+       AND dt_sem.Semestre = dt_m.Semestre
+       AND dt_sem.Dia = 1
+       AND dt_sem.MesNumero IN (1,7)
+      GROUP BY
+          dt_sem.Data,
+          dt_sem.Semestre,
+          dt_sem.Ano;
+      ");
+
+      Sql(@"
+      CREATE OR ALTER VIEW [dbo].[vw_dm_operacao_mensal] AS
+      SELECT
+          dt.Data AS DataSK,
+          CONCAT(dt.MesNome, '/', dt.Ano) AS Label,
+          COUNT(o.OperacaoID) AS Total
+      FROM vw_dm_operacao o
+      JOIN DimTempo dt
+        ON dt.Data = o.DataSK
+      GROUP BY
+          dt.Data,
+          dt.MesNome,
+          dt.Ano;
+      ");
+
+      Sql(@"
+      CREATE OR ALTER VIEW [dbo].[vw_dm_operacao_bimestral] AS
+      SELECT
+          dt_bi.Data AS DataSK,
+          CONCAT('B', dt_bi.Bimestre, '/', dt_bi.Ano) AS Label,
+          COUNT(o.OperacaoID) AS Total
+      FROM vw_dm_operacao o
+      JOIN DimTempo dt_m
+        ON dt_m.Data = o.DataSK
+      JOIN DimTempo dt_bi
+        ON dt_bi.Ano = dt_m.Ano
+        AND dt_bi.Bimestre = dt_m.Bimestre
+        AND dt_bi.Dia = 1
+        AND dt_bi.MesNumero IN (1,3,5,7,9,11)
+      GROUP BY
+          dt_bi.Data,
+          dt_bi.Bimestre,
+          dt_bi.Ano;
+      ");
+
+      Sql(@"
+      CREATE OR ALTER VIEW [dbo].[vw_dm_operacao_trimestral] AS
+      SELECT
+          dt_tri.Data AS DataSK,
+          CONCAT('T', ((dt_m.MesNumero - 1) / 3) + 1, '/', dt_tri.Ano) AS Label,
+          COUNT(o.OperacaoID) AS Total
+      FROM vw_dm_operacao o
+      JOIN DimTempo dt_m
+        ON dt_m.Data = o.DataSK
+      JOIN DimTempo dt_tri
+        ON dt_tri.Ano = dt_m.Ano
+       AND dt_tri.MesNumero = ((dt_m.MesNumero - 1) / 3) * 3 + 1
+       AND dt_tri.Dia = 1
+      GROUP BY
+          dt_tri.Data,
+          dt_tri.Ano,
+          dt_m.MesNumero;
+      ");
+
+      Sql(@"
+      CREATE OR ALTER VIEW [dbo].[vw_dm_operacao_semestral] AS
+      SELECT
+          dt_sem.Data AS DataSK,
+          CONCAT('S', dt_sem.Semestre, '/', dt_sem.Ano) AS Label,
+          COUNT(o.OperacaoID) AS Total
+      FROM vw_dm_operacao o
+      JOIN DimTempo dt_m
+        ON dt_m.Data = o.DataSK
+      JOIN DimTempo dt_sem
+        ON dt_sem.Ano = dt_m.Ano
+        AND dt_sem.Semestre = dt_m.Semestre
+        AND dt_sem.Dia = 1
+        AND dt_sem.MesNumero IN (1,7)
+      GROUP BY
+          dt_sem.Data,
+          dt_sem.Semestre,
+          dt_sem.Ano;
+      ");
+
+      // Novas
+
       Sql(@"
 
         IF NOT EXISTS (

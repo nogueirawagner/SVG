@@ -11,11 +11,20 @@ namespace SVG.App.Interfaces
 {
   public interface IBIAppService : IAppServiceBase<Operacao>
   {
-    Task<IEnumerable<XAdesaoSvg>> ObterMensalAsync();
-    Task<IEnumerable<XAdesaoSvg>> ObterBimestralAsync();
-    Task<IEnumerable<XAdesaoSvg>> ObterTrimestralAsync();
-    Task<IEnumerable<XAdesaoSvg>> ObterSemestralAsync();
-    Task<IEnumerable<XOperacaoBi>> ObterOperacoesPeriodo(string periodo);
-    Task<IEnumerable<XParticipacaoOperador>> ObterParticipacaoOperadorPeriodo(string periodo);
+
+    Task<XBiDashboard> ObterDashboardAsync(
+        string periodo, int? ano, int? secaoId, int? operadorId);
+
+    Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(
+        string periodo, int? ano, int? secaoId, int? operadorId);
+
+    Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(
+        string periodo, int? ano, int? secaoId, int? operadorId);
+
+    Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(
+        string periodo, int? ano, int? secaoId, int? operadorId);
+
+    Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(
+        string periodo, int? ano, int? secaoId);
   }
 }

@@ -2,6 +2,7 @@
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.TiposEstruturados.BI;
 using SVG.Infra.Context.SQLServer;
+using System.Data.SqlClient;
 
 namespace SVG.Infra.Repositories
 {
@@ -15,72 +16,161 @@ namespace SVG.Infra.Repositories
       _db = dbContext;
     }
 
-    public async Task<IEnumerable<XAdesaoSvg>> ObterMensalAsync()
+    private static string ViewPorPeriodo(string baseView, string periodo)
     {
-      return await _db.Database
-          .SqlQuery<XAdesaoSvg>(
-              @"SELECT * FROM vw_dm_adesao_svg_mensal"
-          )
-          .ToListAsync();
-    }
-
-    public async Task<IEnumerable<XAdesaoSvg>> ObterBimestralAsync()
-    {
-      return await _db.Database
-          .SqlQuery<XAdesaoSvg>(
-              @"SELECT * FROM vw_dm_adesao_svg_bimestral"
-          )
-          .ToListAsync();
-    }
-
-    public async Task<IEnumerable<XAdesaoSvg>> ObterTrimestralAsync()
-    {
-      return await _db.Database
-          .SqlQuery<XAdesaoSvg>(
-              @"SELECT * FROM vw_dm_adesao_svg_trimestral"
-          )
-          .ToListAsync();
-    }
-
-    public async Task<IEnumerable<XAdesaoSvg>> ObterSemestralAsync()
-    {
-      return await _db.Database
-          .SqlQuery<XAdesaoSvg>(
-              @"SELECT * FROM vw_dm_adesao_svg_semestral"
-          )
-          .ToListAsync();
-    }
-
-    public async Task<IEnumerable<XOperacaoBi>> ObterOperacoesPeriodo(string periodo)
-    {
-      var view = periodo switch
+      return periodo switch
       {
-        "mensal" => "vw_dm_operacao_mensal",
-        "bimestral" => "vw_dm_operacao_bimestral",
-        "trimestral" => "vw_dm_operacao_trimestral",
-        "semestral" => "vw_dm_operacao_semestral",
-        _ => throw new ArgumentException("Período inválido")
+        "mensal" => $"{baseView}_mensal",
+        "bimestral" => $"{baseView}_bimestral",
+        "trimestral" => $"{baseView}_trimestral",
+        "semestral" => $"{baseView}_semestral",
+        _ => $"{baseView}_mensal"
       };
-
-      return await _db.Database
-          .SqlQuery<XOperacaoBi>($"SELECT * FROM {view}")
-          .ToListAsync();
     }
 
-    public async Task<IEnumerable<XParticipacaoOperador>> ObterParticipacaoOperadorPeriodo(string periodo)
+    public async Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(
+      string periodo, 
+      int? ano, 
+      int? secaoId, 
+      int? operadorId)
     {
-      var view = periodo switch
-      {
-        "mensal" => "vw_dm_participacao_operador_mensal",
-        "bimestral" => "vw_dm_participacao_operador_bimestral",
-        "trimestral" => "vw_dm_participacao_operador_trimestral",
-        "semestral" => "vw_dm_participacao_operador_semestral",
-        _ => throw new ArgumentException("Período inválido")
-      };
+      var view = ViewPorPeriodo("vw_dm_adesao_svg", periodo);
 
-      return await _db.Database
-          .SqlQuery<XParticipacaoOperador>($"SELECT * FROM {view}")
-          .ToListAsync();
+      var sql = @"
+        SELECT
+            DataSK,
+            Label,
+            Total
+        FROM @view
+        WHERE (@ano IS NULL OR YEAR(DataSK) = @ano)
+          AND (@secaoId IS NULL OR SessaoID = @secaoId)
+          AND (@operadorId IS NULL OR OperadorID = @operadorId)
+        ORDER BY DataSK
+    ";
+
+      return await _db.Database.SqlQuery<XBiSerie>(
+          sql,
+          new SqlParameter("@ano", (object?)ano ?? DBNull.Value),
+          new SqlParameter("@secaoId", (object?)secaoId ?? DBNull.Value),
+          new SqlParameter("@operadorId", (object?)operadorId ?? DBNull.Value),
+          new SqlParameter("@view", view)
+      ).ToListAsync();
     }
+
+    public async Task<XBiDashboard> ObterDashboardAsync(
+      string periodo, 
+      int? ano, 
+      int? secaoId, 
+      int? operadorId)
+    {
+      var sql = @"
+        SELECT
+            COUNT(DISTINCT o.OperacaoID)               AS TotalOperacoes,
+            COUNT(DISTINCT p.OperadorID)               AS TotalOperadores,
+            SUM(CASE WHEN p.SVG = 1 THEN 1 ELSE 0 END) AS TotalSvg,
+            CAST(
+                100.0 * SUM(CASE WHEN p.SVG = 1 THEN 1 ELSE 0 END)
+                / NULLIF(COUNT(*), 0)
+                AS decimal(5,2)
+            ) AS PercentualSvg
+        FROM vw_dm_operacao o
+        JOIN vw_dm_participacao_operador p
+          ON p.OperacaoID = o.OperacaoID
+        WHERE (@ano IS NULL OR YEAR(o.DataSK) = @ano)
+          AND (@secaoId IS NULL OR p.SessaoID = @secaoId)
+          AND (@operadorId IS NULL OR p.OperadorID = @operadorId)
+    ";
+
+      return await _db.Database.SqlQuery<XBiDashboard>(
+          sql,
+          new SqlParameter("@ano", (object?)ano ?? DBNull.Value),
+          new SqlParameter("@secaoId", (object?)secaoId ?? DBNull.Value),
+          new SqlParameter("@operadorId", (object?)operadorId ?? DBNull.Value)
+      ).SingleAsync();
+    }
+
+
+    public async Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(
+     string periodo, 
+     int? ano, 
+     int? secaoId, 
+     int? operadorId)
+    {
+      var view = ViewPorPeriodo("vw_dm_operacao", periodo);
+
+      var sql = @"
+        SELECT
+            DataSK,
+            Label,
+            Total
+        FROM @view
+        WHERE (@ano IS NULL OR YEAR(DataSK) = @ano)
+        ORDER BY DataSK
+    ";
+
+      return await _db.Database.SqlQuery<XBiSerie>(
+          sql,
+          new SqlParameter("@ano", (object?)ano ?? DBNull.Value),
+          new SqlParameter("@view", view)
+      ).ToListAsync();
+    }
+
+
+    public async Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(
+    string periodo, 
+    int? ano, 
+    int? secaoId, 
+    int? operadorId)
+    {
+      var view = ViewPorPeriodo("vw_dm_participacao_operador", periodo);
+
+      var sql = @"
+        SELECT
+            DataSK,
+            Label,
+            Total
+        FROM @view
+        WHERE (@ano IS NULL OR YEAR(DataSK) = @ano)
+          AND (@secaoId IS NULL OR SessaoID = @secaoId)
+          AND (@operadorId IS NULL OR OperadorID = @operadorId)
+        ORDER BY DataSK
+    ";
+
+      return await _db.Database.SqlQuery<XBiSerie>(
+          sql,
+          new SqlParameter("@ano", (object?)ano ?? DBNull.Value),
+          new SqlParameter("@secaoId", (object?)secaoId ?? DBNull.Value),
+          new SqlParameter("@operadorId", (object?)operadorId ?? DBNull.Value),
+          new SqlParameter("@view", view)
+      ).ToListAsync();
+    }
+
+
+    public async Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(
+     string periodo, 
+     int? ano, 
+     int? secaoId)
+    {
+      var view = ViewPorPeriodo("vw_dm_top_operadores", periodo);
+
+      var sql = @"
+        SELECT
+            OperadorId,
+            Operador,
+            TotalParticipacoes
+        FROM @view
+        WHERE (@ano IS NULL OR YEAR(DataSK) = @ano)
+          AND (@secaoId IS NULL OR SessaoID = @secaoId)
+        ORDER BY TotalParticipacoes DESC
+    ";
+
+      return await _db.Database.SqlQuery<XTopOperador>(
+          sql,
+          new SqlParameter("@ano", (object?)ano ?? DBNull.Value),
+          new SqlParameter("@secaoId", (object?)secaoId ?? DBNull.Value),
+          new SqlParameter("@view", view)
+      ).ToListAsync();
+    }
+
   }
 }

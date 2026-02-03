@@ -274,69 +274,82 @@
 
 
       Sql(@"
-       CREATE OR ALTER VIEW vw_dm_participacao_operador_mensal AS
+       CREATE OR ALTER VIEW [dbo].[vw_dm_participacao_operador_mensal] AS
         SELECT
-            DataSK,
-            SUM(TotalOperadores) AS TotalOperadores,
-            CAST(AVG(CAST(TotalOperadores AS float)) AS decimal(10,2))
-                AS MediaOperadoresPorOperacao
-        FROM vw_dm_participacao_svg
+            dt.Data AS DataSK,
+            CONCAT(dt.MesNome, '/', dt.Ano) AS Label,
+            COUNT(*) AS Total
+        FROM vw_dm_participacao_operador p
+        JOIN DimTempo dt
+          ON dt.Data = p.DataSK
         GROUP BY
-            DataSK;
+            dt.Data,
+            dt.MesNome,
+            dt.Ano;
+
       ");
 
       Sql(@"
-       CREATE OR ALTER VIEW vw_dm_participacao_operador_bimestral AS
+       CREATE OR ALTER VIEW [dbo].[vw_dm_participacao_operador_bimestral] AS
         SELECT
             dt_bi.Data AS DataSK,
-            SUM(p.TotalOperadores) AS TotalOperadores,
-            CAST(AVG(CAST(p.TotalOperadores AS float)) AS decimal(10,2))
-                AS MediaOperadoresPorOperacao
-        FROM vw_dm_participacao_svg p
-        JOIN DimTempo dt_m ON dt_m.Data = p.DataSK
+            CONCAT('B', dt_bi.Bimestre, '/', dt_bi.Ano) AS Label,
+            COUNT(*) AS Total
+        FROM vw_dm_participacao_operador p
+        JOIN DimTempo dt_m
+          ON dt_m.Data = p.DataSK
         JOIN DimTempo dt_bi
           ON dt_bi.Ano = dt_m.Ano
          AND dt_bi.Bimestre = dt_m.Bimestre
          AND dt_bi.Dia = 1
          AND dt_bi.MesNumero IN (1,3,5,7,9,11)
         GROUP BY
-            dt_bi.Data;
-      ");
-
-      Sql(@"
-      CREATE OR ALTER VIEW vw_dm_participacao_operador_trimestral AS
-      SELECT
-          dt_tri.Data AS DataSK,
-          SUM(p.TotalOperadores) AS TotalOperadores,
-          CAST(AVG(CAST(p.TotalOperadores AS float)) AS decimal(10,2))
-              AS MediaOperadoresPorOperacao
-      FROM vw_dm_participacao_svg p
-      JOIN DimTempo dt_m ON dt_m.Data = p.DataSK
-      JOIN DimTempo dt_tri
-        ON dt_tri.Ano = dt_m.Ano
-       AND dt_tri.MesNumero = ((dt_m.MesNumero - 1) / 3) * 3 + 1
-       AND dt_tri.Dia = 1
-      GROUP BY
-          dt_tri.Data;
+            dt_bi.Data,
+            dt_bi.Bimestre,
+            dt_bi.Ano;
 
       ");
 
       Sql(@"
-      CREATE OR ALTER VIEW vw_dm_participacao_operador_semestral AS
+      CREATE OR ALTER VIEW [dbo].[vw_dm_participacao_operador_trimestral] AS
+        SELECT
+            dt_tri.Data AS DataSK,
+            CONCAT('T', ((dt_m.MesNumero - 1) / 3) + 1, '/', dt_tri.Ano) AS Label,
+            COUNT(*) AS Total
+        FROM vw_dm_participacao_operador p
+        JOIN DimTempo dt_m
+          ON dt_m.Data = p.DataSK
+        JOIN DimTempo dt_tri
+          ON dt_tri.Ano = dt_m.Ano
+         AND dt_tri.MesNumero = ((dt_m.MesNumero - 1) / 3) * 3 + 1
+         AND dt_tri.Dia = 1
+        GROUP BY
+            dt_tri.Data,
+            dt_tri.Ano,
+            dt_m.MesNumero;
+
+
+      ");
+
+      Sql(@"
+      CREATE OR ALTER VIEW [dbo].[vw_dm_participacao_operador_semestral] AS
       SELECT
           dt_sem.Data AS DataSK,
-          SUM(p.TotalOperadores) AS TotalOperadores,
-          CAST(AVG(CAST(p.TotalOperadores AS float)) AS decimal(10,2))
-              AS MediaOperadoresPorOperacao
-      FROM vw_dm_participacao_svg p
-      JOIN DimTempo dt_m ON dt_m.Data = p.DataSK
+          CONCAT('S', dt_sem.Semestre, '/', dt_sem.Ano) AS Label,
+          COUNT(*) AS Total
+      FROM vw_dm_participacao_operador p
+      JOIN DimTempo dt_m
+        ON dt_m.Data = p.DataSK
       JOIN DimTempo dt_sem
         ON dt_sem.Ano = dt_m.Ano
        AND dt_sem.Semestre = dt_m.Semestre
        AND dt_sem.Dia = 1
        AND dt_sem.MesNumero IN (1,7)
       GROUP BY
-          dt_sem.Data;
+          dt_sem.Data,
+          dt_sem.Semestre,
+          dt_sem.Ano;
+
       ");
     }
 

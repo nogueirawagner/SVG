@@ -20,34 +20,29 @@ namespace SVG.Domain.Services
       _biRepository = biRepository;
     }
 
-    public Task<IEnumerable<XAdesaoSvg>> ObterBimestralAsync()
+    public Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(string periodo, int? ano, int? secaoId, int? operadorId)
     {
-      return _biRepository.ObterBimestralAsync();
+      return _biRepository.ObterAdesaoSvgAsync(periodo, ano, secaoId, operadorId);
     }
 
-    public Task<IEnumerable<XAdesaoSvg>> ObterMensalAsync()
+    public Task<XBiDashboard> ObterDashboardAsync(string periodo, int? ano, int? secaoId, int? operadorId)
     {
-      return _biRepository.ObterMensalAsync();
+      return _biRepository.ObterDashboardAsync(periodo, ano, secaoId, operadorId);
     }
 
-    public Task<IEnumerable<XAdesaoSvg>> ObterSemestralAsync()
+    public Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(string periodo, int? ano, int? secaoId, int? operadorId)
     {
-      return _biRepository.ObterMensalAsync();
+      return _biRepository.ObterOperacoesAsync(periodo, ano, secaoId, operadorId);
     }
 
-    public Task<IEnumerable<XAdesaoSvg>> ObterTrimestralAsync()
+    public Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(string periodo, int? ano, int? secaoId, int? operadorId)
     {
-      return _biRepository.ObterMensalAsync();
+      return _biRepository.ObterOperacoesAsync(periodo, ano, secaoId, operadorId);
     }
 
-    public Task<IEnumerable<XOperacaoBi>> ObterOperacoesPeriodo(string periodo)
+    public Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(string periodo, int? ano, int? secaoId)
     {
-      return _biRepository.ObterOperacoesPeriodo(periodo);
-    }
-
-    public Task<IEnumerable<XParticipacaoOperador>> ObterParticipacaoOperadorPeriodo(string periodo)
-    {
-      return _biRepository.ObterParticipacaoOperadorPeriodo(periodo);
+      return _biRepository.ObterTopOperadoresAsync(periodo, ano, secaoId);  
     }
   }
 }
