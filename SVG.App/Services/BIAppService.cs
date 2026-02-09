@@ -46,5 +46,10 @@ namespace SVG.App.Services
     {
       return _biService.ObterTopOperadoresAsync(periodo, ano, secaoId);
     }
+
+    public Task<XBiFiltros> ObterFiltrosAsync()
+    {
+      return _biService.ObterFiltrosAsync();
+    }
   }
 }

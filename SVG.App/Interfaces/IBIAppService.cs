@@ -26,5 +26,7 @@ namespace SVG.App.Interfaces
 
     Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(
         string periodo, int? ano, int? secaoId);
+
+    Task<XBiFiltros> ObterFiltrosAsync();
   }
 }

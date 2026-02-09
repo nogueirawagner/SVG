@@ -24,5 +24,11 @@ namespace SVG.Domain.Interfaces.Repositories
 
     Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(
         string periodo, int? ano, int? secaoId);
+    
+    Task<IEnumerable<int>> ObterAnosAsync();
+
+    Task<XBiDataRange> ObterRangeDatasAsync();
+
+    Task<IEnumerable<XBiOperadorFiltro>> ObterOperadoresAsync();
   }
 }

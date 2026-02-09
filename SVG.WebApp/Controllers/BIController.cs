@@ -70,6 +70,12 @@ public class BIController : Controller
     ));
   }
 
+  [HttpGet("filtros")]
+  public async Task<IActionResult> Filtros()
+  {
+    return Ok(await _biAppService.ObterFiltrosAsync());
+  }
+
   [HttpGet("operacoes")]
   public async Task<ActionResult<IEnumerable<XBiSerie>>> Operacoes(
       int? ano,

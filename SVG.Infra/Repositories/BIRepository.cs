@@ -238,5 +238,50 @@ namespace SVG.Infra.Repositories
       };
     }
 
+    public async Task<IEnumerable<int>> ObterAnosAsync()
+    {
+      var sql = @"
+        SELECT DISTINCT YEAR(o.DataHora) AS Ano
+        FROM Operacao o
+        ORDER BY Ano;
+    ";
+
+      return (await _db.Database
+          .SqlQuery<XBiAno>(sql)
+          .ToListAsync())
+          .Select(x => x.Ano);
+    }
+
+    public async Task<XBiDataRange> ObterRangeDatasAsync()
+    {
+      var sql = @"
+        SELECT 
+            MIN(DataHora) AS DataMin,
+            MAX(DataHora) AS DataMax
+        FROM Operacao;
+    ";
+
+      return await _db.Database
+          .SqlQuery<XBiDataRange>(sql)
+          .FirstAsync();
+    }
+
+    public async Task<IEnumerable<XBiOperadorFiltro>> ObterOperadoresAsync()
+    {
+      var sql = @"
+        SELECT
+            o.ID        AS OperadorID,
+            o.Nome      AS Nome,
+            s.ID        AS SessaoID,
+            s.Nome      AS SessaoNome
+        FROM Operador o
+        JOIN Sessao s ON s.ID = o.SessaoID
+        ORDER BY s.Nome, o.Nome;
+    ";
+
+      return await _db.Database
+          .SqlQuery<XBiOperadorFiltro>(sql)
+          .ToListAsync();
+    }
   }
 }

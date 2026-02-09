@@ -31,6 +31,8 @@
             return qs.toString();
         }
 
+        let biTimer = null;
+
         function biLoadState() {
             const s = sessionStorage.getItem("biState");
             if (s) Object.assign(biState, JSON.parse(s));
@@ -47,6 +49,16 @@
             );
         }
 
+        function biReloadDebounced(delay = 250) {
+            clearTimeout(biTimer);
+            biTimer = setTimeout(biReload, delay);
+        }
+
+        function biLoadState() {
+            const s = sessionStorage.getItem("biState");
+            if (s) Object.assign(biState, JSON.parse(s));
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             biLoadState();
 
@@ -55,10 +67,41 @@
 
                 el.addEventListener("change", e => {
                     biState[el.dataset.biFilter] = e.target.value || null;
+                    biReloadDebounced(); // 🔥 aqui
                 });
             });
 
-            biReload();
+            biReload(); // primeira carga
+            biCarregarFiltros();
         });
+
+        async function biCarregarFiltros() {
+            const resp = await fetch("/bi/filtros");
+            const data = await resp.json();
+
+            // ANOS
+            const selAno = document.getElementById("biAno");
+            data.anos.forEach(a => {
+                const opt = document.createElement("option");
+                opt.value = a;
+                opt.textContent = a;
+                selAno.appendChild(opt);
+            });
+
+            // OPERADORES
+            const selOperador = document.getElementById("biOperador");
+            if (selOperador) {
+                data.operadores.forEach(o => {
+                    const opt = document.createElement("option");
+                    opt.value = o.operadorID;
+                    opt.textContent = `${o.nome} (${o.sessaoNome})`;
+                    selOperador.appendChild(opt);
+                });
+            }
+
+            // Datas disponíveis (se quiser usar depois)
+            console.log("BI Range:", data.dataMin, data.dataMax);
+        }
+
     </script>
 }
