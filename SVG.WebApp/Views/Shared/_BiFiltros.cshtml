@@ -4,27 +4,48 @@
 
             <div class="col-md-3">
                 <label class="form-label mb-1">Ano</label>
-                <select class="form-select" data-bi-filter="ano" id="biAno">
+                <select class="form-select" id="biAno" data-bi-filter="Ano">
                     <option value="">Todos</option>
                 </select>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label mb-1">Período</label>
-                <select class="form-select" data-bi-filter="periodo" id="biPeriodo">
-                    <option value="mensal">Mensal</option>
+                <select class="form-select" id="biPeriodo" data-bi-filter="Periodo">
+                    <option value="diario">Diário</option>
+                    <option value="mensal" selected>Mensal</option>
                     <option value="bimestral">Bimestral</option>
                     <option value="trimestral">Trimestral</option>
                     <option value="semestral">Semestral</option>
                 </select>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <label class="form-label mb-1">Mês</label>
+                <select class="form-select" id="biMes" data-bi-filter="Mes">
+                    <option value="">Todos</option>
+                    <option value="1">Jan</option>
+                    <option value="2">Fev</option>
+                    <option value="3">Mar</option>
+                    <option value="4">Abr</option>
+                    <option value="5">Mai</option>
+                    <option value="6">Jun</option>
+                    <option value="7">Jul</option>
+                    <option value="8">Ago</option>
+                    <option value="9">Set</option>
+                    <option value="10">Out</option>
+                    <option value="11">Nov</option>
+                    <option value="12">Dez</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
                 <label class="form-label mb-1">Seção</label>
-                <select class="form-select" data-bi-filter="secaoId" id="biSecao">
+                <select class="form-select" id="biSecao" data-bi-filter="SecaoId">
                     <option value="">Todas</option>
                 </select>
             </div>
+
         </div>
     </div>
 </section>

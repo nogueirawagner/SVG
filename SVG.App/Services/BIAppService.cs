@@ -22,29 +22,29 @@ namespace SVG.App.Services
       _operacaoService = operacaoService;
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(string periodo, int? ano, int? secaoId, int? operadorId)
+    public Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(XPeriodicidade periodicidade)
     {
-      return _biService.ObterAdesaoSvgAsync(periodo, ano, secaoId, operadorId);
+      return _biService.ObterAdesaoSvgAsync(periodicidade);
     }
 
-    public Task<XBiDashboard> ObterDashboardAsync(string periodo, int? ano, int? secaoId, int? operadorId)
+    public Task<XBiDashboard> ObterDashboardAsync(XPeriodicidade periodicidade)
     {
-      return _biService.ObterDashboardAsync(periodo, ano, secaoId, operadorId);
+      return _biService.ObterDashboardAsync(periodicidade);
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(string periodo, int? ano, int? secaoId, int? operadorId)
+    public Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(XPeriodicidade periodicidade)
     {
-      return _biService.ObterOperacoesAsync(periodo, ano, secaoId, operadorId);
+      return _biService.ObterOperacoesAsync(periodicidade);
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(string periodo, int? ano, int? secaoId, int? operadorId)
+    public Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade)
     {
-      return _biService.ObterParticipacaoOperadorAsync(periodo, ano, secaoId, operadorId);
+      return _biService.ObterParticipacaoOperadorAsync(periodicidade);
     }
 
-    public Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(string periodo, int? ano, int? secaoId)
+    public Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(XPeriodicidade periodicidade)
     {
-      return _biService.ObterTopOperadoresAsync(periodo, ano, secaoId);
+      return _biService.ObterTopOperadoresAsync(periodicidade);
     }
 
     public Task<XBiFiltros> ObterFiltrosAsync()

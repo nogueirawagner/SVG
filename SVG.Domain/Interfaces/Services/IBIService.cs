@@ -10,20 +10,15 @@ namespace SVG.Domain.Interfaces.Services
 {
   public interface IBIService : IServiceBase<Operacao>
   {
-    Task<XBiDashboard> ObterDashboardAsync(
-       string periodo, int? ano, int? secaoId, int? operadorId);
+    Task<XBiDashboard> ObterDashboardAsync(XPeriodicidade periodicidade);
 
-    Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(
-        string periodo, int? ano, int? secaoId, int? operadorId);
+    Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(XPeriodicidade periodicidade);
 
-    Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(
-        string periodo, int? ano, int? secaoId, int? operadorId);
+    Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(XPeriodicidade periodicidade);
 
-    Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(
-        string periodo, int? ano, int? secaoId, int? operadorId);
+    Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade);
 
-    Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(
-        string periodo, int? ano, int? secaoId);
+    Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(XPeriodicidade periodicidade);
 
     Task<XBiFiltros> ObterFiltrosAsync();
   }

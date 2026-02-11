@@ -26,14 +26,14 @@ namespace SVG.Domain.Services
       _cache = cache;
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(string periodo, int? ano, int? secaoId, int? operadorId)
+    public Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(XPeriodicidade periodicidade)
     {
-      return _biRepository.ObterAdesaoSvgAsync(periodo, ano, secaoId, operadorId);
+      return _biRepository.ObterAdesaoSvgAsync(periodicidade);
     }
 
-    public Task<XBiDashboard> ObterDashboardAsync(string periodo, int? ano, int? secaoId, int? operadorId)
+    public Task<XBiDashboard> ObterDashboardAsync(XPeriodicidade periodicidade)
     {
-      return _biRepository.ObterDashboardAsync(periodo, ano, secaoId, operadorId);
+      return _biRepository.ObterDashboardAsync(periodicidade);
     }
 
     public async Task<XBiFiltros> ObterFiltrosAsync()
@@ -57,19 +57,19 @@ namespace SVG.Domain.Services
       return filtros;
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(string periodo, int? ano, int? secaoId, int? operadorId)
+    public Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(XPeriodicidade periodicidade)
     {
-      return _biRepository.ObterOperacoesAsync(periodo, ano, secaoId, operadorId);
+      return _biRepository.ObterOperacoesAsync(periodicidade);
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(string periodo, int? ano, int? secaoId, int? operadorId)
+    public Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade)
     {
-      return _biRepository.ObterOperacoesAsync(periodo, ano, secaoId, operadorId);
+      return _biRepository.ObterOperacoesAsync(periodicidade);
     }
 
-    public Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(string periodo, int? ano, int? secaoId)
+    public Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(XPeriodicidade periodicidade)
     {
-      return _biRepository.ObterTopOperadoresAsync(periodo, ano, secaoId);
+      return _biRepository.ObterTopOperadoresAsync(periodicidade);
     }
   }
 }

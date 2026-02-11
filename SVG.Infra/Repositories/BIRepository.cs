@@ -22,20 +22,16 @@ namespace SVG.Infra.Repositories
       _cache = cache;
     }
 
-    public async Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(
-      string periodo,
-      int? ano,
-      int? secaoId,
-      int? operadorId)
+    public async Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(XPeriodicidade periodicidade)
     {
       var cacheKey = CacheKey(
         nameof(ObterAdesaoSvgAsync),
-        periodo, ano, secaoId, operadorId);
+        periodicidade);
 
       if (_cache.TryGetValue(cacheKey, out IEnumerable<XBiSerie> cached))
         return cached;
 
-      var view = ViewPorPeriodo("vw_dm_adesao_svg", periodo);
+      var view = ViewPorPeriodo("vw_dm_adesao_svg", periodicidade.Periodo);
 
       var sql = $@"
         SELECT
@@ -50,9 +46,9 @@ namespace SVG.Infra.Repositories
 
       var result = await _db.Database.SqlQuery<XBiSerie>(
           sql,
-          new SqlParameter("@ano", (object?)ano ?? DBNull.Value),
-          new SqlParameter("@secaoId", (object?)secaoId ?? DBNull.Value),
-          new SqlParameter("@operadorId", (object?)operadorId ?? DBNull.Value)
+          new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value),
+          new SqlParameter("@secaoId", (object?)periodicidade.SecaoId ?? DBNull.Value),
+          new SqlParameter("@operadorId", (object?)periodicidade.OperadorId ?? DBNull.Value)
       ).ToListAsync();
 
       _cache.Set(
@@ -64,11 +60,7 @@ namespace SVG.Infra.Repositories
       return result;
     }
 
-    public async Task<XBiDashboard> ObterDashboardAsync(
-      string periodo,
-      int? ano,
-      int? secaoId,
-      int? operadorId)
+    public async Task<XBiDashboard> ObterDashboardAsync(XPeriodicidade periodicidade)
     {
       var sql = @"
         SELECT
@@ -89,27 +81,23 @@ namespace SVG.Infra.Repositories
 
       return await _db.Database.SqlQuery<XBiDashboard>(
           sql,
-          new SqlParameter("@ano", (object?)ano ?? DBNull.Value),
-          new SqlParameter("@secaoId", (object?)secaoId ?? DBNull.Value),
-          new SqlParameter("@operadorId", (object?)operadorId ?? DBNull.Value)
+          new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value),
+          new SqlParameter("@secaoId", (object?)periodicidade.SecaoId ?? DBNull.Value),
+          new SqlParameter("@operadorId", (object?)periodicidade.OperadorId ?? DBNull.Value)
       ).SingleAsync();
     }
 
 
-    public async Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(
-     string periodo,
-     int? ano,
-     int? secaoId,
-     int? operadorId)
+    public async Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(XPeriodicidade periodicidade)
     {
       var cacheKey = CacheKey(
        nameof(ObterOperacoesAsync),
-       periodo, ano, secaoId, operadorId);
+       periodicidade);
 
       if (_cache.TryGetValue(cacheKey, out IEnumerable<XBiSerie> cached))
         return cached;
 
-      var view = ViewPorPeriodo("vw_dm_operacao", periodo);
+      var view = ViewPorPeriodo("vw_dm_operacao", periodicidade.Periodo);
 
       var sql = $@"
         SELECT
@@ -123,7 +111,7 @@ namespace SVG.Infra.Repositories
 
       var result = await _db.Database.SqlQuery<XBiSerie>(
           sql,
-          new SqlParameter("@ano", (object?)ano ?? DBNull.Value)
+          new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value)
       ).ToListAsync();
 
       _cache.Set(
@@ -136,20 +124,16 @@ namespace SVG.Infra.Repositories
     }
 
 
-    public async Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(
-    string periodo,
-    int? ano,
-    int? secaoId,
-    int? operadorId)
+    public async Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade)
     {
       var cacheKey = CacheKey(
        nameof(ObterParticipacaoOperadorAsync),
-       periodo, ano, secaoId, operadorId);
+       periodicidade);
 
       if (_cache.TryGetValue(cacheKey, out IEnumerable<XBiSerie> cached))
         return cached;
 
-      var view = ViewPorPeriodo("vw_dm_participacao_operador", periodo);
+      var view = ViewPorPeriodo("vw_dm_participacao_operador", periodicidade.Periodo);
 
       var sql = $@"
         SELECT
@@ -164,9 +148,9 @@ namespace SVG.Infra.Repositories
 
       var result = await _db.Database.SqlQuery<XBiSerie>(
           sql,
-          new SqlParameter("@ano", (object?)ano ?? DBNull.Value),
-          new SqlParameter("@secaoId", (object?)secaoId ?? DBNull.Value),
-          new SqlParameter("@operadorId", (object?)operadorId ?? DBNull.Value)
+          new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value),
+          new SqlParameter("@secaoId", (object?)periodicidade.SecaoId ?? DBNull.Value),
+          new SqlParameter("@operadorId", (object?)periodicidade.OperadorId ?? DBNull.Value)
       ).ToListAsync();
 
       _cache.Set(
@@ -179,16 +163,13 @@ namespace SVG.Infra.Repositories
     }
 
 
-    public async Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(
-     string periodo,
-     int? ano,
-     int? secaoId)
+    public async Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(XPeriodicidade periodicidade)
     {
       var cacheKey = CacheKey(
        nameof(ObterTopOperadoresAsync),
-       periodo, ano, secaoId);
+       periodicidade);
 
-      var view = ViewPorPeriodo("vw_dm_top_operadores", periodo);
+      var view = ViewPorPeriodo("vw_dm_top_operadores", periodicidade.Periodo);
 
       var sql = $@"
         SELECT
@@ -203,8 +184,8 @@ namespace SVG.Infra.Repositories
 
       var result = await _db.Database.SqlQuery<XTopOperador>(
           sql,
-          new SqlParameter("@ano", (object?)ano ?? DBNull.Value),
-          new SqlParameter("@secaoId", (object?)secaoId ?? DBNull.Value)
+          new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value),
+          new SqlParameter("@secaoId", (object?)periodicidade.SecaoId ?? DBNull.Value)
       ).ToListAsync();
 
       _cache.Set(
@@ -217,13 +198,10 @@ namespace SVG.Infra.Repositories
     }
 
     private static string CacheKey(
-    string metodo,
-    string periodo,
-    int? ano,
-    int? secaoId,
-    int? operadorId = null)
+      string metodo,
+      XPeriodicidade periodicidade)
     {
-      return $"BI:{metodo}:{periodo}:{ano}:{secaoId}:{operadorId}";
+      return $"BI:{metodo}:{periodicidade.Periodo}:{periodicidade.Ano}:{periodicidade.SecaoId}:{periodicidade.OperadorId}";
     }
 
     private static string ViewPorPeriodo(string baseView, string periodo)

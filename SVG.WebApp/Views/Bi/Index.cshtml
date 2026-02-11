@@ -3,107 +3,59 @@
     ViewData["Title"] = "BI / Dashboard";
 }
 
-<div class="container mt-4">
-
-    @Html.Partial("_GraficoSvg")
-
+<div class="container-fluid">
     <div class="row mt-4">
-        <div class="col-md-6">
-            <canvas id="graficoOperacoes"></canvas>
-        </div>
-        <div class="col-md-6">
-            <canvas id="graficoKpi"></canvas>
+        <div class="col-12">
+            @Html.Partial("_GraficoSvg")
         </div>
     </div>
-
 </div>
 
 @section Scripts {
     <script>
-        /* ========= SVG ========= */
         let chartSvg;
-
 
         document.addEventListener("bi:changed", async () => {
 
-            const qs = buildBiQuery();
+            const qs = buildPeriodicidadeQuery();
 
-            const dados = await fetch(`/bi/adesao-svg?${qs}`)
-                .then(r => r.json());
+            const resp = await fetch(`/bi/adesao-svg?${qs}`);
+            if (!resp.ok) return;
 
+            const dados = await resp.json();
             if (!dados?.length) return;
 
             if (chartSvg) chartSvg.destroy();
 
-        chartSvg = new Chart(
-            document.getElementById("graficoSvg"),
-            {
-                type: "bar",
-                data: {
-                    labels: dados.map(d => d.label),
-                    datasets: [{
-                        label: "SVG",
-                        data: dados.map(d => d.total)
-                    }]
-                },
-                options: {
-                    onClick: (event, elements) => {
-                        if (!elements.length) return;
-
-                        const index = elements[0].index;
-                        const periodo = dados[index].label;
-
-                        window.location.href = `bi/operacoes?periodo=${encodeURIComponent(periodo)}`;
-                    }
-                }
-            }
-        );
-
-        });
-
-        /* ========= OPERAÇÕES ========= */
-        let chartOperacoes;
-
-        document.addEventListener("bi:changed", async () => {
-
-            const qs = new URLSearchParams(biState);
-
-            const dados = await fetch(`/bi/operacoes?${qs}`)
-                .then(r => r.json());
-
-            if (!dados?.length) return;
-
-            if (chartOperacoes) chartOperacoes.destroy();
-
-            chartOperacoes = new Chart(
-                document.getElementById("graficoOperacoes"),
+            chartSvg = new Chart(
+                document.getElementById("graficoSvg"),
                 {
-                    type: "line",
+                    type: "bar",
                     data: {
                         labels: dados.map(d => d.label),
                         datasets: [{
-                            label: "Operações",
+                            label: "SVG",
                             data: dados.map(d => d.total)
                         }]
+                    },
+                    options: {
+                        responsive: true,
+                        onClick: (event, elements) => {
+                            if (!elements.length) return;
+
+                            const index = elements[0].index;
+                            const label = dados[index].label;
+
+                            // 🔥 drill-down conceitual (exemplo)
+                            // você pode mapear label → mês depois
+                            biState.Periodo = "mensal";
+                            biState.Mes = index + 1;
+
+                            biReload();
+                        }
                     }
                 }
             );
-        });
-
-        /* ========= KPIs ========= */
-        document.addEventListener("bi:changed", async () => {
-
-            const qs = new URLSearchParams(biState);
-
-            const dados = await fetch(`/bi/dashboard?${qs}`)
-                .then(r => r.json());
-
-            if (!dados) return;
-
-            document.getElementById("graficoKpi").innerHTML = `
-                <h5>Total Operações: ${dados.totalOperacoes}</h5>
-                <h5>Total SVG: ${dados.totalSvg}</h5>
-            `;
         });
     </script>
 }

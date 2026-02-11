@@ -3,24 +3,19 @@
     ViewData["Title"] = "BI / Operadores";
 }
 
-<div class="container mt-4">
-    <canvas id="graficoOperadores"></canvas>
-</div>
+<canvas id="graficoOperadores"></canvas>
 
 @section Scripts {
     <script>
-        let chartOperadores;
+        let chartOpd;
 
         document.addEventListener("bi:changed", async () => {
+            const qs = buildPeriodicidadeQuery();
+            const dados = await fetch(`/bi/operadores?${qs}`).then(r => r.json());
 
-            const qs = buildBiQuery();
+            if (chartOpd) chartOpd.destroy();
 
-            const dados = await fetch(`/api/bi/operadores?${qs}`)
-                .then(r => r.json());
-
-            if (chartOperadores) chartOperadores.destroy();
-
-            chartOperadores = new Chart(
+            chartOpd = new Chart(
                 document.getElementById("graficoOperadores"),
                 {
                     type: "bar",

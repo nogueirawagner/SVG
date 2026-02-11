@@ -2,7 +2,6 @@
 using SVG.App.Interfaces;
 using SVG.Domain.TiposEstruturados.BI;
 
-[ApiController]
 [Route("bi")]
 public class BIController : Controller
 {
@@ -41,33 +40,17 @@ public class BIController : Controller
   // =========================
 
   [HttpGet("dashboard")]
-  public async Task<ActionResult<XBiDashboard>> Dashboard(
-      int? ano,
-      string periodo = "mensal",
-      int? secaoId = null,
-      int? operadorId = null)
+  public async Task<ActionResult<XBiDashboard>> Dashboard(XPeriodicidade periodicidade)
   {
-    return Ok(await _biAppService.ObterDashboardAsync(
-        NormalizarPeriodo(periodo),
-        ano,
-        secaoId,
-        operadorId
-    ));
+    periodicidade.Periodo = NormalizarPeriodo(periodicidade.Periodo);
+    return Ok(await _biAppService.ObterDashboardAsync(periodicidade));
   }
 
   [HttpGet("adesao-svg")]
-  public async Task<ActionResult<IEnumerable<XBiSerie>>> AdesaoSvg(
-      int? ano,
-      string periodo = "mensal",
-      int? secaoId = null,
-      int? operadorId = null)
+  public async Task<ActionResult<IEnumerable<XBiSerie>>> AdesaoSvg(XPeriodicidade periodicidade)
   {
-    return Ok(await _biAppService.ObterAdesaoSvgAsync(
-        NormalizarPeriodo(periodo),
-        ano,
-        secaoId,
-        operadorId
-    ));
+    periodicidade.Periodo = NormalizarPeriodo(periodicidade.Periodo);
+    return Ok(await _biAppService.ObterAdesaoSvgAsync(periodicidade));
   }
 
   [HttpGet("filtros")]
@@ -77,46 +60,24 @@ public class BIController : Controller
   }
 
   [HttpGet("operacoes")]
-  public async Task<ActionResult<IEnumerable<XBiSerie>>> Operacoes(
-      int? ano,
-      string periodo = "mensal",
-      int? secaoId = null,
-      int? operadorId = null)
+  public async Task<ActionResult<IEnumerable<XBiSerie>>> Operacoes(XPeriodicidade periodicidade)
   {
-    return Ok(await _biAppService.ObterOperacoesAsync(
-        NormalizarPeriodo(periodo),
-        ano,
-        secaoId,
-        operadorId
-    ));
+    periodicidade.Periodo = NormalizarPeriodo(periodicidade.Periodo);
+    return Ok(await _biAppService.ObterOperacoesAsync(periodicidade));
   }
 
   [HttpGet("operadores")]
-  public async Task<ActionResult<IEnumerable<XBiSerie>>> Operadores(
-      int? ano,
-      string periodo = "mensal",
-      int? secaoId = null,
-      int? operadorId = null)
+  public async Task<ActionResult<IEnumerable<XBiSerie>>> Operadores(XPeriodicidade periodicidade)
   {
-    return Ok(await _biAppService.ObterParticipacaoOperadorAsync(
-        NormalizarPeriodo(periodo),
-        ano,
-        secaoId,
-        operadorId
-    ));
+    periodicidade.Periodo = NormalizarPeriodo(periodicidade.Periodo);
+    return Ok(await _biAppService.ObterParticipacaoOperadorAsync(periodicidade));
   }
 
   [HttpGet("top-operadores")]
-  public async Task<ActionResult<IEnumerable<XTopOperador>>> TopOperadores(
-      int? ano,
-      string periodo = "mensal",
-      int? secaoId = null)
+  public async Task<ActionResult<IEnumerable<XTopOperador>>> TopOperadores(XPeriodicidade periodicidade)
   {
-    return Ok(await _biAppService.ObterTopOperadoresAsync(
-        NormalizarPeriodo(periodo),
-        ano,
-        secaoId
-    ));
+    periodicidade.Periodo = NormalizarPeriodo(periodicidade.Periodo);
+    return Ok(await _biAppService.ObterTopOperadoresAsync(periodicidade));
   }
 
   // =========================

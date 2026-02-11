@@ -11,42 +11,41 @@
 @section Scripts {
     @RenderSection("Scripts", required: false)
 
-    <!-- JS GLOBAL DO BI -->
     <script>
         const biState = {
-            ano: null,
-            periodo: "mensal",
-            secaoId: null,
-            operadorId: null
+            Periodo: "mensal",
+            Ano: null,
+            Mes: null,
+            SecaoId: null,
+            OperadorId: null
         };
 
-          function buildBiQuery() {
-            const qs = new URLSearchParams();
-
-            if (biState.ano)        qs.append("ano", biState.ano);
-            if (biState.periodo)    qs.append("periodo", biState.periodo);
-            if (biState.secaoId)    qs.append("secaoId", biState.secaoId);
-            if (biState.operadorId) qs.append("operadorId", biState.operadorId);
-
-            return qs.toString();
-        }
-
         let biTimer = null;
+
+        function biSaveState() {
+            sessionStorage.setItem("biState", JSON.stringify(biState));
+        }
 
         function biLoadState() {
             const s = sessionStorage.getItem("biState");
             if (s) Object.assign(biState, JSON.parse(s));
         }
 
-        function biSaveState() {
-            sessionStorage.setItem("biState", JSON.stringify(biState));
+        function buildPeriodicidadeQuery() {
+            const qs = new URLSearchParams();
+
+            if (biState.Periodo)    qs.append("Periodo", biState.Periodo);
+            if (biState.Ano)        qs.append("Ano", biState.Ano);
+            if (biState.Mes)        qs.append("Mes", biState.Mes);
+            if (biState.SecaoId)    qs.append("SecaoId", biState.SecaoId);
+            if (biState.OperadorId) qs.append("OperadorId", biState.OperadorId);
+
+            return qs.toString();
         }
 
         function biReload() {
             biSaveState();
-            document.dispatchEvent(
-                new CustomEvent("bi:changed", { detail: biState })
-            );
+            document.dispatchEvent(new CustomEvent("bi:changed", { detail: biState }));
         }
 
         function biReloadDebounced(delay = 250) {
@@ -54,33 +53,81 @@
             biTimer = setTimeout(biReload, delay);
         }
 
-        function biLoadState() {
-            const s = sessionStorage.getItem("biState");
-            if (s) Object.assign(biState, JSON.parse(s));
+        async function biCarregarFiltros() {
+            try {
+                console.log("🔎 Carregando filtros BI…");
+
+                const resp = await fetch("/bi/filtros", { cache: "no-store" });
+                console.log("🌐 /bi/filtros status:", resp.status);
+
+                if (!resp.ok) {
+                    const text = await resp.text();
+                    console.error("❌ Erro ao buscar filtros:", text);
+                    return;
+                }
+
+                const data = await resp.json();
+                console.log("✅ Filtros recebidos:", data);
+
+                // ===== ANO =====
+                const selAno = document.getElementById("biAno");
+                if (selAno) {
+                    // limpa opções exceto "Todos"
+                    selAno.querySelectorAll("option:not([value=''])").forEach(o => o.remove());
+
+                    const anos = (data.anos ?? []).map(Number).filter(a => !Number.isNaN(a));
+                    console.log("📅 anos:", anos);
+
+                    anos.forEach(a => {
+                        const opt = document.createElement("option");
+                        opt.value = String(a);
+                        opt.textContent = String(a);
+                        selAno.appendChild(opt);
+                    });
+
+                    // default: maior ano se ainda não tiver setado (null, "", "null", "undefined")
+                    const anoAtual = biState.Ano;
+                    const naoTemAno = !anoAtual || anoAtual === "null" || anoAtual === "undefined";
+
+                    if (naoTemAno && anos.length) {
+                        const maiorAno = Math.max(...anos);
+                        biState.Ano = String(maiorAno);
+                        selAno.value = biState.Ano;
+                        biSaveState();
+                        console.log("⭐ Ano default definido:", biState.Ano);
+                    } else {
+                        // tenta aplicar o que já está no state
+                        selAno.value = biState.Ano ?? "";
+                    }
+                }
+
+                // (se você também tiver seção/operador, preencha aqui do mesmo jeito)
+
+            } catch (err) {
+                console.error("💥 Falha em biCarregarFiltros:", err);
+            }
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
+
+        document.addEventListener("DOMContentLoaded", async () => {
             biLoadState();
+            await biCarregarFiltros();
 
             document.querySelectorAll("[data-bi-filter]").forEach(el => {
                 el.value = biState[el.dataset.biFilter] ?? "";
 
                 el.addEventListener("change", e => {
                     biState[el.dataset.biFilter] = e.target.value || null;
-                    biReloadDebounced(); // 🔥 aqui
+                    biReloadDebounced();
                 });
             });
 
-            biReload(); // primeira carga
-            biCarregarFiltros();
+            biReload();
         });
 
-        async function biCarregarFiltros() {
-            const resp = await fetch("/bi/filtros");
-            const data = await resp.json();
-
-            // ANOS
-            const selAno = document.getElementById("biAno");
+      const selAno = document.getElementById("biAno");
+        if (selAno && data.anos?.length) {
+            // popula
             data.anos.forEach(a => {
                 const opt = document.createElement("option");
                 opt.value = a;
@@ -88,19 +135,13 @@
                 selAno.appendChild(opt);
             });
 
-            // OPERADORES
-            const selOperador = document.getElementById("biOperador");
-            if (selOperador) {
-                data.operadores.forEach(o => {
-                    const opt = document.createElement("option");
-                    opt.value = o.operadorID;
-                    opt.textContent = `${o.nome} (${o.sessaoNome})`;
-                    selOperador.appendChild(opt);
-                });
+            // 🔥 default: maior ano (se ainda não tiver nada salvo)
+            if (!biState.Ano) {
+                const maiorAno = Math.max(...data.anos.map(Number));
+                biState.Ano = String(maiorAno);
+                selAno.value = biState.Ano;
+                biSaveState();
             }
-
-            // Datas disponíveis (se quiser usar depois)
-            console.log("BI Range:", data.dataMin, data.dataMax);
         }
 
     </script>

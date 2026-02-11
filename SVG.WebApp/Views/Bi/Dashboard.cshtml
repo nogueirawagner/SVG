@@ -1,12 +1,11 @@
 ﻿@{
     Layout = "_LayoutBi";
-    ViewData["Title"] = "BI / Dashboard";
+    ViewData["Title"] = "BI / Indicadores";
 }
 
-<div class="row text-center mt-4">
-
+<div class="row">
     <div class="col-md-3">
-        <div class="card">
+        <div class="card text-center">
             <div class="card-body">
                 <h6>Total Operações</h6>
                 <h3 id="kpiOperacoes">0</h3>
@@ -15,30 +14,23 @@
     </div>
 
     <div class="col-md-3">
-        <div class="card">
+        <div class="card text-center">
             <div class="card-body">
                 <h6>Total SVG</h6>
                 <h3 id="kpiSvg">0</h3>
             </div>
         </div>
     </div>
-
 </div>
 
 @section Scripts {
     <script>
         document.addEventListener("bi:changed", async () => {
+            const qs = buildPeriodicidadeQuery();
+            const dados = await fetch(`/bi/dashboard?${qs}`).then(r => r.json());
 
-            const qs = buildBiQuery();
-
-            const dados = await fetch(`/api/bi/dashboard?${qs}`)
-                .then(r => r.json());
-
-            document.getElementById("kpiOperacoes").textContent =
-                dados.totalOperacoes;
-
-            document.getElementById("kpiSvg").textContent =
-                dados.totalSvg;
+            document.getElementById("kpiOperacoes").textContent = dados.totalOperacoes;
+            document.getElementById("kpiSvg").textContent = dados.totalSvg;
         });
     </script>
 }
