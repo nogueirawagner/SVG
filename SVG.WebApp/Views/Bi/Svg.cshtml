@@ -6,98 +6,60 @@
 @Html.Partial("_GraficoSvg")
 
 @section Scripts {
-    <script>
-        let chartSvg;
+<script>
+let chartSvg;
 
-        function agruparPorMes(dados) {
-            // Espera que cada item tenha Data (ou DataSK) OU (Ano/MesNumero).
-            const map = new Map();
+function agruparPorLabel(dados) {
 
-            for (const d of dados) {
-                let ano, mes;
+    const mapa = {};
 
-                if (d.ano && d.mesNumero) {
-                    ano = Number(d.ano);
-                    mes = Number(d.mesNumero);
-                } else if (d.data || d.dataSK || d.dataReferencia) {
-                    const raw = d.data || d.dataSK || d.dataReferencia;
-                    const dt = new Date(raw);
-                    if (isNaN(dt)) continue;
-                    ano = dt.getFullYear();
-                    mes = dt.getMonth() + 1;
-                } else {
-                    // fallback: tenta deduzir do label se vier como "2026-01-15" etc.
-                    const dt = new Date(d.label);
-                    if (isNaN(dt)) continue;
-                    ano = dt.getFullYear();
-                    mes = dt.getMonth() + 1;
-                }
+    dados.forEach(d => {
 
-                const key = `${ano}-${String(mes).padStart(2, "0")}`;
+        const label = d.label;
 
-                if (!map.has(key)) {
-                    const mesNome = new Date(ano, mes - 1, 1)
-                        .toLocaleDateString("pt-BR", { month: "short" })
-                        .replace(".", "")
-                        .toLowerCase();
-
-                    map.set(key, { label: `${mesNome}/${String(ano).slice(2)}`, total: 0, ano, mes });
-                }
-
-                const item = map.get(key);
-                item.total += Number(d.total ?? 0);
-            }
-
-            // ordena cronologicamente
-            return Array.from(map.values()).sort((a, b) =>
-                a.ano !== b.ano ? a.ano - b.ano : a.mes - b.mes
-            );
+        if (!mapa[label]) {
+            mapa[label] = 0;
         }
 
-        document.addEventListener("bi:changed", async () => {
+        mapa[label] += Number(d.total ?? 0);
+    });
 
-            // Se diário e mês não selecionado, evita gráfico "diário do ano inteiro" (fica ruim)
-            if (biState.Periodo === "diario" && !biState.Mes) {
-                if (chartSvg) chartSvg.destroy();
-                return;
-            }
+    return Object.entries(mapa)
+        .map(([label, total]) => ({ label, total }));
+}
 
-            const qs = buildPeriodicidadeQuery();
-            const resp = await fetch(`/bi/adesao-svg?${qs}`);
-            if (!resp.ok) return;
 
-            let dados = await resp.json();
-            if (!dados?.length) {
-                if (chartSvg) chartSvg.destroy();
-                return;
-            }
+document.addEventListener("bi:changed", async () => {
 
-            // 🔥 Mensal (Todos os meses): agrega client-side
-            const isMensal = biState.Periodo === "mensal";
-            const isMesTodos = !biState.Mes;
-            if (isMensal && isMesTodos) {
-                dados = agruparPorMes(dados);
-            }
+    const qs = buildPeriodicidadeQuery();
+    const resp = await fetch(`/bi/adesao-svg?${qs}`);
+    if (!resp.ok) return;
 
-            if (chartSvg) chartSvg.destroy();
+    let dados = await resp.json();
+    if (!dados?.length) return;
 
-            chartSvg = new Chart(
-                document.getElementById("graficoSvg"),
-                {
-                    type: "bar",
-                    data: {
-                        labels: dados.map(d => d.label),
-                        datasets: [{
-                            label: "SVG",
-                            data: dados.map(d => d.total)
-                        }]
-                    },
-                    options: {
-                        responsive: true
-                    }
-                }
-            );
-        });
-    </script>
+    if (biState.Periodo === "mensal") {
+        dados = agruparPorLabel(dados);
+    }
+
+    if (chartSvg) chartSvg.destroy();
+
+    chartSvg = new Chart(
+        document.getElementById("graficoSvg"),
+        {
+            type: "bar",
+            data: {
+                labels: dados.map(d => d.label),
+                datasets: [{
+                    label: "SVG",
+                    data: dados.map(d => d.total)
+                }]
+            },
+            options: { responsive: true }
+        }
+    );
+});
+
+</script>
 }
 

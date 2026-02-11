@@ -54,95 +54,93 @@
         }
 
         async function biCarregarFiltros() {
-            try {
-                console.log("🔎 Carregando filtros BI…");
 
-                const resp = await fetch("/bi/filtros", { cache: "no-store" });
-                console.log("🌐 /bi/filtros status:", resp.status);
+    const resp = await fetch("/bi/filtros");
+    if (!resp.ok) return;
 
-                if (!resp.ok) {
-                    const text = await resp.text();
-                    console.error("❌ Erro ao buscar filtros:", text);
-                    return;
-                }
+    const data = await resp.json();
 
-                const data = await resp.json();
-                console.log("✅ Filtros recebidos:", data);
+    // ===== ANO =====
+    const selAno = document.getElementById("biAno");
 
-                // ===== ANO =====
-                const selAno = document.getElementById("biAno");
-                if (selAno) {
-                    // limpa opções exceto "Todos"
-                    selAno.querySelectorAll("option:not([value=''])").forEach(o => o.remove());
+    if (selAno && data.anos?.length) {
 
-                    const anos = (data.anos ?? []).map(Number).filter(a => !Number.isNaN(a));
-                    console.log("📅 anos:", anos);
+        // limpa opções antigas
+        selAno.querySelectorAll("option:not([value=''])")
+              .forEach(o => o.remove());
 
-                    anos.forEach(a => {
-                        const opt = document.createElement("option");
-                        opt.value = String(a);
-                        opt.textContent = String(a);
-                        selAno.appendChild(opt);
-                    });
-
-                    // default: maior ano se ainda não tiver setado (null, "", "null", "undefined")
-                    const anoAtual = biState.Ano;
-                    const naoTemAno = !anoAtual || anoAtual === "null" || anoAtual === "undefined";
-
-                    if (naoTemAno && anos.length) {
-                        const maiorAno = Math.max(...anos);
-                        biState.Ano = String(maiorAno);
-                        selAno.value = biState.Ano;
-                        biSaveState();
-                        console.log("⭐ Ano default definido:", biState.Ano);
-                    } else {
-                        // tenta aplicar o que já está no state
-                        selAno.value = biState.Ano ?? "";
-                    }
-                }
-
-                // (se você também tiver seção/operador, preencha aqui do mesmo jeito)
-
-            } catch (err) {
-                console.error("💥 Falha em biCarregarFiltros:", err);
-            }
-        }
-
-
-        document.addEventListener("DOMContentLoaded", async () => {
-            biLoadState();
-            await biCarregarFiltros();
-
-            document.querySelectorAll("[data-bi-filter]").forEach(el => {
-                el.value = biState[el.dataset.biFilter] ?? "";
-
-                el.addEventListener("change", e => {
-                    biState[el.dataset.biFilter] = e.target.value || null;
-                    biReloadDebounced();
-                });
-            });
-
-            biReload();
+        data.anos.forEach(a => {
+            const opt = document.createElement("option");
+            opt.value = a;
+            opt.textContent = a;
+            selAno.appendChild(opt);
         });
 
-      const selAno = document.getElementById("biAno");
-        if (selAno && data.anos?.length) {
-            // popula
-            data.anos.forEach(a => {
-                const opt = document.createElement("option");
-                opt.value = a;
-                opt.textContent = a;
-                selAno.appendChild(opt);
-            });
+        // 🔥 default maior ano
+        const maiorAno = Math.max(...data.anos.map(Number));
+        biState.Ano = String(maiorAno);
+        selAno.value = biState.Ano;
+        biSaveState();
+    }
 
-            // 🔥 default: maior ano (se ainda não tiver nada salvo)
-            if (!biState.Ano) {
-                const maiorAno = Math.max(...data.anos.map(Number));
-                biState.Ano = String(maiorAno);
-                selAno.value = biState.Ano;
-                biSaveState();
-            }
+    // ===== MÊS DEFAULT =====
+    const selMes = document.getElementById("biMes");
+    if (selMes) {
+        const mesAtual = new Date().getMonth() + 1;
+        biState.Mes = String(mesAtual);
+        selMes.value = biState.Mes;
+        biSaveState();
+    }
+}
+
+
+
+      
+document.addEventListener("DOMContentLoaded", async () => {
+
+    biLoadState();
+
+    await biCarregarFiltros();
+
+    document.querySelectorAll("[data-bi-filter]").forEach(el => {
+
+        const key = el.dataset.biFilter;
+
+        // aplica estado salvo
+        if (biState[key] && biState[key] !== "null" && biState[key] !== "undefined") {
+            el.value = biState[key];
         }
+
+        el.addEventListener("change", e => {
+
+            biState[key] = e.target.value || null;
+
+            // 🔥 LÓGICA INTELIGENTE DE PERÍODO
+            if (key === "Periodo") {
+
+                const selMes = document.getElementById("biMes");
+
+                if (biState.Periodo === "mensal") {
+                    biState.Mes = null;
+                    if (selMes) selMes.value = "";
+                }
+
+                if (biState.Periodo === "diario") {
+                    const mesAtual = new Date().getMonth() + 1;
+                    biState.Mes = String(mesAtual);
+                    if (selMes) selMes.value = biState.Mes;
+                }
+            }
+
+            biReloadDebounced();
+        });
+    });
+
+    biReload();
+});
+
+
+
 
     </script>
 }

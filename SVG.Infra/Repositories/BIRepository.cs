@@ -40,9 +40,7 @@ namespace SVG.Infra.Repositories
             Total
         FROM {view}
         WHERE (@ano IS NULL OR YEAR(DataSK) = @ano)
-          
-        ORDER BY DataSK
-    ";
+        ORDER BY DataSK";
 
       var result = await _db.Database.SqlQuery<XBiSerie>(
           sql,
