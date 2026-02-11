@@ -52,42 +52,43 @@
             FROM Datas
             WHERE Data < @DataFim
         )
-        INSERT INTO DimTempo
-        SELECT
-            Data,
+        IF NOT EXISTS (SELECT 1 FROM DimTempo)
+        BEGIN
+            INSERT INTO DimTempo
+            SELECT
+                Data,
 
-            YEAR(Data)  AS Ano,
-            MONTH(Data) AS MesNumero,
-            LOWER(LEFT(DATENAME(MONTH, Data), 3)) AS MesNome,
+                YEAR(Data)  AS Ano,
+                MONTH(Data) AS MesNumero,
+                LOWER(LEFT(DATENAME(MONTH, Data), 3)) AS MesNome,
 
-            ((MONTH(Data) + 1) / 2) AS Bimestre,
-            CONCAT('B', ((MONTH(Data) + 1) / 2)) AS BimestreNome,
+                ((MONTH(Data) + 1) / 2) AS Bimestre,
+                CONCAT('B', ((MONTH(Data) + 1) / 2)) AS BimestreNome,
 
-            CASE 
-                WHEN MONTH(Data) <= 6 THEN 1
-                ELSE 2
-            END AS Semestre,
-            CONCAT(
-                'S',
                 CASE 
                     WHEN MONTH(Data) <= 6 THEN 1
                     ELSE 2
-                END
-            ) AS SemestreNome,
+                END AS Semestre,
+                CONCAT(
+                    'S',
+                    CASE 
+                        WHEN MONTH(Data) <= 6 THEN 1
+                        ELSE 2
+                    END
+                ) AS SemestreNome,
 
-            DAY(Data) AS Dia,
-            DATEPART(WEEKDAY, Data) AS DiaSemanaNumero,
-            LOWER(LEFT(DATENAME(WEEKDAY, Data), 3)) AS DiaSemanaNome,
+                DAY(Data) AS Dia,
+                DATEPART(WEEKDAY, Data) AS DiaSemanaNumero,
+                LOWER(LEFT(DATENAME(WEEKDAY, Data), 3)) AS DiaSemanaNome,
 
-            CASE 
-                WHEN DATEPART(WEEKDAY, Data) IN (1,7) THEN 1
-                ELSE 0
-            END AS IsFimDeSemana
+                CASE 
+                    WHEN DATEPART(WEEKDAY, Data) IN (1,7) THEN 1
+                    ELSE 0
+                END AS IsFimDeSemana
 
-        FROM Datas
-        OPTION (MAXRECURSION 0);
-
-
+            FROM Datas
+            OPTION (MAXRECURSION 0);
+        END
       ");
 
       Sql(@"
@@ -113,11 +114,16 @@
       Sql(@"
         INSERT INTO DimTipoOperacao (TipoOperacaoID, Nome, Peso)
         SELECT
-            ID,
-            Nome,
-            Peso
-        FROM TipoOperacao;
-        ");
+            t.ID,
+            t.Nome,
+            t.Peso
+        FROM TipoOperacao t
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM DimTipoOperacao d
+            WHERE d.TipoOperacaoID = t.ID
+        );
+      ");
 
       
     }

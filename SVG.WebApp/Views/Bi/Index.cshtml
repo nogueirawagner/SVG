@@ -15,15 +15,60 @@
     <script>
         let chartSvg;
 
+
+        // Plugin custom oficial
+        const valueLabelPlugin = {
+            id: 'valueLabelPlugin',
+            afterDraw(chart) {
+
+                const { ctx } = chart;
+                const dataset = chart.data.datasets[0];
+                const meta = chart.getDatasetMeta(0);
+
+                if (!meta || !meta.data) return;
+
+                ctx.save();
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillStyle = '#000';
+
+                meta.data.forEach((bar, index) => {
+                    const value = dataset.data[index];
+
+                    const x = bar.x;
+                    const y = bar.y - 6;
+
+                    ctx.fillText(value, x, y);
+                });
+
+                ctx.restore();
+            }
+        };
+
+        function agruparPorLabel(dados) {
+            const mapa = {};
+            dados.forEach(d => {
+                if (!mapa[d.label]) mapa[d.label] = 0;
+                mapa[d.label] += Number(d.total ?? 0);
+            });
+
+            return Object.entries(mapa)
+                .map(([label, total]) => ({ label, total }));
+        }
+
         document.addEventListener("bi:changed", async () => {
-
+            console.log("bi:changed disparado");
             const qs = buildPeriodicidadeQuery();
-
             const resp = await fetch(`/bi/adesao-svg?${qs}`);
             if (!resp.ok) return;
 
-            const dados = await resp.json();
+            let dados = await resp.json();
             if (!dados?.length) return;
+
+            if (biState.Periodo === "mensal") {
+                dados = agruparPorLabel(dados);
+            }
 
             if (chartSvg) chartSvg.destroy();
 
@@ -35,27 +80,38 @@
                         labels: dados.map(d => d.label),
                         datasets: [{
                             label: "SVG",
-                            data: dados.map(d => d.total)
+                            data: dados.map(d => d.total),
+                            backgroundColor: "#212529",
+                            borderRadius: 6
                         }]
                     },
                     options: {
                         responsive: true,
-                        onClick: (event, elements) => {
-                            if (!elements.length) return;
-
-                            const index = elements[0].index;
-                            const label = dados[index].label;
-
-                            // 🔥 drill-down conceitual (exemplo)
-                            // você pode mapear label → mês depois
-                            biState.Periodo = "mensal";
-                            biState.Mes = index + 1;
-
-                            biReload();
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: { top: 30 }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 }
+                            },
+                            x: {
+                                ticks: {
+                                    maxRotation: 0,
+                                    minRotation: 0
+                                }
+                            }
                         }
-                    }
+                    },
+                    plugins: [valueLabelPlugin] // 👈 AQUI está o segredo
                 }
             );
+
         });
+
     </script>
 }
