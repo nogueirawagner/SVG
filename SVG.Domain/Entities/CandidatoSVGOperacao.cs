@@ -12,5 +12,8 @@ namespace SVG.Domain.Entities
     public int OperadorID { get; set; }
     public int OperacaoID { get; set; }
     public DateTime DataHoraCriacao { get; set; }
+
+    public virtual Operacao Operacao { get; set; }
+    public virtual Operador Operador { get; set; }
   }
 }

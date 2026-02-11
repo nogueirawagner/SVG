@@ -63,6 +63,10 @@ namespace SVG.Infra.Context.SQLServer
         .HasOptional(u => u.Operador)      // Usuario pode NÃO ter Operador
         .WithOptionalDependent(o => o.Usuario)
         .Map(m => m.MapKey("OperadorID")); // Operador é dependente
+
+      modelBuilder.Entity<CandidatoSVGOperacao>()
+      .HasIndex(c => new { c.OperadorID, c.OperacaoID })
+      .IsUnique();
     }
   }
 }

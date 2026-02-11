@@ -17,11 +17,13 @@
     public virtual TipoOperacao TipoOperacao { get; set; }
     public virtual ICollection<OperadorOperacao> OperadoresOperacao { get; set; }
     public virtual ICollection<ViaturaOperacao> ViaturasOperacao { get; set; }
+    public virtual ICollection<CandidatoSVGOperacao> CandidatosSVGOperacao { get; set; }
 
     public Operacao()
     {
       OperadoresOperacao = new List<OperadorOperacao>();
       ViaturasOperacao = new List<ViaturaOperacao>();
+      CandidatosSVGOperacao = new List<CandidatoSVGOperacao>(); 
     }
   }
 }

@@ -19,5 +19,12 @@ namespace SVG.Domain.Entities
     public int SessaoID { get; set; }
     public virtual Sessao Sessao { get; set; }
     public Usuario? Usuario { get; set; }
+
+    public virtual ICollection<CandidatoSVGOperacao> CandidatosSVGOperacao { get; set; }
+
+    public Operador()
+    {
+      CandidatosSVGOperacao = new List<CandidatoSVGOperacao>();
+    }
   }
 }
