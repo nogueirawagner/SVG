@@ -7,8 +7,6 @@
   {
     public override void Up()
     {
-      // Alterações de views anteriores:
-
       Sql(@"
       CREATE OR ALTER VIEW [dbo].[vw_dm_adesao_svg_diario] AS
       SELECT
@@ -215,8 +213,8 @@
             o.Nome,
             s.ID        AS SessaoID,
             s.Nome      AS SessaoNome
-        FROM Operador o
-        JOIN Sessao s ON s.ID = o.SessaoID
+        FROM dbo.Operador o
+        JOIN dbo.Sessao   s ON s.ID = o.SessaoID
         WHERE NOT EXISTS (
             SELECT 1
             FROM dbo.DimOperador d
