@@ -12,5 +12,4 @@ namespace SVG.Domain.TiposEstruturados.BI
     public string Label { get; set; } = "";
     public int Total { get; set; }
   }
-
 }

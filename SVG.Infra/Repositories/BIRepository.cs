@@ -55,6 +55,9 @@ namespace SVG.Infra.Repositories
           new SqlParameter("@operadorId", (object?)periodicidade.OperadorId ?? DBNull.Value)
       ).ToListAsync();
 
+      var total = result.Sum(s => s.Total);
+      var media = result.Average(s => s.Total);
+
       _cache.Set(
        cacheKey,
        result,
