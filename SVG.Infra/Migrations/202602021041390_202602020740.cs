@@ -7,7 +7,61 @@
   {
     public override void Up()
     {
-      // Alterações de views anteriores:
+      Sql(@"
+      CREATE OR ALTER VIEW [dbo].[vw_dm_operacao] AS
+      SELECT
+          o.ID       AS OperacaoID,
+          dt.Data    AS DataSK,
+          o.DataHora,
+          -- Dimensão Tempo (desnormalizada, se quiser manter)
+          dt.Ano,
+          dt.MesNumero,
+          dt.MesNome,
+          dt.Bimestre,
+          dt.BimestreNome,
+          dt.Semestre,
+          dt.SemestreNome,
+          dt.DiaSemanaNome,
+          dt.IsFimDeSemana,
+
+          -- Dimensão Operação
+          t.Nome AS TipoOperacao
+
+      FROM Operacao o
+      JOIN DimTempo dt
+        ON dt.Data = CAST(o.DataHora AS date)
+      JOIN TipoOperacao t
+        ON t.ID = o.TipoOperacaoID;
+
+      ");
+
+      Sql(@"
+          CREATE OR ALTER VIEW vw_dm_participacao_svg AS
+            SELECT
+                o.ID AS OperacaoID,
+
+                -- SKs
+                dt.Data            AS DataSK,
+                dto.TipoOperacaoSK,
+
+                -- Métricas
+                COUNT(oo.OperadorID) AS TotalOperadores,
+                SUM(CASE WHEN oo.SVG = 1 THEN 1 ELSE 0 END) AS TotalOperadoresSVG
+
+            FROM Operacao o
+            JOIN OperadorOperacao oo
+              ON oo.OperacaoID = o.ID
+            JOIN DimTempo dt
+              ON dt.Data = CAST(o.DataHora AS date)
+            JOIN DimTipoOperacao dto
+              ON dto.TipoOperacaoID = o.TipoOperacaoID
+
+            GROUP BY
+                o.ID,
+                dt.Data,
+                dto.TipoOperacaoSK;
+
+        ");
 
       Sql(@"
       CREATE OR ALTER VIEW [dbo].[vw_dm_adesao_svg_mensal] AS

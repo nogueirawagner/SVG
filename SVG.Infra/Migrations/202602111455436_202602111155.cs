@@ -194,35 +194,6 @@
       ");
 
       Sql(@"
-        IF NOT EXISTS (
-            SELECT 1
-            FROM sys.indexes
-            WHERE name = 'UX_DimOperador_OperadorID'
-        )
-        BEGIN
-            CREATE UNIQUE INDEX UX_DimOperador_OperadorID
-                ON dbo.DimOperador (OperadorID);
-        END;
-      ");
-
-      Sql(@"
-        INSERT INTO dbo.DimOperador (OperadorID, Matricula, Nome, SessaoID, SessaoNome)
-        SELECT
-            o.ID        AS OperadorID,
-            o.Matricula,
-            o.Nome,
-            s.ID        AS SessaoID,
-            s.Nome      AS SessaoNome
-        FROM dbo.Operador o
-        JOIN dbo.Sessao   s ON s.ID = o.SessaoID
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM dbo.DimOperador d
-            WHERE d.OperadorID = o.ID
-        );
-      ");
-
-      Sql(@"
         CREATE OR ALTER VIEW [dbo].[vw_dm_participacao_operador] AS
         SELECT
             o.ID            AS OperacaoID,
