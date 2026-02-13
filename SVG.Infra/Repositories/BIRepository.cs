@@ -5,6 +5,7 @@ using SVG.Domain.TiposEstruturados.BI;
 using SVG.Infra.Context.SQLServer;
 using System.Data.SqlClient;
 using System.Runtime.Caching;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SVG.Infra.Repositories
 {
@@ -32,6 +33,10 @@ namespace SVG.Infra.Repositories
         return cached;
 
       var view = ViewPorPeriodo("vw_dm_adesao_svg", periodicidade.Periodo);
+      var where = "WHERE(@ano IS NULL OR YEAR(DataSK) = @ano)";
+
+      if (periodicidade.Periodo == "diario")
+        where = where + " and MONTH(DataSK) = @mes";
 
       var sql = $@"
         SELECT
@@ -39,12 +44,13 @@ namespace SVG.Infra.Repositories
             Label,
             Total
         FROM {view}
-        WHERE (@ano IS NULL OR YEAR(DataSK) = @ano)
+        {where}
         ORDER BY DataSK";
 
       var result = await _db.Database.SqlQuery<XBiSerie>(
           sql,
           new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value),
+          new SqlParameter("@mes", (object?)periodicidade.Mes ?? DBNull.Value),
           new SqlParameter("@secaoId", (object?)periodicidade.SecaoId ?? DBNull.Value),
           new SqlParameter("@operadorId", (object?)periodicidade.OperadorId ?? DBNull.Value)
       ).ToListAsync();
@@ -199,13 +205,14 @@ namespace SVG.Infra.Repositories
       string metodo,
       XPeriodicidade periodicidade)
     {
-      return $"BI:{metodo}:{periodicidade.Periodo}:{periodicidade.Ano}:{periodicidade.SecaoId}:{periodicidade.OperadorId}";
+      return $"BI:{metodo}:{periodicidade.Periodo}:{periodicidade.Ano}:{periodicidade.Mes}:{periodicidade.SecaoId}:{periodicidade.OperadorId}";
     }
 
     private static string ViewPorPeriodo(string baseView, string periodo)
     {
       return periodo switch
       {
+        "diario" => $"{baseView}_diario",
         "mensal" => $"{baseView}_mensal",
         "bimestral" => $"{baseView}_bimestral",
         "trimestral" => $"{baseView}_trimestral",

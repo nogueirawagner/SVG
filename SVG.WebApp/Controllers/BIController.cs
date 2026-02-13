@@ -8,7 +8,7 @@ public class BIController : Controller
   private readonly IBIAppService _biAppService;
 
   private static readonly string[] PeriodosValidos =
-      { "mensal", "bimestral", "trimestral", "semestral" };
+      { "diario", "mensal", "bimestral", "trimestral", "semestral" };
 
   public BIController(IBIAppService biAppService)
   {

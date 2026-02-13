@@ -10,10 +10,10 @@
       // Alterações de views anteriores:
 
       Sql(@"
-      CREATE OR ALTER VIEW [dbo].[vw_dm_adesao_svg_diaria] AS
+      CREATE OR ALTER VIEW [dbo].[vw_dm_adesao_svg_diario] AS
       SELECT
           dt.Data AS DataSK,
-          CONCAT(dt.MesNome, '/', dt.Ano) AS Label,
+          CONCAT(dt.Dia, '/', dt.MesNome) AS Label,
           SUM(p.TotalOperadoresSVG) AS Total
       FROM vw_dm_participacao_svg p
       JOIN DimTempo dt
@@ -21,7 +21,7 @@
       GROUP BY
           dt.Data,
           dt.MesNome,
-          dt.Ano;
+          dt.Dia;
       ");
 
       Sql(@"
