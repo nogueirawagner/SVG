@@ -57,14 +57,33 @@
                 .map(([label, total]) => ({ label, total }));
         }
 
+
+      function atualizarMetricasNaTela(metricas) {
+
+            if (!metricas) return;
+
+            document.getElementById("biTotal").innerText = metricas.total;
+            document.getElementById("biMedia").innerText = metricas.media.toFixed(2);
+            document.getElementById("biMaximo").innerText = metricas.maximo;
+            document.getElementById("biMinimo").innerText = metricas.minimo;
+            document.getElementById("biCrescimento").innerText =
+                metricas.crescimentoPercentual.toFixed(2) + "%";
+        }
+
+
         document.addEventListener("bi:changed", async () => {
-            console.log("bi:changed disparado");
+
             const qs = buildPeriodicidadeQuery();
             const resp = await fetch(`/bi/adesao-svg?${qs}`);
             if (!resp.ok) return;
 
-            let dados = await resp.json();
-            if (!dados?.length) return;
+            const resposta = await resp.json();
+
+            if (!resposta || !resposta.serie || !resposta.serie.length)
+                return;
+
+            let dados = resposta.serie;
+            let metricas = resposta.metricas;
 
             if (biState.Periodo === "mensal") {
                 dados = agruparPorLabel(dados);
@@ -88,9 +107,7 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        layout: {
-                            padding: { top: 30 }
-                        },
+                        layout: { padding: { top: 30 } },
                         plugins: {
                             legend: { display: false }
                         },
@@ -111,7 +128,10 @@
                 }
             );
 
+            // 🔵 Aqui você já pode usar as métricas
+            atualizarMetricasNaTela(metricas);
         });
+
 
     </script>
 }

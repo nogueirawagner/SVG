@@ -26,7 +26,7 @@ namespace SVG.Domain.Services
       _cache = cache;
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(XPeriodicidade periodicidade)
+    public Task<XBiResultado> ObterAdesaoSvgAsync(XPeriodicidade periodicidade)
     {
       return _biRepository.ObterAdesaoSvgAsync(periodicidade);
     }
@@ -57,12 +57,12 @@ namespace SVG.Domain.Services
       return filtros;
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(XPeriodicidade periodicidade)
+    public Task<XBiResultado> ObterOperacoesAsync(XPeriodicidade periodicidade)
     {
       return _biRepository.ObterOperacoesAsync(periodicidade);
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade)
+    public Task<XBiResultado> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade)
     {
       return _biRepository.ObterOperacoesAsync(periodicidade);
     }

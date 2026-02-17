@@ -14,11 +14,11 @@ namespace SVG.App.Interfaces
 
     Task<XBiDashboard> ObterDashboardAsync(XPeriodicidade periodicidade);
 
-    Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(XPeriodicidade periodicidade);
+    Task<XBiResultado> ObterAdesaoSvgAsync(XPeriodicidade periodicidade);
 
-    Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(XPeriodicidade periodicidade);
+    Task<XBiResultado> ObterOperacoesAsync(XPeriodicidade periodicidade);
 
-    Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade);
+    Task<XBiResultado> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade);
 
     Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(XPeriodicidade periodicidade);
 

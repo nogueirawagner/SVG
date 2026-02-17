@@ -23,13 +23,13 @@ namespace SVG.Infra.Repositories
       _cache = cache;
     }
 
-    public async Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(XPeriodicidade periodicidade)
+    public async Task<XBiResultado> ObterAdesaoSvgAsync(XPeriodicidade periodicidade)
     {
       var cacheKey = CacheKey(
         nameof(ObterAdesaoSvgAsync),
         periodicidade);
 
-      if (_cache.TryGetValue(cacheKey, out IEnumerable<XBiSerie> cached))
+      if (_cache.TryGetValue(cacheKey, out XBiResultado cached))
         return cached;
 
       var view = ViewPorPeriodo("vw_dm_adesao_svg", periodicidade.Periodo);
@@ -55,16 +55,44 @@ namespace SVG.Infra.Repositories
           new SqlParameter("@operadorId", (object?)periodicidade.OperadorId ?? DBNull.Value)
       ).ToListAsync();
 
+      result = result.OrderBy(s => s.DataSK).ToList();
+
       var total = result.Sum(s => s.Total);
       var media = result.Average(s => s.Total);
+      var max = result.Any() ? result.Max(s => s.Total) : 0;
+      var min = result.Any() ? result.Min(s => s.Total) : 0;
+      
+      double crescimento = 0;
+
+      if (result.Count > 1)
+      {
+        var primeiro = result.First().Total;
+        var ultimo = result.Last().Total;
+
+        if (primeiro != 0)
+          crescimento = ((double)(ultimo - primeiro) / primeiro) * 100;
+      }
+
+      var resultado = new XBiResultado
+      {
+        Serie = result,
+        Metricas = new XBiMetricas
+        {
+          Total = total,
+          Media = Math.Round(media, 2),
+          Maximo = max,
+          Minimo = min,
+          CrescimentoPercentual = Math.Round(crescimento, 2)
+        }
+      };
 
       _cache.Set(
        cacheKey,
-       result,
+       resultado,
        TimeSpan.FromMinutes(5)
       );
 
-      return result;
+      return resultado;
     }
 
     public async Task<XBiDashboard> ObterDashboardAsync(XPeriodicidade periodicidade)
@@ -95,13 +123,13 @@ namespace SVG.Infra.Repositories
     }
 
 
-    public async Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(XPeriodicidade periodicidade)
+    public async Task<XBiResultado> ObterOperacoesAsync(XPeriodicidade periodicidade)
     {
       var cacheKey = CacheKey(
        nameof(ObterOperacoesAsync),
        periodicidade);
 
-      if (_cache.TryGetValue(cacheKey, out IEnumerable<XBiSerie> cached))
+      if (_cache.TryGetValue(cacheKey, out XBiResultado cached))
         return cached;
 
       var view = ViewPorPeriodo("vw_dm_operacao", periodicidade.Periodo);
@@ -121,23 +149,29 @@ namespace SVG.Infra.Repositories
           new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value)
       ).ToListAsync();
 
+      var resultado = new XBiResultado
+      {
+        Serie = result,
+        Metricas = new XBiMetricas()
+      };
+
       _cache.Set(
         cacheKey,
-        result,
+        resultado,
         TimeSpan.FromMinutes(5)
       );
 
-      return result;
+      return resultado;
     }
 
 
-    public async Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade)
+    public async Task<XBiResultado> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade)
     {
       var cacheKey = CacheKey(
        nameof(ObterParticipacaoOperadorAsync),
        periodicidade);
 
-      if (_cache.TryGetValue(cacheKey, out IEnumerable<XBiSerie> cached))
+      if (_cache.TryGetValue(cacheKey, out XBiResultado cached))
         return cached;
 
       var view = ViewPorPeriodo("vw_dm_participacao_operador", periodicidade.Periodo);
@@ -160,13 +194,20 @@ namespace SVG.Infra.Repositories
           new SqlParameter("@operadorId", (object?)periodicidade.OperadorId ?? DBNull.Value)
       ).ToListAsync();
 
+      var resultado = new XBiResultado
+      {
+        Serie = result,
+        Metricas = new XBiMetricas()
+      };
+
       _cache.Set(
         cacheKey,
-        result,
+        resultado,
         TimeSpan.FromMinutes(5)
       );
 
-      return result;
+      return resultado;
+;
     }
 
 

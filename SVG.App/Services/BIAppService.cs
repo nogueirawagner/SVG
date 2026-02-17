@@ -22,7 +22,7 @@ namespace SVG.App.Services
       _operacaoService = operacaoService;
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterAdesaoSvgAsync(XPeriodicidade periodicidade)
+    public Task<XBiResultado> ObterAdesaoSvgAsync(XPeriodicidade periodicidade)
     {
       return _biService.ObterAdesaoSvgAsync(periodicidade);
     }
@@ -32,12 +32,12 @@ namespace SVG.App.Services
       return _biService.ObterDashboardAsync(periodicidade);
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterOperacoesAsync(XPeriodicidade periodicidade)
+    public Task<XBiResultado> ObterOperacoesAsync(XPeriodicidade periodicidade)
     {
       return _biService.ObterOperacoesAsync(periodicidade);
     }
 
-    public Task<IEnumerable<XBiSerie>> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade)
+    public Task<XBiResultado> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade)
     {
       return _biService.ObterParticipacaoOperadorAsync(periodicidade);
     }

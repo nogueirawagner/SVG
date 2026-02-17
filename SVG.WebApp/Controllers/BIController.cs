@@ -47,7 +47,7 @@ public class BIController : Controller
   }
 
   [HttpGet("adesao-svg")]
-  public async Task<ActionResult<IEnumerable<XBiSerie>>> AdesaoSvg(XPeriodicidade periodicidade)
+  public async Task<ActionResult<IEnumerable<XBiResultado>>> AdesaoSvg(XPeriodicidade periodicidade)
   {
     periodicidade.Periodo = NormalizarPeriodo(periodicidade.Periodo);
     return Ok(await _biAppService.ObterAdesaoSvgAsync(periodicidade));
@@ -60,14 +60,14 @@ public class BIController : Controller
   }
 
   [HttpGet("operacoes")]
-  public async Task<ActionResult<IEnumerable<XBiSerie>>> Operacoes(XPeriodicidade periodicidade)
+  public async Task<ActionResult<IEnumerable<XBiResultado>>> Operacoes(XPeriodicidade periodicidade)
   {
     periodicidade.Periodo = NormalizarPeriodo(periodicidade.Periodo);
     return Ok(await _biAppService.ObterOperacoesAsync(periodicidade));
   }
 
   [HttpGet("operadores")]
-  public async Task<ActionResult<IEnumerable<XBiSerie>>> Operadores(XPeriodicidade periodicidade)
+  public async Task<ActionResult<IEnumerable<XBiResultado>>> Operadores(XPeriodicidade periodicidade)
   {
     periodicidade.Periodo = NormalizarPeriodo(periodicidade.Periodo);
     return Ok(await _biAppService.ObterParticipacaoOperadorAsync(periodicidade));
