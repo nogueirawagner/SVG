@@ -13,132 +13,134 @@
     @RenderSection("Scripts", required: false)
 
     <script>
-        const biState = {
-            Periodo: "mensal",
-            Ano: null,
-            Mes: null,
-            SecaoId: null,
-            OperadorId: null
-        };
+                const biState = {
+                    Periodo: "mensal",
+                    Ano: null,
+                    Mes: null,
+                    SecaoId: null,
+                    OperadorId: null,
+                    DataSK: null
+                };
 
-        let biTimer = null;
+                let biTimer = null;
 
-        function biSaveState() {
-            sessionStorage.setItem("biState", JSON.stringify(biState));
-        }
-
-        function biLoadState() {
-            const s = sessionStorage.getItem("biState");
-            if (s) Object.assign(biState, JSON.parse(s));
-        }
-
-        function buildPeriodicidadeQuery() {
-            const qs = new URLSearchParams();
-
-            if (biState.Periodo)    qs.append("Periodo", biState.Periodo);
-            if (biState.Ano)        qs.append("Ano", biState.Ano);
-            if (biState.Mes)        qs.append("Mes", biState.Mes);
-            if (biState.SecaoId)    qs.append("SecaoId", biState.SecaoId);
-            if (biState.OperadorId) qs.append("OperadorId", biState.OperadorId);
-
-            return qs.toString();
-        }
-
-        function biReload() {
-            biSaveState();
-            document.dispatchEvent(new CustomEvent("bi:changed", { detail: biState }));
-        }
-
-        function biReloadDebounced(delay = 250) {
-            clearTimeout(biTimer);
-            biTimer = setTimeout(biReload, delay);
-        }
-
-        async function biCarregarFiltros() {
-
-    const resp = await fetch("/bi/filtros");
-    if (!resp.ok) return;
-
-    const data = await resp.json();
-
-    // ===== ANO =====
-    const selAno = document.getElementById("biAno");
-
-    if (selAno && data.anos?.length) {
-
-        // limpa opções antigas
-        selAno.querySelectorAll("option:not([value=''])")
-              .forEach(o => o.remove());
-
-        data.anos.forEach(a => {
-            const opt = document.createElement("option");
-            opt.value = a;
-            opt.textContent = a;
-            selAno.appendChild(opt);
-        });
-
-        // 🔥 default maior ano
-        const maiorAno = Math.max(...data.anos.map(Number));
-        biState.Ano = String(maiorAno);
-        selAno.value = biState.Ano;
-        biSaveState();
-    }
-
-    // ===== MÊS DEFAULT =====
-    const selMes = document.getElementById("biMes");
-    if (selMes) {
-        const mesAtual = new Date().getMonth() + 1;
-        biState.Mes = String(mesAtual);
-        selMes.value = biState.Mes;
-        biSaveState();
-    }
-}
-
-
-
-      
-document.addEventListener("DOMContentLoaded", async () => {
-
-    biLoadState();
-
-    await biCarregarFiltros();
-
-    document.querySelectorAll("[data-bi-filter]").forEach(el => {
-
-        const key = el.dataset.biFilter;
-
-        // aplica estado salvo
-        if (biState[key] && biState[key] !== "null" && biState[key] !== "undefined") {
-            el.value = biState[key];
-        }
-
-        el.addEventListener("change", e => {
-
-            biState[key] = e.target.value || null;
-
-            // 🔥 LÓGICA INTELIGENTE DE PERÍODO
-            if (key === "Periodo") {
-
-                const selMes = document.getElementById("biMes");
-
-                if (biState.Periodo === "mensal") {
-                    biState.Mes = null;
-                    if (selMes) selMes.value = "";
+                function biSaveState() {
+                    sessionStorage.setItem("biState", JSON.stringify(biState));
                 }
 
-                if (biState.Periodo === "diario") {
-                    const mesAtual = new Date().getMonth() + 1;
-                    biState.Mes = String(mesAtual);
-                    if (selMes) selMes.value = biState.Mes;
+                function biLoadState() {
+                    const s = sessionStorage.getItem("biState");
+                    if (s) Object.assign(biState, JSON.parse(s));
                 }
+
+                function buildPeriodicidadeQuery() {
+                    const qs = new URLSearchParams();
+
+                    if (biState.Periodo)    qs.append("Periodo", biState.Periodo);
+                    if (biState.Ano)        qs.append("Ano", biState.Ano);
+                    if (biState.Mes)        qs.append("Mes", biState.Mes);
+                    if (biState.SecaoId)    qs.append("SecaoId", biState.SecaoId);
+                    if (biState.OperadorId) qs.append("OperadorId", biState.OperadorId);
+                    if (biState.DataReferencia) qs.append("DataReferencia", biState.DataReferencia);
+
+                    return qs.toString();
+                }
+
+                function biReload() {
+                    biSaveState();
+                    document.dispatchEvent(new CustomEvent("bi:changed", { detail: biState }));
+                }
+
+                function biReloadDebounced(delay = 250) {
+                    clearTimeout(biTimer);
+                    biTimer = setTimeout(biReload, delay);
+                }
+
+                async function biCarregarFiltros() {
+
+            const resp = await fetch("/bi/filtros");
+            if (!resp.ok) return;
+
+            const data = await resp.json();
+
+            // ===== ANO =====
+            const selAno = document.getElementById("biAno");
+
+            if (selAno && data.anos?.length) {
+
+                // limpa opções antigas
+                selAno.querySelectorAll("option:not([value=''])")
+                      .forEach(o => o.remove());
+
+                data.anos.forEach(a => {
+                    const opt = document.createElement("option");
+                    opt.value = a;
+                    opt.textContent = a;
+                    selAno.appendChild(opt);
+                });
+
+                // 🔥 default maior ano
+                const maiorAno = Math.max(...data.anos.map(Number));
+                biState.Ano = String(maiorAno);
+                selAno.value = biState.Ano;
+                biSaveState();
             }
 
-            biReloadDebounced();
-        });
-    });
+            // ===== MÊS DEFAULT =====
+            const selMes = document.getElementById("biMes");
+            if (selMes) {
+                const mesAtual = new Date().getMonth() + 1;
+                biState.Mes = String(mesAtual);
+                selMes.value = biState.Mes;
+                biSaveState();
+            }
+        }
 
-    biReload();
-});
+
+
+
+        document.addEventListener("DOMContentLoaded", async () => {
+
+            biLoadState();
+
+            await biCarregarFiltros();
+
+            document.querySelectorAll("[data-bi-filter]").forEach(el => {
+
+                const key = el.dataset.biFilter;
+
+                // aplica estado salvo
+                if (biState[key] && biState[key] !== "null" && biState[key] !== "undefined") {
+                    el.value = biState[key];
+                }
+
+                el.addEventListener("change", e => {
+
+                    biState[key] = e.target.value || null;
+
+                    // 🔥 LÓGICA INTELIGENTE DE PERÍODO
+                    if (key === "Periodo") {
+
+                        const selMes = document.getElementById("biMes");
+
+                        if (biState.Periodo === "mensal") {
+                            biState.Mes = null;
+                            if (selMes) selMes.value = "";
+                        }
+
+                        if (biState.Periodo === "diario") {
+                            const mesAtual = new Date().getMonth() + 1;
+                            biState.Mes = String(mesAtual);
+                            if (selMes) selMes.value = biState.Mes;
+                        }
+                    }
+
+                    biReloadDebounced();
+                });
+            });
+
+            biReload();
+        });
 
 
 

@@ -19,21 +19,22 @@ public class BIController : Controller
   // VIEWS (HTML)
   // =========================
 
-  [HttpGet("/bi")]
+  [HttpGet("")]
   public IActionResult Index()
-      => View();
+        => View();
 
-  [HttpGet("/bi/svg")]
+  [HttpGet("svg")]
   public IActionResult Svg()
       => View();
 
-  [HttpGet("/bi/operacoes-view")]
+  [HttpGet("operacoes-view")]
   public IActionResult OperacoesView()
-      => View();
+      => PartialView("_GraficoOperacoes");
 
-  [HttpGet("/bi/operadores-view")]
+  [HttpGet("operadores-view")]
   public IActionResult OperadoresView()
-      => View();
+      => PartialView("_GraficoOperadores");
+
 
   // =========================
   // API (JSON)
@@ -47,7 +48,7 @@ public class BIController : Controller
   }
 
   [HttpGet("adesao-svg")]
-  public async Task<ActionResult<IEnumerable<XBiResultado>>> AdesaoSvg(XPeriodicidade periodicidade)
+  public async Task<ActionResult<XBiResultado>> AdesaoSvg(XPeriodicidade periodicidade)
   {
     periodicidade.Periodo = NormalizarPeriodo(periodicidade.Periodo);
     return Ok(await _biAppService.ObterAdesaoSvgAsync(periodicidade));
@@ -60,14 +61,14 @@ public class BIController : Controller
   }
 
   [HttpGet("operacoes")]
-  public async Task<ActionResult<IEnumerable<XBiResultado>>> Operacoes(XPeriodicidade periodicidade)
+  public async Task<ActionResult<XBiResultado>> Operacoes(XPeriodicidade periodicidade)
   {
     periodicidade.Periodo = NormalizarPeriodo(periodicidade.Periodo);
     return Ok(await _biAppService.ObterOperacoesAsync(periodicidade));
   }
 
   [HttpGet("operadores")]
-  public async Task<ActionResult<IEnumerable<XBiResultado>>> Operadores(XPeriodicidade periodicidade)
+  public async Task<ActionResult<XBiResultado>> Operadores(XPeriodicidade periodicidade)
   {
     periodicidade.Periodo = NormalizarPeriodo(periodicidade.Periodo);
     return Ok(await _biAppService.ObterParticipacaoOperadorAsync(periodicidade));

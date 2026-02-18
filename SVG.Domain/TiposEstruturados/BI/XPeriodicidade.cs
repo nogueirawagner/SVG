@@ -8,6 +8,8 @@ namespace SVG.Domain.TiposEstruturados.BI
 {
   public class XPeriodicidade
   {
+    public DateTime? DataReferencia { get; set; } 
+
     public string Periodo { get; set; } = "mensal";
 
     public int? Ano { get; set; }
@@ -16,5 +18,4 @@ namespace SVG.Domain.TiposEstruturados.BI
     public int? SecaoId { get; set; }
     public int? OperadorId { get; set; }
   }
-
 }

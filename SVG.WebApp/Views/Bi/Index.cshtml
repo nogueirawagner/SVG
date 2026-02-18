@@ -4,17 +4,204 @@
 }
 
 <div class="container-fluid">
-    <div class="row mt-4">
-        <div class="col-12">
-            @Html.Partial("_GraficoSvg")
+    <div class="row">
+
+        <!-- SIDEBAR CORPORATIVA -->
+        <div class="col-lg-2 sidebar-bi p-0">
+
+            <div class="sidebar-header text-center py-4">
+                <h6 class="text-uppercase fw-bold text-secondary">
+                    BI Dashboard
+                </h6>
+            </div>
+
+            <div class="nav flex-column nav-pills px-3">
+
+                <button class="nav-link active"
+                        id="btnSvg"
+                        onclick="trocarPainel('svg', this)">
+                    <i class="bi bi-bar-chart-fill me-2"></i>
+                    SVG
+                </button>
+
+                <button class="nav-link"
+                        id="btnOperacoes"
+                        onclick="trocarPainel('operacoes', this)">
+                    <i class="bi bi-clipboard-data-fill me-2"></i>
+                    Operações
+                </button>
+
+                
+                <button class="nav-link"
+                        id="btnOperadores"
+                        onclick="trocarPainel('operadores', this)">
+                    <i class="bi bi-people-fill me-2"></i>
+                    Operadores
+                </button>
+
+            </div>
+        </div>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <div class="col-lg-10 p-4">
+            <div id="biConteudo">
+                @Html.Partial("_GraficoSvg")
+            </div>
         </div>
     </div>
 </div>
 
+
 @section Scripts {
     <script>
         let chartSvg;
+        let painelAtual = "svg";
+        let contextoDrill = null;
+        let indiceSelecionado = null;
 
+        async function carregarViewGrafico(tipo) {
+
+            const resp = await fetch(`/bi/${tipo}-view`);
+            if (!resp.ok) return;
+
+            const html = await resp.text();
+
+            document.getElementById("biConteudo").innerHTML = html;
+        }
+
+        function aplicarDrill(dado) {
+
+            if (!dado?.dataSK) return;
+
+            const dataRef = String(dado.dataSK).substring(0, 10);
+            biState.DataReferencia = dado.dataSK;
+
+            // Hierarquia
+            if (painelAtual === "svg") {
+                painelAtual = "operacoes";
+            }
+            else if (painelAtual === "operacoes") {
+                painelAtual = "operadores";
+            }
+            else {
+                return;
+            }
+
+            atualizarSidebar(painelAtual);
+
+            document.dispatchEvent(new CustomEvent("bi:changed"));
+        }
+
+        async function trocarPainel(tipo) {
+
+            painelAtual = tipo;
+            contextoDrill = null;
+            indiceSelecionado = null;
+
+            atualizarSidebar(tipo);
+
+            await carregarViewGrafico(tipo);
+
+            document.dispatchEvent(new CustomEvent("bi:changed"));
+        }
+
+        function atualizarSidebar(tipo) {
+            document.querySelectorAll(".sidebar-bi .nav-link")
+                .forEach(btn => btn.classList.remove("active"));
+
+            if (tipo === "svg")
+                document.getElementById("btnSvg").classList.add("active");
+
+            if (tipo === "operacoes")
+                document.getElementById("btnOperacoes").classList.add("active");
+
+            if (tipo === "operadores")
+                document.getElementById("btnOperadores").classList.add("active");
+        }
+
+                function renderizarGrafico(dados, metricas) {
+
+            if (chartSvg) chartSvg.destroy();
+
+            const canvasId =
+                painelAtual === "svg" ? "graficoSvg" :
+                painelAtual === "operacoes" ? "graficoOperacoes" :
+                "graficoOperadores";
+
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            chartSvg = new Chart(canvas, {
+                type: "bar",
+                data: {
+                    labels: dados.map(d => d.label),
+                    datasets: [{
+                        label: painelAtual.toUpperCase(),
+                        data: dados.map(d => d.total),
+                        dataSKs: dados.map(d => d.dataSK), // 🔥 essencial
+                        backgroundColor: dados.map((_, i) =>
+                            i === indiceSelecionado
+                                  ? "#c0c0c0"
+                                  : "#212529"
+                        ),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 30 } },
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 0,
+                                minRotation: 0
+                            }
+                        }
+                    },
+                    onClick: (evt, elements) => {
+
+                        if (!elements.length) return;
+
+                        const index = elements[0].index;
+
+                        indiceSelecionado = index;
+
+                        // Atualiza apenas as cores
+                        chartSvg.data.datasets[0].backgroundColor =
+                            chartSvg.data.datasets[0].data.map((_, i) =>
+                                i === indiceSelecionado ? "#c0c0c0" : "#212529"
+                            );
+
+                        chartSvg.update({ duration: 200 });
+
+                        const dataset = chartSvg.data.datasets[0];
+
+                        const dadoSelecionado = {
+                            dataSK: dataset.dataSKs[index],
+                            label: chartSvg.data.labels[index],
+                            total: dataset.data[index]
+                        };
+
+                        // Pequeno delay para o usuário ver o destaque
+                        setTimeout(() => {
+                            aplicarDrill(dadoSelecionado);
+                        }, 150);
+                    },
+                },
+                plugins: [valueLabelPlugin]
+            });
+
+            if (metricas)
+                atualizarMetricasNaTela(metricas);
+        }
 
         // Plugin custom oficial
         const valueLabelPlugin = {
@@ -74,64 +261,64 @@
         document.addEventListener("bi:changed", async () => {
 
             const qs = buildPeriodicidadeQuery();
-            const resp = await fetch(`/bi/adesao-svg?${qs}`);
+
+            let endpoint = "";
+
+            if (painelAtual === "svg")
+                endpoint = `/bi/adesao-svg?${qs}`;
+
+            if (painelAtual === "operacoes")
+                endpoint = `/bi/operacoes?${qs}`;
+
+            if (painelAtual === "operadores")
+                endpoint = `/bi/operadores?${qs}`;
+
+            if (contextoDrill)
+                endpoint += `&dataSK=${contextoDrill}`;
+
+            const resp = await fetch(endpoint);
             if (!resp.ok) return;
 
             const resposta = await resp.json();
 
-            if (!resposta || !resposta.serie || !resposta.serie.length)
-                return;
+            if (!resposta?.serie?.length) return;
 
             let dados = resposta.serie;
             let metricas = resposta.metricas;
 
-            if (biState.Periodo === "mensal") {
-                dados = agruparPorLabel(dados);
-            }
+            // if (biState.Periodo === "mensal") {
+            //     dados = agruparPorLabel(dados);
+            // }
 
-            if (chartSvg) chartSvg.destroy();
-
-            chartSvg = new Chart(
-                document.getElementById("graficoSvg"),
-                {
-                    type: "bar",
-                    data: {
-                        labels: dados.map(d => d.label),
-                        datasets: [{
-                            label: "SVG",
-                            data: dados.map(d => d.total),
-                            backgroundColor: "#212529",
-                            borderRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        layout: { padding: { top: 30 } },
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { precision: 0 }
-                            },
-                            x: {
-                                ticks: {
-                                    maxRotation: 0,
-                                    minRotation: 0
-                                }
-                            }
-                        }
-                    },
-                    plugins: [valueLabelPlugin] // 👈 AQUI está o segredo
-                }
-            );
-
-            // 🔵 Aqui você já pode usar as métricas
-            atualizarMetricasNaTela(metricas);
+            renderizarGrafico(dados, metricas);
         });
+
 
 
     </script>
 }
+
+<style>
+.sidebar-bi {
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    min-height: 100vh;
+}
+
+.sidebar-bi .nav-link {
+    color: #495057;
+    font-weight: 500;
+    text-align: left;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.sidebar-bi .nav-link.active {
+    background-color: #212529;
+    color: #fff;
+}
+
+.sidebar-bi .nav-link:hover {
+    background-color: #e9ecef;
+}
+</style>

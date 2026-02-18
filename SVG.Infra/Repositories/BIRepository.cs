@@ -42,48 +42,25 @@ namespace SVG.Infra.Repositories
         SELECT
             DataSK,
             Label,
-            Total
+            (Total *  6) 'Total'
         FROM {view}
         {where}
         ORDER BY DataSK";
 
       var result = await _db.Database.SqlQuery<XBiSerie>(
           sql,
-          new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value),
-          new SqlParameter("@mes", (object?)periodicidade.Mes ?? DBNull.Value),
-          new SqlParameter("@secaoId", (object?)periodicidade.SecaoId ?? DBNull.Value),
-          new SqlParameter("@operadorId", (object?)periodicidade.OperadorId ?? DBNull.Value)
+            new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value),
+            new SqlParameter("@mes", (object?)periodicidade.Mes ?? DBNull.Value)
       ).ToListAsync();
 
       result = result.OrderBy(s => s.DataSK).ToList();
-
-      var total = result.Sum(s => s.Total);
-      var media = result.Average(s => s.Total);
-      var max = result.Any() ? result.Max(s => s.Total) : 0;
-      var min = result.Any() ? result.Min(s => s.Total) : 0;
       
-      double crescimento = 0;
-
-      if (result.Count > 1)
-      {
-        var primeiro = result.First().Total;
-        var ultimo = result.Last().Total;
-
-        if (primeiro != 0)
-          crescimento = ((double)(ultimo - primeiro) / primeiro) * 100;
-      }
-
+      var metricas = CalcularMetricas(result);
+      
       var resultado = new XBiResultado
       {
         Serie = result,
-        Metricas = new XBiMetricas
-        {
-          Total = total,
-          Media = Math.Round(media, 2),
-          Maximo = max,
-          Minimo = min,
-          CrescimentoPercentual = Math.Round(crescimento, 2)
-        }
+        Metricas = metricas
       };
 
       _cache.Set(
@@ -133,26 +110,52 @@ namespace SVG.Infra.Repositories
         return cached;
 
       var view = ViewPorPeriodo("vw_dm_operacao", periodicidade.Periodo);
+      var where = "WHERE(@ano IS NULL OR YEAR(DataSK) = @ano)";
 
-      var sql = $@"
+      if (periodicidade.Periodo == "diario")
+        where = where + " and MONTH(DataSK) = @mes";
+
+      var sql = "";
+
+      if (periodicidade.DataReferencia.HasValue)
+      {
+        sql = $@"
         SELECT
             DataSK,
             Label,
             Total
         FROM {view}
-        WHERE (@ano IS NULL OR YEAR(DataSK) = @ano)
+        WHERE DataSK = @dataSK
         ORDER BY DataSK
     ";
+      }
+      else
+      {
+        sql = $@"
+        SELECT
+            DataSK,
+            Label,
+            Total
+        FROM {view}
+        {where}
+        ORDER BY DataSK
+    ";
+      }
 
       var result = await _db.Database.SqlQuery<XBiSerie>(
           sql,
-          new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value)
+            new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value),
+            new SqlParameter("@mes", (object?)periodicidade.Mes ?? DBNull.Value),
+            new SqlParameter("@dataSK", (object?)periodicidade.DataReferencia ?? DBNull.Value)
       ).ToListAsync();
+
+      result = result.OrderBy(s => s.DataSK).ToList();
+      var metricas = CalcularMetricas(result);
 
       var resultado = new XBiResultado
       {
         Serie = result,
-        Metricas = new XBiMetricas()
+        Metricas = metricas
       };
 
       _cache.Set(
@@ -175,29 +178,47 @@ namespace SVG.Infra.Repositories
         return cached;
 
       var view = ViewPorPeriodo("vw_dm_participacao_operador", periodicidade.Periodo);
-
-      var sql = $@"
+      
+      var sql= "";
+      if (periodicidade.DataReferencia.HasValue)
+      {
+        sql = $@"
+        SELECT
+            DataSK,
+            Label,
+            Total
+        FROM {view}
+        WHERE DataSK = @dataSK
+        ORDER BY DataSK";
+      }
+      else
+      {
+        sql = $@"
         SELECT
             DataSK,
             Label,
             Total
         FROM {view}
         WHERE (@ano IS NULL OR YEAR(DataSK) = @ano)
-          
-        ORDER BY DataSK
-    ";
+        ORDER BY DataSK";
+      }
 
       var result = await _db.Database.SqlQuery<XBiSerie>(
           sql,
           new SqlParameter("@ano", (object?)periodicidade.Ano ?? DBNull.Value),
+          new SqlParameter("@mes", (object?)periodicidade.Mes ?? DBNull.Value),
+          new SqlParameter("@dataSK", (object?)periodicidade.DataReferencia ?? DBNull.Value),
           new SqlParameter("@secaoId", (object?)periodicidade.SecaoId ?? DBNull.Value),
           new SqlParameter("@operadorId", (object?)periodicidade.OperadorId ?? DBNull.Value)
       ).ToListAsync();
 
+      result = result.OrderBy(s => s.DataSK).ToList();
+      var metricas = CalcularMetricas(result);
+
       var resultado = new XBiResultado
       {
         Serie = result,
-        Metricas = new XBiMetricas()
+        Metricas = metricas
       };
 
       _cache.Set(
@@ -309,6 +330,35 @@ namespace SVG.Infra.Repositories
       return await _db.Database
           .SqlQuery<XBiOperadorFiltro>(sql)
           .ToListAsync();
+    }
+
+    private XBiMetricas CalcularMetricas(List<XBiSerie> result)
+    {
+      var total = result.Sum(s => s.Total);
+      var media = result.Average(s => s.Total);
+      var max = result.Any() ? result.Max(s => s.Total) : 0;
+      var min = result.Any() ? result.Min(s => s.Total) : 0;
+      var crescimento = 0.0;
+
+      if (result.Count > 1)
+      {
+        var primeiro = result.First().Total;
+        var ultimo = result.Last().Total;
+
+        if (primeiro != 0)
+          crescimento = ((double)(ultimo - primeiro) / primeiro) * 100;
+      }
+
+      var metricas = new XBiMetricas
+      {
+        Total = total,
+        Media = media,
+        Maximo = max,
+        Minimo = min,
+        CrescimentoPercentual = Math.Round(crescimento, 2)
+      };
+
+      return metricas;
     }
   }
 }
