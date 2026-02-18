@@ -64,7 +64,7 @@ namespace SVG.Domain.Services
 
     public Task<XBiResultado> ObterParticipacaoOperadorAsync(XPeriodicidade periodicidade)
     {
-      return _biRepository.ObterOperacoesAsync(periodicidade);
+      return _biRepository.ObterParticipacaoOperadorAsync(periodicidade);
     }
 
     public Task<IEnumerable<XTopOperador>> ObterTopOperadoresAsync(XPeriodicidade periodicidade)

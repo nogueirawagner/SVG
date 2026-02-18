@@ -23,9 +23,9 @@ public class BIController : Controller
   public IActionResult Index()
         => View();
 
-  [HttpGet("svg")]
+  [HttpGet("svg-view")]
   public IActionResult Svg()
-      => View();
+      => PartialView("_GraficoSvg");
 
   [HttpGet("operacoes-view")]
   public IActionResult OperacoesView()
