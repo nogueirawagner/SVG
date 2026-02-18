@@ -36,6 +36,21 @@ namespace SVG.App.Services
       return _usuarioService.CriarUsuarioComSenhaAsync(usuario, senha);
     }
 
+    public Task<IEnumerable<Usuario>> ListarAsync()
+    {
+      return _usuarioService.ListarAsync();
+    }
+
+    public Task<Usuario?> ObterPorIdAsync(int id)
+    {
+      return _usuarioService.ObterPorIdAsync(id);
+    }
+
+    public Task<Usuario?> ObterPorLoginAsync(string login)
+    {
+      return _usuarioService.ObterPorLoginAsync(login);
+    }
+
     public Task<Usuario?> ValidarLogin(string pLogin, string pSenha)
     {
       return _usuarioService.ValidarLogin(pLogin, pSenha);

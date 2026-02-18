@@ -1,13 +1,7 @@
 ﻿using SVG.Domain.Configurations.Interface;
-using SVG.Domain.Entities;
 using SVG.Domain.Entities.Identity;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SVG.Domain.Interfaces.Services
 {
@@ -112,6 +106,21 @@ namespace SVG.Domain.Interfaces.Services
           });
         }
       }
+    }
+
+    public Task<Usuario?> ObterPorIdAsync(int id)
+    {
+      return _usuarioRepository.ObterPorIdAsync(id);
+    }
+
+    public Task<Usuario?> ObterPorLoginAsync(string login)
+    {
+      return _usuarioRepository.ObterPorLoginAsync(login);
+    }
+
+    public Task<IEnumerable<Usuario>> ListarAsync()
+    {
+      return _usuarioRepository.ListarAsync();
     }
   }
 }

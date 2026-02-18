@@ -90,6 +90,7 @@ namespace SVG.WebApp.Controllers
           .ToList();
       normOperadores.AddRange(PegarUsuariosAdmin());
 
+      login = login.Replace(".", "").Replace("-", "");
       var operador = normOperadores.First(s => s.Matricula.Replace(".", "").Replace("-", "") == login);
 
       var usuario = await _usuarioAppService.ValidarLogin(loginNormalizado, senha);
@@ -164,6 +165,14 @@ namespace SVG.WebApp.Controllers
         return View();
       }
 
+      login = login.Replace(".", "").Replace("-", "");
+      var usuarioExistente = await _usuarioAppService.ObterPorLoginAsync(login);
+      if (usuarioExistente != null)
+      {
+        ModelState.AddModelError("", "Usuário já existente.");
+        return View();
+      }
+
       var normOperadores = _operadorAppService
           .GetAll()
           .OrderBy(o => o.Nome)
@@ -171,9 +180,10 @@ namespace SVG.WebApp.Controllers
 
       var admins = PegarUsuariosAdmin();
       normOperadores.AddRange(admins);
-
-      var operador = normOperadores.First(s => s.Matricula.Replace(".", "").Replace("-", "") == login);
-      operador.Alcunha = nome;
+      
+      var operador = normOperadores.FirstOrDefault(s => s.Matricula.Replace(".", "").Replace("-", "") == login);
+      if (operador != null)
+        operador.Alcunha = nome;
 
       if (operador == null)
       {

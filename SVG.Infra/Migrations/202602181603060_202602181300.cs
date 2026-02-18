@@ -53,7 +53,7 @@
       ");
 
       Sql(@"
-       CREATE   VIEW [dbo].[vw_dm_participacao_operador_diario] AS
+       CREATE OR ALTER VIEW [dbo].[vw_dm_participacao_operador_diario] AS
           SELECT
               dt.Data AS DataSK,
               CONCAT(dt.Dia, '/', dt.MesNome) AS Label,

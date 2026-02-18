@@ -11,5 +11,8 @@ namespace SVG.App.Interfaces
     Task AlterarSenhaAsync(int pUsuarioId, string pSenhaAtual, string pNovaSenha);
     Task CriarUsuarioAsync(Usuario usuario);
     Task CriarUsuarioComSenhaAsync(Usuario operador, string senha);
+    Task<Usuario?> ObterPorIdAsync(int id);
+    Task<Usuario?> ObterPorLoginAsync(string login);
+    Task<IEnumerable<Usuario>> ListarAsync();
   }
 }
