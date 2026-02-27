@@ -196,6 +196,7 @@ namespace SVG.Infra.Repositories
 	        join Operador op on op.ID = oo.OperadorID
 	        join Sessao s on s.ID = op.SessaoID
         where o.ID = @pOperacaoID
+        order by SVG desc, Sessao
         ";
 
       var raw = _db.Database.

@@ -176,6 +176,8 @@ namespace SVG.WebApp.Controllers
       ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
 
       var detalhes = _operacaoAppService.PegarDetalhesOperacao(pOperacaoID).ToList();
+      if (detalhes.Count == 0)
+        return RedirectToAction("Index");
 
       return View(detalhes);
     }
