@@ -768,14 +768,13 @@ namespace SVG.WebApp.Controllers
       if (coord != null)
         model.Coordenador = coord.Nome;
 
-      var entidade = _mapper.Map<Operacao>(model);
-      entidade.ID = original.ID;
-      entidade.DataHoraCriacao = original.DataHoraCriacao;
-      entidade.DataHora = model.DataHoraInicio;
-      entidade.OrdemServico = string.Concat("OS ", model.OrdemServico);
+      original.OrdemServico = string.Concat("OS ", model.OrdemServico);
+      original.DataHoraInicio = model.DataHoraInicio;
+      original.DataHoraFim = model.DataHoraFim;
+      original.SvgAberto = model.SvgAberto;
 
-      if (entidade.TipoOperacaoID == 3)
-        entidade.DataHoraFim = null;
+      if (original.TipoOperacaoID == 3)
+        original.DataHoraFim = null;
 
       var opSvg = model.OperadoresSelecionados?
           .Where(s => s.SVG)
@@ -817,24 +816,23 @@ namespace SVG.WebApp.Controllers
                 SVG = true
               }));
 
-      if (!entidade.SvgAberto)
+      if (!original.SvgAberto)
       {
-        entidade.QtdVagasRestantes = 0;
+        original.QtdVagasRestantes = 0;
       }
       else
       {
         var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
-        entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
-        entidade.SvgAberto = qtdRestante > 0;
+        original.QtdVagasTotais = model.QtdVagasVoluntarios;
+        original.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
+        original.SvgAberto = qtdRestante > 0;
       }
 
-      _operacaoAppService.Update(entidade);
-      AtualizarOperadoresOperacao(entidade.ID, operadoresOperacao);
+      _operacaoAppService.Update(original);
+      AtualizarOperadoresOperacao(original.ID, operadoresOperacao);
 
       return RedirectToAction(nameof(Index));
     }
-
-
 
 
     // GET: Operacao/Delete/5
