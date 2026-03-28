@@ -187,6 +187,14 @@
                                         </li>
                                         <li>
                                             <a class="dropdown-item"
+                                               href="@(item.TipoOperacao == "Segurança Orgânica" || item.TipoOperacao == "Delta"
+                                                           ? Url.Action("EditarOperacaoSODelta", "Operacao", new { pOperacaoID = item.ID })
+                                                           : Url.Action("EditarOperacao", "Operacao", new { pOperacaoID = item.ID }))">
+                                                Editar
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
                                                href="@Url.Action("DetalhesOperacao", "Operacao", new { pOperacaoID = item.ID })">
                                                 Detalhes
                                             </a>

@@ -195,7 +195,7 @@
                 <div class="text-muted">Informe uma OS e clique em <strong>Carregar por OS</strong>.</div>
             </div>
 
-            <div class="table-responsive" id="wrapTabela" style="display:none;">
+            <div class="table-responsive tabela-operacoes-os" id="wrapTabela" style="display:none;">
                 <table class="table table-sm align-middle mb-0">
                     <thead class="table-light text-center">
                         <tr>
@@ -587,14 +587,37 @@
                             </span>
                         </td>
                         <td class="text-center">
-                            ${
-                                idValido
-                                    ? `<button type="button" class="btn btn-sm btn-danger btn-remover" data-id="${id}">
-                                           Remover
-                                       </button>`
-                                    : `<span class="text-muted">—</span>`
-                            }
-                        </td>
+                          ${
+                              idValido
+                                  ? `
+                                      <div class="dropdown">
+                                          <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                                  type="button"
+                                                  data-bs-toggle="dropdown"
+                                                  aria-expanded="false">
+                                              Ações
+                                          </button>
+
+                                          <ul class="dropdown-menu dropdown-menu-end">
+                                              <li>
+                                                  <a class="dropdown-item"
+                                                     href="/Operacao/EditarOperacaoSODelta?pOperacaoID=${id}">
+                                                      Editar
+                                                  </a>
+                                              </li>
+                                              <li>
+                                                  <button type="button"
+                                                          class="dropdown-item text-danger btn-remover"
+                                                          data-id="${id}">
+                                                      Remover
+                                                  </button>
+                                              </li>
+                                          </ul>
+                                      </div>
+                                    `
+                                  : `<span class="text-muted">—</span>`
+                          }
+                       </td>
                     `;
 
                     tbodyOps.appendChild(tr);
@@ -647,15 +670,38 @@
                             ${svgAberto ? "Sim" : "Não"}
                         </span>
                     </td>
-                    <td class="text-center">
-                        ${
-                            idValido
-                                ? `<button type="button" class="btn btn-sm btn-danger btn-remover" data-id="${id}">
-                                       Remover
-                                   </button>`
-                                : `<span class="text-muted">—</span>`
-                        }
-                    </td>
+                   <td class="text-center">
+                          ${
+                              idValido
+                                  ? `
+                                      <div class="dropdown">
+                                          <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                                  type="button"
+                                                  data-bs-toggle="dropdown"
+                                                  aria-expanded="false">
+                                              Ações
+                                          </button>
+
+                                          <ul class="dropdown-menu dropdown-menu-end">
+                                              <li>
+                                                  <a class="dropdown-item"
+                                                     href="/Operacao/EditarOperacaoSODelta?pOperacaoID=${id}">
+                                                      Editar
+                                                  </a>
+                                              </li>
+                                              <li>
+                                                  <button type="button"
+                                                          class="dropdown-item text-danger btn-remover"
+                                                          data-id="${id}">
+                                                      Remover
+                                                  </button>
+                                              </li>
+                                          </ul>
+                                      </div>
+                                    `
+                                  : `<span class="text-muted">—</span>`
+                          }
+                       </td>
                 `;
 
                 tbodyOps.appendChild(tr);
@@ -976,3 +1022,20 @@
        
     </script>
 }
+
+<style>
+    .tabela-operacoes-os {
+        overflow: visible !important;
+    }
+
+        .tabela-operacoes-os .dropdown-menu {
+            z-index: 1060;
+        }
+
+        .tabela-operacoes-os table,
+        .tabela-operacoes-os tbody,
+        .tabela-operacoes-os tr,
+        .tabela-operacoes-os td {
+            overflow: visible !important;
+        }
+</style>

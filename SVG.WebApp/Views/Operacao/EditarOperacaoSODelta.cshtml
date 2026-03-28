@@ -1,0 +1,454 @@
+﻿@model SVG.App.ViewModels.OperacaoViewModel
+
+@using SVG.Domain.Entities
+@using Newtonsoft.Json
+
+@{
+    ViewData["Title"] = "Editar Segurança Orgânica / Delta";
+
+    var tipos = (IEnumerable<TipoOperacao>)(ViewBag.TiposOperacao ?? Enumerable.Empty<TipoOperacao>());
+    var coordenadores = (IEnumerable<Operador>)(ViewBag.Coordenadores ?? Enumerable.Empty<Operador>());
+    var operadoresJson = (string)(ViewBag.OperadoresJson ?? "[]");
+
+    var operadores = Model.OperadoresSelecionados ?? new List<OperadorSelecionadoVM>();
+
+    var operadoresSelecionadosJson = JsonConvert.SerializeObject(
+        operadores.Select(o => new
+        {
+            ID = o.OperadorID,
+            Nome = o.Nome,
+            Matricula = o.Matricula,
+            SVG = o.SVG
+        }).ToList()
+    );
+}
+
+<div class="container mt-4">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Editar Operação</h2>
+        <a asp-action="Index" asp-controller="Operacao" class="btn btn-sm btn-outline-secondary">Voltar</a>
+    </div>
+
+    <form id="formEditarOperacaoSODelta" class="card" method="post" asp-action="EditarOperacaoSODelta">
+        @Html.AntiForgeryToken()
+
+        <input asp-for="ID" type="hidden" />
+
+        <div class="card-header py-2">
+            Atualize os campos e clique em <strong>Salvar alterações</strong>
+            <div class="mb-3 fw-semibold mt-2">
+                Plantão:
+                <span class="text-primary">@ViewBag.PlantaoHoje</span>
+                |
+                Amanhã:
+                <span class="text-success">@ViewBag.PlantaoAmanha</span>
+                |
+                Fantasma:
+                <span class="text-muted">@ViewBag.PlantaoFantasma</span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label asp-for="OrdemServico" class="form-label">OS</label>
+                    <input asp-for="OrdemServico"
+                           id="OrdemServico"
+                           type="text"
+                           class="form-control"
+                           placeholder="Ex.: 222" />
+                    <span asp-validation-for="OrdemServico" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Tipo de Operação</label>
+                    <select class="form-select" id="TipoOperacaoID" name="TipoOperacaoID">
+                        <option value="">Selecione...</option>
+                        @foreach (var t in tipos)
+                        {
+                            if (Model.TipoOperacaoID == t.ID)
+                            {
+                                <option value="@t.ID" selected="selected">@t.Nome</option>
+                            }
+                            else
+                            {
+                                <option value="@t.ID">@t.Nome</option>
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="TipoOperacaoID" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Coordenador</label>
+                    <input type="text"
+                           id="coordenadorSearch"
+                           class="form-control mb-2"
+                           placeholder="Buscar coordenador..." />
+
+                    <select asp-for="CoordenadorOperadorID" id="coordenadorSelect" class="form-select">
+                        <option value="">Selecione...</option>
+                        @foreach (var op in coordenadores)
+                        {
+                            if (Model.CoordenadorOperadorID == op.ID)
+                            {
+                                <option value="@op.ID" selected="selected">@op.Nome</option>
+                            }
+                            else
+                            {
+                                <option value="@op.ID">@op.Nome</option>
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="CoordenadorOperadorID" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-2">
+                    <label asp-for="DataHoraInicio" class="form-label">Horário Início</label>
+                    <input asp-for="DataHoraInicio"
+                           id="DataHoraInicio"
+                           type="datetime-local"
+                           class="form-control"
+                           value="@(Model.DataHoraInicio == default(DateTime) ? "" : Model.DataHoraInicio.ToString("yyyy-MM-ddTHH:mm"))" />
+                    <span asp-validation-for="DataHoraInicio" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-2" id="grupoDataHoraFim">
+                    <label asp-for="DataHoraFim" class="form-label">Horário Fim</label>
+                    <input asp-for="DataHoraFim"
+                           id="DataHoraFim"
+                           type="datetime-local"
+                           class="form-control"
+                           value="@(Model.DataHoraFim == default(DateTime) ? "" : Model.DataHoraFim.ToString("yyyy-MM-ddTHH:mm"))" />
+                    <span asp-validation-for="DataHoraFim" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Buscar Operador</label>
+                    <input type="text" id="operadorBusca" class="form-control" placeholder="Digite nome ou matrícula..." />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Operadores</label>
+                    <select id="operadorSelect" class="form-select">
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" id="btnAddOperador" class="btn btn-outline-primary w-100">
+                        +
+                    </button>
+                </div>
+
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <span>Operadores selecionados</span>
+                            <span class="badge bg-secondary">
+                                Total: <span id="operadoresCount">0</span>
+                            </span>
+                            <span class="badge bg-success">
+                                SVG: <span id="totalSvg">0</span>
+                            </span>
+                        </div>
+                        <div class="card-body p-2">
+                            <ul id="listaOperadoresSelecionados" class="list-group"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <label asp-for="Objeto" class="form-label">Descrição / Objeto</label>
+                    <input asp-for="Objeto"
+                           id="Objeto"
+                           class="form-control"
+                           placeholder="Ex.: Posto 01 – Entrada principal" />
+                    <span asp-validation-for="Objeto" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-2">
+                    <label asp-for="QtdVagasVoluntarios" class="form-label">Vagas Totais</label>
+                    <input asp-for="QtdVagasVoluntarios"
+                           id="QtdVagasVoluntarios"
+                           type="number"
+                           min="0"
+                           class="form-control" />
+                    <span asp-validation-for="QtdVagasVoluntarios" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">SVG Aberto</label>
+                    <div class="form-check mt-2">
+                        <input asp-for="SvgAberto" class="form-check-input" type="checkbox" id="SvgAberto" />
+                        <label class="form-check-label" for="SvgAberto">Sim</label>
+                    </div>
+                </div>
+
+                <div class="col-12 d-flex justify-content-end gap-2">
+                    <a asp-action="Index" asp-controller="Operacao" class="btn btn-outline-secondary">
+                        Voltar
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        Salvar alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const operadoresData = @Html.Raw(operadoresJson);
+            const operadoresSelecionadosEdicao = @Html.Raw(operadoresSelecionadosJson);
+
+            const coordSearch = document.getElementById("coordenadorSearch");
+            const coordSelect = document.getElementById("coordenadorSelect");
+
+            const operadorBusca = document.getElementById("operadorBusca");
+            const operadorSelect = document.getElementById("operadorSelect");
+            const btnAddOperador = document.getElementById("btnAddOperador");
+            const listaOperadoresSelecionados = document.getElementById("listaOperadoresSelecionados");
+
+            const tipoOperacao = document.getElementById("TipoOperacaoID");
+            const grupoDataHoraFim = document.getElementById("grupoDataHoraFim");
+            const inputDataHoraFim = document.getElementById("DataHoraFim");
+            const inputObjeto = document.getElementById("Objeto");
+            const valorOriginalDataHoraFim = inputDataHoraFim ? inputDataHoraFim.value : "";
+
+            const TIPO_DELTA = "3";
+            const TIPO_SEGURANCA_ORGANICA = "4";
+
+            function aplicarRegra() {
+                const valor = tipoOperacao.value;
+
+                if (valor === TIPO_DELTA) {
+                    grupoDataHoraFim.style.display = "none";
+                    if (inputDataHoraFim) inputDataHoraFim.value = "";
+                    if (inputObjeto && (!inputObjeto.value || inputObjeto.value === "Reforço Segurança Orgânica")) {
+                        inputObjeto.value = "Operação DELTA";
+                    }
+                }
+                else if (valor === TIPO_SEGURANCA_ORGANICA) {
+                    grupoDataHoraFim.style.display = "";
+                    if (inputDataHoraFim && !inputDataHoraFim.value) {
+                        inputDataHoraFim.value = valorOriginalDataHoraFim;
+                    }
+                    if (inputObjeto && (!inputObjeto.value || inputObjeto.value === "Operação DELTA")) {
+                        inputObjeto.value = "Reforço Segurança Orgânica";
+                    }
+                }
+                else {
+                    grupoDataHoraFim.style.display = "";
+                    if (inputDataHoraFim && !inputDataHoraFim.value) {
+                        inputDataHoraFim.value = valorOriginalDataHoraFim;
+                    }
+                }
+            }
+
+            function atualizarOperadoresCount() {
+                const itens = listaOperadoresSelecionados.querySelectorAll("li");
+                document.getElementById("operadoresCount").textContent = itens.length;
+
+                let svgCount = 0;
+                itens.forEach(li => {
+                    const inputSvg = li.querySelector(".inputSvgFlag");
+                    if (inputSvg && inputSvg.value === "true") {
+                        svgCount++;
+                    }
+                });
+
+                document.getElementById("totalSvg").textContent = svgCount;
+            }
+
+            function reindexarOperadoresHidden() {
+                const itens = listaOperadoresSelecionados.querySelectorAll("li");
+
+                itens.forEach((li, idx) => {
+                    const inputId = li.querySelector(".inputOperadorId");
+                    const inputSvg = li.querySelector(".inputSvgFlag");
+
+                    if (inputId) inputId.name = `OperadoresSelecionados[${idx}].OperadorID`;
+                    if (inputSvg) inputSvg.name = `OperadoresSelecionados[${idx}].SVG`;
+                });
+
+                atualizarOperadoresCount();
+            }
+
+            function renderOperadorOptions(filtro) {
+                const f = (filtro || "").toLowerCase();
+                const cur = operadorSelect.value;
+
+                operadorSelect.innerHTML = `<option value="">Selecione...</option>`;
+
+                const filtrados = operadoresData
+                    .filter(o => {
+                        const nome = (o.Nome || "").toLowerCase();
+                        const mat = (o.Matricula || "").toString().toLowerCase();
+                        return !f || nome.includes(f) || mat.includes(f);
+                    })
+                    .slice(0, 200);
+
+                filtrados.forEach(o => {
+                    const opt = document.createElement("option");
+                    opt.value = o.ID;
+                    opt.text = `${o.Nome} (${o.Matricula})`;
+                    operadorSelect.appendChild(opt);
+                });
+
+                if (cur) operadorSelect.value = cur;
+            }
+
+            function addOperadorSelecionado(op, svgInicial = true) {
+                const id = op.ID;
+                if (!id) return;
+
+                if (listaOperadoresSelecionados.querySelector(`li[data-id="${id}"]`)) return;
+
+                const li = document.createElement("li");
+                li.className = "list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2";
+                li.dataset.id = id;
+
+                const svgText = svgInicial ? "SVG: Sim" : "SVG: Não";
+                const svgBtnClass = svgInicial ? "btn-outline-success" : "btn-outline-secondary";
+
+                li.innerHTML = `
+                    <div>
+                        <strong>${op.Nome}</strong>
+                        <span class="text-muted">(${op.Matricula})</span>
+                    </div>
+
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn ${svgBtnClass} btnToggleSvg">
+                            ${svgText}
+                        </button>
+
+                        <button type="button" class="btn btn-outline-danger btnRemoverOperador">
+                            Remover
+                        </button>
+                    </div>
+
+                    <input type="hidden" value="${id}" class="inputOperadorId" />
+                    <input type="hidden" value="${svgInicial ? "true" : "false"}" class="inputSvgFlag" />
+                `;
+
+                li.querySelector(".btnRemoverOperador").addEventListener("click", function () {
+                    li.remove();
+                    reindexarOperadoresHidden();
+                });
+
+                li.querySelector(".btnToggleSvg").addEventListener("click", function () {
+                    const inputSvg = li.querySelector(".inputSvgFlag");
+                    const atual = (inputSvg.value ?? "").toString().toLowerCase() === "true";
+                    const novo = !atual;
+
+                    inputSvg.value = novo ? "true" : "false";
+                    this.textContent = novo ? "SVG: Sim" : "SVG: Não";
+                    this.classList.toggle("btn-outline-success", novo);
+                    this.classList.toggle("btn-outline-secondary", !novo);
+
+                    atualizarOperadoresCount();
+                });
+
+                listaOperadoresSelecionados.appendChild(li);
+                reindexarOperadoresHidden();
+            }
+
+            if (coordSearch && coordSelect) {
+                coordSearch.addEventListener("input", function () {
+                    const termo = this.value.trim().toLowerCase();
+
+                    let firstMatchIndex = -1;
+                    let matchCount = 0;
+
+                    for (let i = 0; i < coordSelect.options.length; i++) {
+                        const opt = coordSelect.options[i];
+
+                        if (!opt.value) {
+                            opt.hidden = false;
+                            continue;
+                        }
+
+                        const texto = (opt.text || "").toLowerCase();
+                        const match = termo === "" || texto.includes(termo);
+
+                        opt.hidden = !match;
+
+                        if (match) {
+                            matchCount++;
+                            if (firstMatchIndex === -1) firstMatchIndex = i;
+                        }
+                    }
+
+                    if (termo === "") {
+                        coordSelect.size = 1;
+                        return;
+                    }
+
+                    if (matchCount === 1 && firstMatchIndex !== -1) {
+                        coordSelect.selectedIndex = firstMatchIndex;
+                        coordSelect.size = 1;
+                    } else if (matchCount > 1) {
+                        coordSelect.selectedIndex = firstMatchIndex;
+                        coordSelect.size = Math.min(matchCount + 1, 8);
+                    } else {
+                        coordSelect.selectedIndex = 0;
+                        coordSelect.size = 1;
+                    }
+                });
+
+                coordSearch.addEventListener("blur", function () {
+                    coordSelect.size = 1;
+                });
+            }
+
+            renderOperadorOptions("");
+            aplicarRegra();
+
+            tipoOperacao.addEventListener("change", aplicarRegra);
+
+            operadorBusca.addEventListener("input", function () {
+                const termo = (this.value || "").trim();
+                renderOperadorOptions(termo);
+
+                const options = Array.from(operadorSelect.options).filter(o => o.value);
+                if (options.length === 1) {
+                    operadorSelect.value = options[0].value;
+                } else if (options.length > 1) {
+                    operadorSelect.value = options[0].value;
+                } else {
+                    operadorSelect.value = "";
+                }
+            });
+
+            btnAddOperador.addEventListener("click", function () {
+                const id = parseInt(operadorSelect.value || "0", 10);
+                if (!id) return;
+
+                const op = operadoresData.find(x => x.ID === id);
+                if (!op) return;
+
+                addOperadorSelecionado(op, true);
+                operadorSelect.value = "";
+                operadorBusca.focus();
+            });
+
+            operadoresSelecionadosEdicao.forEach(op => {
+                const base = operadoresData.find(x => x.ID === op.ID) || op;
+
+                addOperadorSelecionado({
+                    ID: op.ID,
+                    Nome: op.Nome || base.Nome,
+                    Matricula: op.Matricula || base.Matricula
+                }, !!op.SVG);
+            });
+        });
+    </script>
+}

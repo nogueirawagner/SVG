@@ -305,13 +305,7 @@ namespace SVG.WebApp.Controllers
     [ValidateAntiForgeryToken]
     public void CreateReforcoPlantao(OperacaoViewModel model)
     {
-      ModelState.Remove("Coordenador");
-      ModelState.Remove("TipoOperacaoNome");
-      ModelState.Remove("OperadoresSelecionados.Nome");
-      ModelState.Remove("OperadoresSelecionados.Matricula");
-      ModelState.Remove("OperadoresSelecionados.Telefone");
-      ModelState.Remove("OperadoresSelecionados.Sessao");
-      ModelState.Remove("QtdVagasRestantes");
+      LimparModelStateCustom();
 
       if (!ModelState.IsValid)
       {
@@ -366,6 +360,7 @@ namespace SVG.WebApp.Controllers
       else
       {
         var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
+        entidade.QtdVagasTotais = model.QtdVagasVoluntarios;
         entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
         entidade.SvgAberto = qtdRestante > 0 ? true : false;
       }
@@ -401,18 +396,40 @@ namespace SVG.WebApp.Controllers
       return View(model);
     }
 
+    private void LimparModelStateCustom()
+    {
+      // Simples
+      ModelState.Remove("Coordenador");
+      ModelState.Remove("TipoOperacaoNome");
+      ModelState.Remove("QtdVagasRestantes");
+
+      // Coleção OperadoresSelecionados
+      var props = new[]
+      {
+        "Nome",
+        "Matricula",
+        "Telefone",
+        "Sessao"
+    };
+
+      var keysParaRemover = ModelState.Keys
+          .Where(k =>
+              k.StartsWith("OperadoresSelecionados[", StringComparison.OrdinalIgnoreCase) &&
+              props.Any(p => k.EndsWith("." + p, StringComparison.OrdinalIgnoreCase)))
+          .ToList();
+
+      foreach (var key in keysParaRemover)
+      {
+        ModelState.Remove(key);
+      }
+    }
+
     // POST: Operacao/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Create(OperacaoViewModel model)
     {
-      ModelState.Remove("Coordenador");
-      ModelState.Remove("TipoOperacaoNome");
-      ModelState.Remove("OperadoresSelecionados.Nome");
-      ModelState.Remove("OperadoresSelecionados.Matricula");
-      ModelState.Remove("OperadoresSelecionados.Telefone");
-      ModelState.Remove("OperadoresSelecionados.Sessao");
-      ModelState.Remove("QtdVagasRestantes");
+      LimparModelStateCustom();
 
       if (!ModelState.IsValid)
       {
@@ -450,6 +467,7 @@ namespace SVG.WebApp.Controllers
       else
       {
         var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
+        entidade.QtdVagasTotais = model.QtdVagasVoluntarios;
         entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
         entidade.SvgAberto = qtdRestante > 0 ? true : false;
       }
@@ -548,69 +566,276 @@ namespace SVG.WebApp.Controllers
       return View(vm);
     }
 
-    // POST: Operacao/Edit/5
+    private OperacaoViewModel MontarViewModelEdicao(int pOperacaoID)
+    {
+      var operacao = _operacaoAppService.GetById(pOperacaoID);
+      if (operacao == null) return null;
+
+      var vm = _mapper.Map<OperacaoViewModel>(operacao);
+
+      // remove prefixo "OS " para a tela
+      vm.OrdemServico = (operacao.OrdemServico ?? string.Empty)
+          .Replace("OS ", "", StringComparison.OrdinalIgnoreCase)
+          .Trim();
+
+      // Coordenador -> achar por nome
+      var coord = _operadorAppService
+          .GetAll()
+          .FirstOrDefault(o => o.Nome == operacao.Coordenador);
+
+      if (coord != null)
+        vm.CoordenadorOperadorID = coord.ID;
+
+      vm.QtdVagasVoluntarios = operacao.QtdVagasTotais;
+
+      // Usa o mesmo serviço do Detalhes para carregar operadores
+      var detalhes = _operacaoAppService.PegarDetalhesOperacao(pOperacaoID).ToList();
+
+      vm.OperadoresSelecionados = detalhes
+          .Select(d => new OperadorSelecionadoVM
+          {
+            OperadorID = d.OperadorID,
+            Nome = d.NomeOperador,
+            Matricula = d.Matricula,
+            Sessao = d.Sessao,
+            SVG = d.SVG
+          })
+          .ToList();
+
+      return vm;
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public IActionResult EditarOperacao(int pOperacaoID)
+    {
+      var operacao = _operacaoAppService.GetById(pOperacaoID);
+      if (operacao == null)
+        return NotFound();
+
+      // proteção extra
+      if (operacao.TipoOperacaoID == 3 || operacao.TipoOperacaoID == 4)
+        return RedirectToAction(nameof(EditarOperacaoSODelta), new { pOperacaoID });
+
+      var vm = MontarViewModelEdicao(pOperacaoID);
+      PopularCombos(vm.TipoOperacaoID, vm.CoordenadorOperadorID);
+
+      return View(vm);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public IActionResult EditarOperacaoSODelta(int pOperacaoID)
+    {
+      var operacao = _operacaoAppService.GetById(pOperacaoID);
+      if (operacao == null)
+        return NotFound();
+
+      // proteção extra
+      if (operacao.TipoOperacaoID != 3 && operacao.TipoOperacaoID != 4)
+        return RedirectToAction(nameof(EditarOperacao), new { pOperacaoID });
+
+      var vm = MontarViewModelEdicao(pOperacaoID);
+
+      PopularCombos(vm.TipoOperacaoID, vm.CoordenadorOperadorID);
+
+      var tipos = _tipoOperacaoAppService
+          .GetAll()
+          .OrderBy(t => t.Nome)
+          .Where(t => t.ID == 3 || t.ID == 4)
+          .ToList();
+
+      ViewBag.TiposOperacao = tipos;
+      ViewBag.TipoOperacaoID = vm.TipoOperacaoID;
+
+      return View(vm);
+    }
+
+    private void AtualizarOperadoresOperacao(int operacaoId, List<OperadorSelecionadoVM> operadores)
+    {
+      var atuais = _operadorOperacaoAppService
+          .GetAll()
+          .Where(oo => oo.OperacaoID == operacaoId)
+          .ToList();
+
+      foreach (var vinculo in atuais)
+        _operadorOperacaoAppService.Remove(vinculo);
+
+      if (operadores == null || !operadores.Any())
+        return;
+
+      foreach (var op in operadores)
+      {
+        _operadorOperacaoAppService.Add(new OperadorOperacao
+        {
+          OperacaoID = operacaoId,
+          OperadorID = op.OperadorID,
+          SVG = op.SVG
+        });
+      }
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Edit(OperacaoViewModel model)
+    [Authorize(Roles = "Admin")]
+    public IActionResult EditarOperacao(OperacaoViewModel model)
     {
-      // Campos que vamos preencher manualmente (igual ao Create)
-      ModelState.Remove("Coordenador");
-      ModelState.Remove("TipoOperacaoNome");
+      LimparModelStateCustom();
 
       if (!ModelState.IsValid)
       {
-        // Recarregar combos se der erro de validação
         PopularCombos(model.TipoOperacaoID, model.CoordenadorOperadorID);
         return View(model);
       }
 
-      // Buscar operação original para preservar DataHoraCriacao
       var original = _operacaoAppService.GetById(model.ID);
       if (original == null)
         return NotFound();
 
-      // Preencher nome do coordenador a partir do ID
       var coord = _operadorAppService.GetById(model.CoordenadorOperadorID);
       if (coord != null)
         model.Coordenador = coord.Nome;
 
-      // Mapear VM -> entidade
-      var entidade = _mapper.Map<Operacao>(model);
-      entidade.DataHoraCriacao = original.DataHoraCriacao; // preserva
+      original.OrdemServico = string.Concat("OS ", model.OrdemServico);
+      original.DataHoraInicio = null;
+      original.DataHoraFim = null;
+      original.SvgAberto = model.SvgAberto;
 
-      // Atualiza a operação
-      _operacaoAppService.Update(entidade);
+      var opSvg = model.OperadoresSelecionados?
+          .Where(s => s.SVG)
+          .Select(x => x.OperadorID)
+          .ToList() ?? new List<int>();
 
-      // Atualizar vínculos OperadorOperacao:
-      // 1) remover todos os antigos dessa operação
-      var atuais = _operadorOperacaoAppService
-          .GetAll()
-          .Where(oo => oo.OperacaoID == entidade.ID)
-          .ToList();
+      var operadoresSVG = CalcularOperdoresSVG(opSvg, model.QtdVagasVoluntarios);
 
-      foreach (var vinculo in atuais)
+      var operadoresOperacao = model.OperadoresSelecionados?
+          .Where(s => !s.SVG)
+          .ToList() ?? new List<OperadorSelecionadoVM>();
+
+      operadoresOperacao.AddRange(
+          operadoresSVG
+              .Where(id => !operadoresOperacao.Any(o => o.OperadorID == id))
+              .Select(id => new OperadorSelecionadoVM
+              {
+                OperadorID = id,
+                SVG = true
+              }));
+      
+      if (!original.SvgAberto)
       {
-        _operadorOperacaoAppService.Remove(vinculo);
+        original.QtdVagasRestantes = 0;
+      }
+      else
+      {
+        var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
+        original.QtdVagasTotais = model.QtdVagasVoluntarios;
+        original.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
+        original.SvgAberto = qtdRestante > 0;
       }
 
-      // 2) adicionar os que vieram da tela (sessão + voluntários)
-      if (model.OperadoresSelecionados != null)
-      {
-        foreach (var opSel in model.OperadoresSelecionados)
-        {
-          var novo = new OperadorOperacao
-          {
-            OperacaoID = entidade.ID,
-            OperadorID = opSel.OperadorID,
-            SVG = opSel.SVG
-          };
-
-          _operadorOperacaoAppService.Add(novo);
-        }
-      }
+      _operacaoAppService.Update(original);
+      AtualizarOperadoresOperacao(original.ID, operadoresOperacao);
 
       return RedirectToAction(nameof(Index));
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
+    public IActionResult EditarOperacaoSODelta(OperacaoViewModel model)
+    {
+      LimparModelStateCustom();
+
+      if (!ModelState.IsValid)
+      {
+        PopularCombos(model.TipoOperacaoID, model.CoordenadorOperadorID);
+
+        var tipos = _tipoOperacaoAppService
+            .GetAll()
+            .OrderBy(t => t.Nome)
+            .Where(t => t.ID == 3 || t.ID == 4)
+            .ToList();
+
+        ViewBag.TiposOperacao = tipos;
+        return View(model);
+      }
+
+      var original = _operacaoAppService.GetById(model.ID);
+      if (original == null)
+        return NotFound();
+
+      var coord = _operadorAppService.GetById(model.CoordenadorOperadorID);
+      if (coord != null)
+        model.Coordenador = coord.Nome;
+
+      var entidade = _mapper.Map<Operacao>(model);
+      entidade.ID = original.ID;
+      entidade.DataHoraCriacao = original.DataHoraCriacao;
+      entidade.DataHora = model.DataHoraInicio;
+      entidade.OrdemServico = string.Concat("OS ", model.OrdemServico);
+
+      if (entidade.TipoOperacaoID == 3)
+        entidade.DataHoraFim = null;
+
+      var opSvg = model.OperadoresSelecionados?
+          .Where(s => s.SVG)
+          .Select(x => x.OperadorID)
+          .ToList() ?? new List<int>();
+
+      var dataBase = DateTime.Now.AddMonths(-1);
+
+      var operadoresContemplados = new List<int>();
+      if (opSvg.Count > 0)
+      {
+        if (opSvg.Count > model.QtdVagasVoluntarios)
+        {
+          if (model.QtdVagasVoluntarios == 0)
+            model.QtdVagasVoluntarios = opSvg.Count;
+
+          operadoresContemplados = _operacaoAppService
+              .PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios)
+              .ToList();
+        }
+        else
+        {
+          operadoresContemplados = opSvg;
+        }
+      }
+
+      var operadoresOperacao = model.OperadoresSelecionados?
+          .Where(s => !s.SVG)
+          .ToList() ?? new List<OperadorSelecionadoVM>();
+
+      var operadoresSVG = opSvg.Where(id => operadoresContemplados.Contains(id)).ToList();
+
+      operadoresOperacao.AddRange(
+          operadoresSVG
+              .Where(id => !operadoresOperacao.Any(o => o.OperadorID == id))
+              .Select(id => new OperadorSelecionadoVM
+              {
+                OperadorID = id,
+                SVG = true
+              }));
+
+      if (!entidade.SvgAberto)
+      {
+        entidade.QtdVagasRestantes = 0;
+      }
+      else
+      {
+        var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
+        entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
+        entidade.SvgAberto = qtdRestante > 0;
+      }
+
+      _operacaoAppService.Update(entidade);
+      AtualizarOperadoresOperacao(entidade.ID, operadoresOperacao);
+
+      return RedirectToAction(nameof(Index));
+    }
+
+
+
 
     // GET: Operacao/Delete/5
     public IActionResult Delete(int id)
