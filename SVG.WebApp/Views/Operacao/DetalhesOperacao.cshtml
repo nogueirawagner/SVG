@@ -156,6 +156,12 @@
            class="btn btn-sm btn-outline-secondary me-1">
             Voltar
         </a>
+        <a class="btn btn-sm btn-outline-primary me-1"
+           href="@(op.TipoOperacao == "Segurança Orgânica" || op.TipoOperacao == "Delta"
+                                                                      ? Url.Action("EditarOperacaoSODelta", "Operacao", new { pOperacaoID = op.ID })
+                                                                      : Url.Action("EditarOperacao", "Operacao", new { pOperacaoID = op.ID }))">
+            Editar
+        </a>
         <a href="@Url.Action("Delete", "Operacao", new { id = op.ID })"
            class="btn btn-sm btn-outline-danger">
             Excluir
