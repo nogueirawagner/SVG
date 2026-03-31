@@ -247,7 +247,7 @@ namespace SVG.WebApp.Controllers
       return View(operacoesSVG);
     }
 
-    [Authorize(Roles = "Admin, Operador")]
+    [Authorize(Roles = "Admin")]
     public IActionResult OperacoesSVGAberto()
     {
       PopularCombos();
