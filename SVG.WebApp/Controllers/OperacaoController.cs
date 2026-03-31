@@ -123,6 +123,34 @@ namespace SVG.WebApp.Controllers
       }
     }
 
+    [HttpGet]
+    public ActionResult PegarEscala()
+    {
+      PopularCombos();
+
+      var escala = _operacaoAppService.PegarEscalaPlantao(DateTime.Now).ToList();
+
+      var escalaHoje = escala.FirstOrDefault(s => s.Situacao == XSituacaoPlantao.Atual);
+      var escalaAmanha = escala.FirstOrDefault(s => s.Situacao == XSituacaoPlantao.Proxima);
+      var escalaFantasma = escala.FirstOrDefault(s => s.Situacao == XSituacaoPlantao.Fantasma);
+
+      ViewBag.PlantaoHoje = escalaHoje?.Nome;
+      ViewBag.PlantaoAmanha = escalaAmanha?.Nome;
+      ViewBag.PlantaoFantasma = escalaFantasma?.Nome;
+
+      ViewBag.SecaoIdHoje = escalaHoje?.SecaoID ?? 0;
+      ViewBag.SecaoIdAmanha = escalaAmanha?.SecaoID ?? 0;
+      ViewBag.SecaoIdFantasma = escalaFantasma?.SecaoID ?? 0;
+
+      var hoje = DateTime.Now.Date;
+
+      ViewBag.DataHoje = hoje.ToString("dd/MM");
+      ViewBag.DataAmanha = hoje.AddDays(1).ToString("dd/MM");
+      ViewBag.DataFantasma = hoje.AddDays(2).ToString("dd/MM");
+
+      return View();
+    }
+
     [HttpPost]
     public IActionResult AlterarSVGOperador(int pOperadorID, bool pSVG)
     {
