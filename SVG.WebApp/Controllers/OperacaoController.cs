@@ -174,12 +174,20 @@ namespace SVG.WebApp.Controllers
       ViewBag.PlantaoHoje = escala.First(s => s.Situacao == XSituacaoPlantao.Atual).Nome;
       ViewBag.PlantaoAmanha = escala.First(s => s.Situacao == XSituacaoPlantao.Proxima).Nome;
       ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
+      
+      var op = _operacaoAppService.GetById(pOperacaoID);
+      var opVm = _mapper.Map<OperacaoViewModel>(op);
 
-      var detalhes = _operacaoAppService.PegarDetalhesOperacao(pOperacaoID).ToList();
-      if (detalhes.Count == 0)
-        return RedirectToAction("Index");
-
-      return View(detalhes);
+      var operadores = _operacaoAppService.PegarOperadoresOperacaoResumido(pOperacaoID).ToList().OrderBy(s => !s.SVG);
+      opVm.OperadoresSelecionados = operadores.Select(o => new OperadorSelecionadoVM
+      {
+        OperadorID = o.OperadorID,
+        SVG = o.SVG,
+        Nome = o.Nome,
+        Matricula = o.Matricula,
+        Sessao = o.Sessao
+      }).ToList();
+      return View(opVm);
     }
 
     [Authorize(Roles = "Operador")]

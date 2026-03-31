@@ -254,9 +254,12 @@ namespace SVG.Infra.Repositories
       var sql = @"
       select 
 	      o.Nome, 
-	      o.Matricula 
+	      o.Matricula,
+        oo.SVG,
+        s.Nome Sessao
       from Operador o
 	      join OperadorOperacao oo on oo.OperadorID = o.ID
+        join Sessao s on s.ID = o.SessaoID
       where oo.OperacaoID = @pOperacaoID";
 
       return _db.Database.
