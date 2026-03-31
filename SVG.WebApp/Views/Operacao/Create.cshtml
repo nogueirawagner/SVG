@@ -274,16 +274,18 @@
           console.log("Validator:", validator);
 
           function atualizarBotao() {
-            const valido = $(form).valid();
+              let valido = $(form).valid();
 
-            // DEBUG: quais campos estão errando
-            if (!valido) {
-              const v = $(form).validate();
-              console.log("Campos com erro:", v.errorMap);
-              console.log("Lista de erros:", v.errorList);
-            }
+              const tipoOperacao = document.getElementById("TipoOperacaoID")?.value;
+              const coordenador = document.getElementById("coordenadorSelect")?.value;
 
-            btnSalvar.disabled = !valido;
+              const TIPO_APOIO_ID = "1";
+
+              if (tipoOperacao === TIPO_APOIO_ID && !coordenador) {
+                  valido = false;
+              }
+
+              btnSalvar.disabled = !valido;
           }
 
           // Para aparecer erro quando o usuário mexer
@@ -292,9 +294,13 @@
 
           // Força mostrar mensagens ao tentar enviar
           form.addEventListener("submit", function (e) {
-            if (!$(form).valid()) {
-              e.preventDefault();
-              $(form).validate().focusInvalid();
+            const tipoOperacao = document.getElementById("TipoOperacaoID")?.value;
+            const coordenador = document.getElementById("coordenadorSelect")?.value;
+            const TIPO_APOIO_ID = "1";
+
+            if (!$(form).valid() || (tipoOperacao === TIPO_APOIO_ID && !coordenador)) {
+                e.preventDefault();
+                $(form).validate().focusInvalid();
             }
           });
 

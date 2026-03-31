@@ -174,7 +174,7 @@ namespace SVG.WebApp.Controllers
       ViewBag.PlantaoHoje = escala.First(s => s.Situacao == XSituacaoPlantao.Atual).Nome;
       ViewBag.PlantaoAmanha = escala.First(s => s.Situacao == XSituacaoPlantao.Proxima).Nome;
       ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
-      
+
       var op = _operacaoAppService.GetById(pOperacaoID);
       var opVm = _mapper.Map<OperacaoViewModel>(op);
 
@@ -322,9 +322,12 @@ namespace SVG.WebApp.Controllers
       }
 
       // Exemplo: pegar o nome do coordenador a partir do ID selecionado
-      var coord = _operadorAppService.GetById(model.CoordenadorOperadorID);
-      if (coord != null)
-        model.Coordenador = coord.Nome;
+      if (model.CoordenadorOperadorID != null)
+      {
+        var coord = _operadorAppService.GetById(model.CoordenadorOperadorID.Value);
+        if (coord != null)
+          model.Coordenador = coord.Nome;
+      }
 
       var entidade = _mapper.Map<Operacao>(model);
       entidade.DataHoraCriacao = DateTime.Now;
@@ -446,9 +449,13 @@ namespace SVG.WebApp.Controllers
       }
 
       // Exemplo: pegar o nome do coordenador a partir do ID selecionado
-      var coord = _operadorAppService.GetById(model.CoordenadorOperadorID);
-      if (coord != null)
-        model.Coordenador = coord.Nome;
+      if (model.CoordenadorOperadorID != null)
+      {
+        var coord = _operadorAppService.GetById(model.CoordenadorOperadorID.Value);
+        if (coord != null)
+          model.Coordenador = coord.Nome;
+      }
+
 
       var entidade = _mapper.Map<Operacao>(model);
       entidade.DataHoraCriacao = DateTime.Now;
@@ -700,9 +707,14 @@ namespace SVG.WebApp.Controllers
       if (original == null)
         return NotFound();
 
-      var coord = _operadorAppService.GetById(model.CoordenadorOperadorID);
-      if (coord != null)
-        model.Coordenador = coord.Nome;
+      // Exemplo: pegar o nome do coordenador a partir do ID selecionado
+      if (model.CoordenadorOperadorID != null)
+      {
+        var coord = _operadorAppService.GetById(model.CoordenadorOperadorID.Value);
+        if (coord != null)
+          model.Coordenador = coord.Nome;
+      }
+
 
       original.OrdemServico = string.Concat("OS ", model.OrdemServico);
       original.DataHoraInicio = null;
@@ -728,7 +740,7 @@ namespace SVG.WebApp.Controllers
                 OperadorID = id,
                 SVG = true
               }));
-      
+
       if (!original.SvgAberto)
       {
         original.QtdVagasRestantes = 0;
@@ -772,9 +784,13 @@ namespace SVG.WebApp.Controllers
       if (original == null)
         return NotFound();
 
-      var coord = _operadorAppService.GetById(model.CoordenadorOperadorID);
-      if (coord != null)
-        model.Coordenador = coord.Nome;
+      // Exemplo: pegar o nome do coordenador a partir do ID selecionado
+      if (model.CoordenadorOperadorID != null)
+      {
+        var coord = _operadorAppService.GetById(model.CoordenadorOperadorID.Value);
+        if (coord != null)
+          model.Coordenador = coord.Nome;
+      }
 
       original.OrdemServico = string.Concat("OS ", model.OrdemServico);
       original.DataHoraInicio = model.DataHoraInicio;

@@ -29,8 +29,7 @@ namespace SVG.App.ViewModels
 
     public string Coordenador { get; set; }
 
-    [Required(ErrorMessage = "Selecione o coordenador.")]
-    public int CoordenadorOperadorID { get; set; }
+    public int? CoordenadorOperadorID { get; set; }
 
     [Required(ErrorMessage = "Informe a quantidade de vagas SVG.")]
     public int QtdVagasVoluntarios { get; set; }
@@ -48,5 +47,18 @@ namespace SVG.App.ViewModels
 #warning trocar esse objeto por OperadorViewModel.
     public List<OperadorSelecionadoVM> OperadoresSelecionados { get; set; }
         = new List<OperadorSelecionadoVM>();
+
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+      const int TIPO_APOIO_ID = 1;
+
+      if (TipoOperacaoID == TIPO_APOIO_ID && !CoordenadorOperadorID.HasValue)
+      {
+        yield return new ValidationResult(
+            "Selecione o coordenador.",
+            new[] { nameof(CoordenadorOperadorID) });
+      }
+    }
   }
 }
