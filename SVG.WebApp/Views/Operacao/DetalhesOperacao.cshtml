@@ -67,20 +67,20 @@
                 </div>
 
                 <div class="mb-3 p-3 border rounded bg-light">
-                    <span class="fw-bold me-2">SVG Aberto:</span>
-
-                    @if (op.SvgAberto)
-                    {
-                        <span class="fw-bold text-success fs-5">
-                            SIM
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="SvgAbertoToggle"
+                               data-operacao-id="@op.ID"
+                               @(op.SvgAberto ? "checked" : null) />
+                        <label class="form-check-label fw-bold" for="SvgAbertoToggle">
+                            SVG Aberto
+                        </label>
+                        <span id="SvgAbertoStatus"
+                              class="ms-2 fw-bold @(op.SvgAberto ? "text-success" : "text-dark")">
+                            @(op.SvgAberto ? "SIM" : "NÃO")
                         </span>
-                    }
-                    else
-                    {
-                        <span class="fw-bold text-dark fs-5">
-                            NÃO
-                        </span>
-                    }
+                    </div>
                 </div>
             </div>
 
@@ -158,8 +158,8 @@
         </a>
         <a class="btn btn-sm btn-outline-primary me-1"
            href="@(op.TipoOperacaoNome == "Segurança Orgânica" || op.TipoOperacaoNome == "Delta"
-                                                                      ? Url.Action("EditarOperacaoSODelta", "Operacao", new { pOperacaoID = op.ID })
-                                                                      : Url.Action("EditarOperacao", "Operacao", new { pOperacaoID = op.ID }))">
+                                                                                 ? Url.Action("EditarOperacaoSODelta", "Operacao", new { pOperacaoID = op.ID })
+                                                                                 : Url.Action("EditarOperacao", "Operacao", new { pOperacaoID = op.ID }))">
             Editar
         </a>
         <a href="@Url.Action("Delete", "Operacao", new { id = op.ID })"
@@ -180,6 +180,43 @@
                 document.addEventListener("DOMContentLoaded", function () {
 
                     const urlAlterar = '@Url.Action("AlterarSVGOperador", "Operacao")';
+                    const urlAlterarSvgAberto = '@Url.Action("AlterarSVGAbertoOperacao", "Operacao")';
+
+                    const svgAbertoToggle = document.getElementById("SvgAbertoToggle");
+                    const svgAbertoStatus = document.getElementById("SvgAbertoStatus");
+
+                    if (svgAbertoToggle) {
+                        svgAbertoToggle.addEventListener("change", async function () {
+                            const operacaoId = this.getAttribute("data-operacao-id");
+                            const estadoAnterior = !this.checked;
+                            const novoEstado = this.checked;
+
+                            this.disabled = true;
+
+                            try {
+                                const resp = await fetch(
+                                    `${urlAlterarSvgAberto}?pOperacaoID=${operacaoId}&pSvgAberto=${novoEstado}`,
+                                    { method: "POST" }
+                                );
+
+                                if (!resp.ok) {
+                                    throw new Error("Erro ao alterar o estado do SVG.");
+                                }
+
+                                if (svgAbertoStatus) {
+                                    svgAbertoStatus.textContent = novoEstado ? "SIM" : "NÃO";
+                                    svgAbertoStatus.classList.toggle("text-success", novoEstado);
+                                    svgAbertoStatus.classList.toggle("text-dark", !novoEstado);
+                                }
+                            } catch (e) {
+                                console.error(e);
+                                this.checked = estadoAnterior;
+                                alert("Erro ao alterar o estado do SVG.");
+                            } finally {
+                                this.disabled = false;
+                            }
+                        });
+                    }
 
 
                     function atualizarContadores() {
