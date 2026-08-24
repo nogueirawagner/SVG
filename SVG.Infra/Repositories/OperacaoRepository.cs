@@ -228,10 +228,21 @@ namespace SVG.Infra.Repositories
     public IEnumerable<XEscalaPlantao> PegarEscalaPlantao(DateTime pDataReferencia)
     {
       var sql = @"
-        select * from fn_Escala_Plantao_PorData(@pDataReferencia) e
-	        join Sessao s on s.ID = e.SecaoID
-        order by dataPlantao
-        ";
+        WITH CTE_EscalaPlantao AS (
+
+        select * from fn_Escala_Plantao_PorData(getdate()) e
+           join Sessao s on s.ID = e.SecaoID
+        where s.ID not in (5, 6)
+        )
+
+        , CTE_EscalaSobreaviso AS (
+        select e.NomeSecao SecaoSobreaviso, e.SecaoID SecaoSobreavisoID from fn_Escala_Sobreaviso_PorData(getdate()) e
+           join Sessao s on s.ID = e.SecaoID
+        where s.ID in (5, 6)
+        )
+
+        select * from CTE_EscalaPlantao, CTE_EscalaSobreaviso        
+      ";
       return _db.Database.
          SqlQuery<XEscalaPlantao>(sql,
            new SqlParameter("@pDataReferencia", pDataReferencia)

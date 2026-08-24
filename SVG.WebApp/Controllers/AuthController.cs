@@ -182,8 +182,8 @@ namespace SVG.WebApp.Controllers
       normOperadores.AddRange(admins);
       
       var operador = normOperadores.FirstOrDefault(s => s.Matricula.Replace(".", "").Replace("-", "") == login);
-      if (operador != null)
-        operador.Alcunha = nome;
+      //if (operador != null)
+      //  operador.Alcunha = nome;
 
       if (operador == null)
       {

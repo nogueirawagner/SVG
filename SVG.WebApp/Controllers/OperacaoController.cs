@@ -41,12 +41,23 @@ namespace SVG.WebApp.Controllers
       _userContext = userContext;
     }
 
-    private void PopularCombos(int? tipoOperacaoId = null, int? coordenadorId = null)
+    private void CriarViewBagsEscalas()
     {
       var escala = _operacaoAppService.PegarEscalaPlantao(DateTime.Now).ToList();
       ViewBag.PlantaoHoje = escala.First(s => s.Situacao == XSituacaoPlantao.Atual).Nome;
       ViewBag.PlantaoAmanha = escala.First(s => s.Situacao == XSituacaoPlantao.Proxima).Nome;
       ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
+      ViewBag.SecaoSobreaviso = escala.First().SecaoSobreaviso;
+      ViewBag.SecaoSobreavisoID = escala.First().SecaoSobreavisoID;
+
+
+      var escalaHoje = escala.FirstOrDefault(s => s.Situacao == XSituacaoPlantao.Atual);
+      ViewBag.SessaoSelecionadaId = escalaHoje.SecaoID;
+    }
+
+    private void PopularCombos(int? tipoOperacaoId = null, int? coordenadorId = null)
+    {
+      CriarViewBagsEscalas();
 
       // =====================
       // OPERADORES / COORDENADORES
@@ -81,9 +92,9 @@ namespace SVG.WebApp.Controllers
           .OrderBy(s => s.Nome)
           .ToList();
 
-      var escalaHoje = escala.FirstOrDefault(s => s.Situacao == XSituacaoPlantao.Atual);
+      //var escalaHoje = escala.FirstOrDefault(s => s.Situacao == XSituacaoPlantao.Atual);
       ViewBag.Sessoes = sessoes;
-      ViewBag.SessaoSelecionadaId = escalaHoje.SecaoID;
+      //ViewBag.SessaoSelecionadaId = escalaHoje.SecaoID;
 
       // =====================
       // TIPOS DE OPERAÇÃO
@@ -103,10 +114,7 @@ namespace SVG.WebApp.Controllers
     [Authorize(Roles = "Admin")]
     public IActionResult Index(string search)
     {
-      var escala = _operacaoAppService.PegarEscalaPlantao(DateTime.Now).ToList();
-      ViewBag.PlantaoHoje = escala.First(s => s.Situacao == XSituacaoPlantao.Atual).Nome;
-      ViewBag.PlantaoAmanha = escala.First(s => s.Situacao == XSituacaoPlantao.Proxima).Nome;
-      ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
+      CriarViewBagsEscalas();
 
       var operacoes = _operacaoAppService.PegarOperacoesRealizadas().ToList();
       if (User.IsInRole("Admin"))
@@ -133,6 +141,9 @@ namespace SVG.WebApp.Controllers
       var escalaHoje = escala.FirstOrDefault(s => s.Situacao == XSituacaoPlantao.Atual);
       var escalaAmanha = escala.FirstOrDefault(s => s.Situacao == XSituacaoPlantao.Proxima);
       var escalaFantasma = escala.FirstOrDefault(s => s.Situacao == XSituacaoPlantao.Fantasma);
+
+      ViewBag.SecaoSobreaviso = escala.First().SecaoSobreaviso;
+      ViewBag.SecaoSobreavisoID = escala.First().SecaoSobreavisoID;
 
       ViewBag.PlantaoHoje = escalaHoje?.Nome;
       ViewBag.PlantaoAmanha = escalaAmanha?.Nome;
@@ -198,10 +209,7 @@ namespace SVG.WebApp.Controllers
     // GET: Operacao/Details/5
     public IActionResult DetalhesOperacao(int pOperacaoID)
     {
-      var escala = _operacaoAppService.PegarEscalaPlantao(DateTime.Now).ToList();
-      ViewBag.PlantaoHoje = escala.First(s => s.Situacao == XSituacaoPlantao.Atual).Nome;
-      ViewBag.PlantaoAmanha = escala.First(s => s.Situacao == XSituacaoPlantao.Proxima).Nome;
-      ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
+      CriarViewBagsEscalas();
 
       var op = _operacaoAppService.GetById(pOperacaoID);
       var opVm = _mapper.Map<OperacaoViewModel>(op);
@@ -221,10 +229,7 @@ namespace SVG.WebApp.Controllers
     [Authorize(Roles = "Operador")]
     public IActionResult OperacoesSVGAbertoOperador()
     {
-      var escala = _operacaoAppService.PegarEscalaPlantao(DateTime.Now).ToList();
-      ViewBag.PlantaoHoje = escala.First(s => s.Situacao == XSituacaoPlantao.Atual).Nome;
-      ViewBag.PlantaoAmanha = escala.First(s => s.Situacao == XSituacaoPlantao.Proxima).Nome;
-      ViewBag.PlantaoFantasma = escala.First(s => s.Situacao == XSituacaoPlantao.Fantasma).Nome;
+      CriarViewBagsEscalas();
 
       var operador = _userContext.OperadorId.HasValue
          ? _operadorAppService.GetById(_userContext.OperadorId.Value)

@@ -10,26 +10,30 @@
     var secaoIdHoje = (int)(ViewBag.SecaoIdHoje ?? 0);
     var secaoIdAmanha = (int)(ViewBag.SecaoIdAmanha ?? 0);
     var secaoIdFantasma = (int)(ViewBag.SecaoIdFantasma ?? 0);
+    var secaoIdSobreAviso = (int)(ViewBag.SecaoSobreavisoID ?? 0);
 
     var plantaoHoje = (string)(ViewBag.PlantaoHoje ?? "");
     var plantaoAmanha = (string)(ViewBag.PlantaoAmanha ?? "");
     var plantaoFantasma = (string)(ViewBag.PlantaoFantasma ?? "");
+    var secaoSobreaviso = (string)(ViewBag.SecaoSobreaviso ?? "");
 
     var dataHoje = (string)(ViewBag.DataHoje ?? "");
     var dataAmanha = (string)(ViewBag.DataAmanha ?? "");
     var dataFantasma = (string)(ViewBag.DataFantasma ?? "");
 }
 
-<div class="container mt-4">
+<div class="container-fluid mt-4 px-4">
     <h2>Escala de Plantão</h2>
     <hr />
 
     <div class="row g-3">
-        <div class="col-12 col-lg-4">
+
+        <div class="col-12 col-md-6 col-lg-3">
             <div class="card h-100 border-primary shadow">
                 <div class="card-header py-2 bg-primary text-white fw-bold">
                     Hoje (@dataHoje)
                 </div>
+
                 <div class="card-body p-3">
                     <div class="mb-2">
                         <strong>Seção:</strong> @plantaoHoje
@@ -40,11 +44,28 @@
             </div>
         </div>
 
-        <div class="col-12 col-lg-4">
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card h-100 border-primary shadow">
+                <div class="card-header py-2 bg-primary text-white fw-bold">
+                    Sobreaviso (@dataHoje)
+                </div>
+
+                <div class="card-body p-3">
+                    <div class="mb-2">
+                        <strong>Seção:</strong> @secaoSobreaviso
+                    </div>
+
+                    <ul id="listaOperadoresSobreaviso" class="list-group"></ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
             <div class="card h-100">
                 <div class="card-header py-2">
                     Amanhã (@dataAmanha)
                 </div>
+
                 <div class="card-body p-3">
                     <div class="mb-2">
                         <strong>Seção:</strong> @plantaoAmanha
@@ -55,11 +76,12 @@
             </div>
         </div>
 
-        <div class="col-12 col-lg-4">
+        <div class="col-12 col-md-6 col-lg-3">
             <div class="card h-100">
                 <div class="card-header py-2">
                     Fantasma (@dataFantasma)
                 </div>
+
                 <div class="card-body p-3">
                     <div class="mb-2">
                         <strong>Seção:</strong> @plantaoFantasma
@@ -69,10 +91,15 @@
                 </div>
             </div>
         </div>
+
+       
+
     </div>
 
     <div class="mt-4">
-        <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            Voltar
+        </a>
     </div>
 </div>
 
@@ -83,6 +110,7 @@
         const secaoIdHoje = @secaoIdHoje;
         const secaoIdAmanha = @secaoIdAmanha;
         const secaoIdFantasma = @secaoIdFantasma;
+        const secaoIdSobreaviso = @secaoIdSobreAviso;
 
         function renderOperadoresDaSecao(listaId, sessaoId) {
             const lista = document.getElementById(listaId);
@@ -100,12 +128,15 @@
 
             const ops = operadoresData
                 .filter(o => o.SessaoID === sessaoId)
-                .sort((a, b) => (a.Nome || "").localeCompare(b.Nome || ""));
+                .sort((a, b) =>
+                    (a.Nome || "").localeCompare(b.Nome || "")
+                );
 
             if (!ops.length) {
                 const li = document.createElement("li");
                 li.className = "list-group-item text-muted";
-                li.textContent = "Nenhum operador encontrado para esta seção.";
+                li.textContent =
+                    "Nenhum operador encontrado para esta seção.";
                 lista.appendChild(li);
                 return;
             }
@@ -113,15 +144,34 @@
             ops.forEach(op => {
                 const li = document.createElement("li");
                 li.className = "list-group-item";
-                li.innerHTML = `<strong>${op.Nome}</strong> (${op.Matricula})`;
+
+                li.innerHTML =
+                    `<strong>${op.Nome}</strong> (${op.Matricula})`;
+
                 lista.appendChild(li);
             });
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-            renderOperadoresDaSecao("listaOperadoresHoje", secaoIdHoje);
-            renderOperadoresDaSecao("listaOperadoresAmanha", secaoIdAmanha);
-            renderOperadoresDaSecao("listaOperadoresFantasma", secaoIdFantasma);
+            renderOperadoresDaSecao(
+                "listaOperadoresHoje",
+                secaoIdHoje
+            );
+
+            renderOperadoresDaSecao(
+                "listaOperadoresAmanha",
+                secaoIdAmanha
+            );
+
+            renderOperadoresDaSecao(
+                "listaOperadoresFantasma",
+                secaoIdFantasma
+            );
+
+            renderOperadoresDaSecao(
+                "listaOperadoresSobreaviso",
+                secaoIdSobreaviso
+            );
         });
     </script>
 }
