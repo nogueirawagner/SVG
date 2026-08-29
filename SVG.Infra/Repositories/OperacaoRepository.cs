@@ -59,7 +59,7 @@ namespace SVG.Infra.Repositories
       _db.Database.ExecuteSqlCommand(@"
           DELETE FROM CandidatoSVGOperacao 
           WHERE OperacaoID = @pOperacaoID 
-            and OperadorID = @pOperadorID", 
+            and OperadorID = @pOperadorID",
         new SqlParameter("@pOperacaoID", pOperacaoID),
         new SqlParameter("@pOperadorID", pOperadorID)
       );
@@ -279,9 +279,30 @@ namespace SVG.Infra.Repositories
          );
     }
 
-    public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)
+    public IEnumerable<XOperadoresSecaoOrdemSVG> PegarOperadoresSecaoOrdemPrioridade (int[] pOperadorIDs, DateTime pDataLimite)
     {
-      string sql = @"
+      if (pOperadorIDs == null || pOperadorIDs.Length == 0)
+        return Enumerable.Empty<XOperadoresSecaoOrdemSVG>();
+
+      var parametrosOperadores = pOperadorIDs
+        .Select((id, index) => new SqlParameter($"@pOperador{index}", id))
+        .ToArray();
+
+      var operadoresIn = string.Join(", ",
+          parametrosOperadores.Select(p => p.ParameterName));
+
+      /*
+       Regras do SVG
+      1 Limite de 12h
+      2 fantasma
+      3 sobreaviso 
+      4 plantão - primeira folga
+      5 expediente 
+      6 plantão que estará entrando
+       */
+
+      string sql = $@"
+
         WITH CTE_Operacao AS (
         select 
 	        op.ID,
@@ -304,7 +325,184 @@ namespace SVG.Infra.Repositories
 			        and oo.SVG = 1
 	        join TipoOperacao tp on tp.ID = op.TipoOperacaoID
           join Operador o on o.ID = oo.OperadorID
-	      where oo.OperadorID in ({0})
+	      where oo.OperadorID in ({operadoresIn})
+        group by 
+	        oo.OperadorID,
+	        op.TipoOperacaoID,
+	        tp.Peso,
+	        tp.Nome,
+          o.SessaoID
+        )
+
+        , CTE_OperadoresNaoOperou AS (
+	        select 
+            o.ID as OperadorID,
+            o.SessaoID,
+	        0 QtdOperacoes, 
+	        NULL TipoOperacaoID,
+	        10 Peso,
+	        '' Nome 
+        from Operador o
+        left join OperadorOperacao oo 
+            on o.ID = oo.OperadorID
+            and oo.SVG = 1
+        left join Operacao op 
+            on op.ID = oo.OperacaoID
+            and op.DataHora >= @pDataLimite
+        where o.ID in ({operadoresIn})
+        group by 
+          o.ID,
+          o.SessaoID
+        having count(op.ID) = 0
+        )
+
+        , CTE_QuantitativoOperacoes AS (
+        select *, (QtdOperacoes * 6) QtdHoras from CTE_QtdOperacoesOperadores
+        union all
+        select *, 0 QtdHoras from CTE_OperadoresNaoOperou
+        )
+
+
+		      /*
+		      Atual = 0,
+		      Proxima = 1,
+		      Fantasma = 2
+		
+		      */
+        , CTE_SecaoPlantao AS (
+	        select 
+		        *,
+				(CASE
+					WHEN Situacao = 0 THEN 'Atual' -- Entrando as 8:00h
+					WHEN Situacao = 1 THEN 'Proximo' -- 
+					WHEN Situacao = 2 THEN 'Fantasma' -- 
+				END) 'SituacaoEquipe',
+				(CASE
+					WHEN Situacao = 0 THEN 6
+					WHEN Situacao = 1 THEN 1
+					WHEN Situacao = 2 THEN 5
+				END) 'PesoEquipe'
+
+	        from fn_Escala_Plantao_PorData(@pDataLimite) 
+			where SecaoID not in (5, 6)
+	        --where Situacao = 1
+        )
+
+		, CTE_SituacoesSecoesPlantao AS (
+			select 
+				s.ID SecaoID, 
+				s.Nome,
+				COALESCE(sc.SituacaoEquipe, 'PrimeiraFolga') SituacaoEquipe,
+				COALESCE(sc.PesoEquipe, 3) PesoEquipe
+			from Sessao s 
+				left join CTE_SecaoPlantao sc on sc.SecaoID = s.ID
+			where s.ID in (1, 2, 3, 4)		
+		)
+
+		, CTE_SecaoExpedienteDia AS (
+			select *, 2 PesoEquipe from fn_Escala_Sobreaviso_PorData(@pDataLimite)
+		)
+
+		, CTE_SituacaoSecaoExpediente AS (
+			select
+				s.ID SecaoID, 
+				s.Nome,
+				(CASE
+					WHEN esc.SecaoID is not null THEN 'Sobreaviso'
+					WHEN esc.SecaoID is null THEN 'Expediente'
+				END) SituacaoEquipe,	
+				COALESCE((CASE
+					WHEN esc.SecaoID is not null THEN 4
+				END), 2) PesoEquipe
+			from Sessao s 
+				left join fn_Escala_Sobreaviso_PorData(@pDataLimite) esc on esc.SecaoID = s.ID
+			where s.ID in (5, 6, 7)
+		),
+		
+		CTE_SecoesOrdemPrioridade AS (
+			select * from CTE_SituacaoSecaoExpediente 
+			union all 
+			select * from CTE_SituacoesSecoesPlantao
+		)
+	
+		select 
+			op.OperadorID,
+			op.QtdOperacoes,
+			op.QtdHoras,
+			sc.Nome Secao,
+			sc.SituacaoEquipe,
+			COALESCE(PesoEquipe, 0) PesoEquipe,
+			CAST(
+        ROW_NUMBER() OVER (
+				  PARTITION BY SituacaoEquipe
+				  ORDER BY QtdHoras ASC
+			  ) 
+      AS INT) OrdemNaEquipe
+		from CTE_QuantitativoOperacoes Op 
+			left join CTE_SecoesOrdemPrioridade sc on sc.SecaoID = Op.SessaoID
+		--where op.QtdHoras < 12
+		order by PesoEquipe desc
+
+
+			 
+
+      ";
+
+      var parametros = new List<SqlParameter>
+      {
+        new SqlParameter("@pDataLimite", pDataLimite)
+      };
+      parametros.AddRange(parametrosOperadores);
+
+      var result = _db.Database.
+         SqlQuery<XOperadoresSecaoOrdemSVG>(sql,
+           parametros.ToArray()
+         ).ToList();
+
+      //// SQL somente para copiar/testar no SSMS
+      //var sqlDebug = sql.ToDebugSql(
+      //    parametros.ToArray()
+      //);
+
+      return result;
+    }
+
+    public IEnumerable<int> PegarOperadoresSVG(int[] pOperadorIDs, DateTime pDataLimite, int pQtdVagas)
+    {
+      if (pOperadorIDs == null || pOperadorIDs.Length == 0)
+        return Enumerable.Empty<int>();
+
+      var parametrosOperadores = pOperadorIDs
+        .Select((id, index) => new SqlParameter($"@pOperador{index}", id))
+        .ToArray();
+
+      var operadoresIn = string.Join(", ",
+          parametrosOperadores.Select(p => p.ParameterName));
+
+      string sql = $@"
+        WITH CTE_Operacao AS (
+        select 
+	        op.ID,
+	        op.TipoOperacaoID
+        from Operacao op 
+        where op.DataHora >= @pDataLimite
+        )
+
+        , CTE_QtdOperacoesOperadores AS (
+        select 
+	        oo.OperadorID,
+          o.SessaoID,
+	        COUNT(*) QtdOperacoes,
+	        op.TipoOperacaoID,
+	        tp.Peso,
+	        tp.Nome
+        from CTE_Operacao op
+	        join OperadorOperacao oo 
+		        on oo.OperacaoID = op.ID 
+			        and oo.SVG = 1
+	        join TipoOperacao tp on tp.ID = op.TipoOperacaoID
+          join Operador o on o.ID = oo.OperadorID
+	      where oo.OperadorID in ({operadoresIn})
         group by 
 	        oo.OperadorID,
 	        op.TipoOperacaoID,
@@ -328,7 +526,7 @@ namespace SVG.Infra.Repositories
         left join Operacao op 
             on op.ID = oo.OperacaoID
             and op.DataHora >= @pDataLimite
-        where o.ID in ({0})
+        where o.ID in ({operadoresIn})
         group by 
           o.ID,
           o.SessaoID
@@ -379,14 +577,18 @@ namespace SVG.Infra.Repositories
 
         select * from CTE_Resultado";
 
-      var ids = string.Join(", ", pOperadorIDs);
-      sql = string.Format(sql, ids);
+      var parametros = new List<SqlParameter>
+      {
+        new SqlParameter("@pDataLimite", pDataLimite),
+        new SqlParameter("@pQtdVagas", pQtdVagas)
+      };
+      parametros.AddRange(parametrosOperadores);
 
-      return _db.Database.
+      var result = _db.Database.
          SqlQuery<int>(sql,
-           new SqlParameter("@pDataLimite", pDataLimite),
-           new SqlParameter("@pQtdVagas", pQtdVagas)
-         );
+           parametros.ToArray()
+         ).ToList();
+      return result;
     }
   }
 }

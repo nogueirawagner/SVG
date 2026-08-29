@@ -75,5 +75,10 @@ namespace SVG.Domain.Services
     {
       _operacaoRepository.RemoveCandidatoSVG(pOperacaoID, pOperadorID);
     }
+
+    public IEnumerable<XOperadoresSecaoOrdemSVG> PegarOperadoresSecaoOrdemPrioridade(int[] pOperadorIDs, DateTime pDataLimite)
+    {
+      return _operacaoRepository.PegarOperadoresSecaoOrdemPrioridade(pOperadorIDs, pDataLimite);
+    }
   }
 }

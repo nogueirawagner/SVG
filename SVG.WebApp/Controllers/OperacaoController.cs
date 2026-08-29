@@ -173,18 +173,21 @@ namespace SVG.WebApp.Controllers
     [ValidateAntiForgeryToken]
     public IActionResult EncerrarCalcularSVG(int pOperacaoID)
     {
-      var oper = _operacaoAppService.GetById(pOperacaoID);
+      var operacao = _operacaoAppService.GetById(pOperacaoID);
 
       var operadores = _operacaoAppService.PegaCandidatoSVG(pOperacaoID).ToList();
       var opSvg = operadores.Select(o => o.OperadorID).ToList();
 
-      var operadoresSVG = CalcularOperdoresSVG(opSvg, oper.QtdVagasRestantes)
+      var operadoresSVG = AplicarRegraSVG(opSvg, operacao.QtdVagasRestantes)
         .Select(o => new OperadorSelecionadoVM { OperadorID = o, SVG = true }).ToList();
+
+      //var operadoresSVG = CalcularOperdoresSVG(opSvg, operacao.QtdVagasRestantes)
+      //  .Select(o => new OperadorSelecionadoVM { OperadorID = o, SVG = true }).ToList();
       SalvarOperadoresOperacao(pOperacaoID, operadoresSVG);
 
-      oper.SvgAberto = false;
-      oper.QtdVagasRestantes = 0;
-      _operacaoAppService.Update(oper);
+      operacao.SvgAberto = false;
+      operacao.QtdVagasRestantes = 0;
+      _operacaoAppService.Update(operacao);
       return RedirectToAction("DetalhesOperacao", new { pOperacaoID = pOperacaoID });
     }
 
@@ -496,6 +499,9 @@ namespace SVG.WebApp.Controllers
       entidade.DataHoraInicio = null;
       entidade.DataHoraFim = null;
 
+      /*
+       
+      
       var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
       var operadoresSVG = CalcularOperdoresSVG(opSvg, model.QtdVagasRestantes);
 
@@ -519,8 +525,22 @@ namespace SVG.WebApp.Controllers
         entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
         entidade.SvgAberto = qtdRestante > 0 ? true : false;
       }
+       */
 
+      _operacaoAppService.Add(entidade);
 
+      if (!entidade.SvgAberto)
+      {
+        entidade.QtdVagasRestantes = 0;
+      }
+      else
+      {
+        entidade.QtdVagasTotais = model.QtdVagasVoluntarios;
+        entidade.QtdVagasRestantes = model.QtdVagasVoluntarios;
+        entidade.SvgAberto = true;
+      }
+
+      var operadoresOperacao = model.OperadoresSelecionados.ToList();
       SalvarOperadoresOperacao(entidade.ID, operadoresOperacao);
 
       return RedirectToAction(nameof(Index));
@@ -540,10 +560,57 @@ namespace SVG.WebApp.Controllers
       }
     }
 
+    private List<int> AplicarRegraSVG(List<int> pOperadoresID, int pQtdVagas)
+    {
+      /*
+       Regras do SVG
+      1 Limite de 12h
+      2 fantasma
+      3 sobreaviso 
+      4 plantão - primeira folga
+      5 expediente 
+      6 plantão que estará entrando
+       */
+
+      var opSvg = pOperadoresID;
+      var dataBase = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+      var operadoresPrioridades = _operacaoAppService.PegarOperadoresSecaoOrdemPrioridade(opSvg.ToArray(), dataBase);
+      var operMais12h = operadoresPrioridades.Where(s => s.QtdHoras >= 12);
+      var operMenos12h = operadoresPrioridades.Where(s => s.QtdHoras < 12);
+      var prioridades = operMenos12h
+        .OrderByDescending(s => s.PesoEquipe)
+        .ThenBy(s => s.OrdemNaEquipe)
+        .ToList();
+
+      var operadoresVagas = prioridades.Take(pQtdVagas).ToList();
+      
+      var operadoresRestantes = new List<XOperadoresSecaoOrdemSVG>();
+
+      if (operadoresVagas.Count() < pQtdVagas)
+      {
+        var qtdFalta = pQtdVagas - operadoresVagas.Count();
+
+        if (operMais12h.Count() > 0)
+        {
+          var operadoresFora = operMais12h
+          .OrderByDescending(s => s.PesoEquipe)
+          .ThenBy(s => s.OrdemNaEquipe)
+          .ToList();
+
+          operadoresRestantes = operadoresFora.Take(qtdFalta).ToList();
+        }
+      }
+
+      operadoresVagas.AddRange(operadoresRestantes);
+      var operadoresId = operadoresVagas.Select(s => s.OperadorID).ToList();
+      return operadoresId;
+    }
+
     private List<int> CalcularOperdoresSVG(List<int> pOperadoresID, int pQtdVagas)
     {
       var opSvg = pOperadoresID;
-      var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
+      //var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
+      var dataBase = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
       var operadoresContemplados = new List<int>();
       if (opSvg.Count > 0)
@@ -748,45 +815,46 @@ namespace SVG.WebApp.Controllers
           model.Coordenador = coord.Nome;
       }
 
-
       original.OrdemServico = string.Concat("OS ", model.OrdemServico);
       original.DataHoraInicio = null;
       original.DataHoraFim = null;
       original.SvgAberto = model.SvgAberto;
 
-      var opSvg = model.OperadoresSelecionados?
-          .Where(s => s.SVG)
-          .Select(x => x.OperadorID)
-          .ToList() ?? new List<int>();
+      //var opSvg = model.OperadoresSelecionados?
+      //    .Where(s => s.SVG)
+      //    .Select(x => x.OperadorID)
+      //    .ToList() ?? new List<int>();
 
-      var operadoresSVG = CalcularOperdoresSVG(opSvg, model.QtdVagasVoluntarios);
+      //var operadoresSVG = CalcularOperdoresSVG(opSvg, model.QtdVagasVoluntarios);
 
-      var operadoresOperacao = model.OperadoresSelecionados?
-          .Where(s => !s.SVG)
-          .ToList() ?? new List<OperadorSelecionadoVM>();
+      //var operadoresOperacao = model.OperadoresSelecionados?
+      //    .Where(s => !s.SVG)
+      //    .ToList() ?? new List<OperadorSelecionadoVM>();
 
-      operadoresOperacao.AddRange(
-          operadoresSVG
-              .Where(id => !operadoresOperacao.Any(o => o.OperadorID == id))
-              .Select(id => new OperadorSelecionadoVM
-              {
-                OperadorID = id,
-                SVG = true
-              }));
+      //operadoresOperacao.AddRange(
+      //    operadoresSVG
+      //        .Where(id => !operadoresOperacao.Any(o => o.OperadorID == id))
+      //        .Select(id => new OperadorSelecionadoVM
+      //        {
+      //          OperadorID = id,
+      //          SVG = true
+      //        }));
 
-      if (!original.SvgAberto)
-      {
-        original.QtdVagasRestantes = 0;
-      }
-      else
-      {
-        var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
-        original.QtdVagasTotais = model.QtdVagasVoluntarios;
-        original.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
-        original.SvgAberto = qtdRestante > 0;
-      }
+      //if (!original.SvgAberto)
+      //{
+      //  original.QtdVagasRestantes = 0;
+      //}
+      //else
+      //{
+      //  var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
+      //  original.QtdVagasTotais = model.QtdVagasVoluntarios;
+      //  original.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
+      //  original.SvgAberto = qtdRestante > 0;
+      //}
 
       _operacaoAppService.Update(original);
+
+      var operadoresOperacao = model.OperadoresSelecionados;
       AtualizarOperadoresOperacao(original.ID, operadoresOperacao);
 
       return RedirectToAction(nameof(Index));
