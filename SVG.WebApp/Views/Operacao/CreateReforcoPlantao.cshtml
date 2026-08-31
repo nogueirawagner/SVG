@@ -95,7 +95,6 @@
                     <span asp-validation-for="DataHoraFim" class="text-danger"></span>
                 </div>
 
-
                 <!-- ======================
                      Operadores (busca + combo)
                      ====================== -->
@@ -180,7 +179,7 @@
     </form>
 
     <!-- ======================
-         BLOCO DA TABELA: PERMANECE COMO ESTÁ
+         BLOCO DA TABELA
          ====================== -->
     <div class="card mt-3">
         <div class="card-header py-2 d-flex justify-content-between align-items-center">
@@ -216,7 +215,6 @@
             </div>
         </div>
     </div>
-
 </div>
 
 @section Scripts {
@@ -243,6 +241,11 @@
 
             const criarUrl = form.getAttribute("action");
 
+            // ==========================
+            // Buffer da sessão
+            // ==========================
+            const BUFFER_KEY = "SVG.CreateReforcoPlantao.Buffer.v1";
+
             // Operadores
             const operadoresData = @Html.Raw(operadoresJson);
             const operadorBusca = document.getElementById("operadorBusca");
@@ -258,7 +261,7 @@
 
             let osSelecionada = "";
 
-               // 🔹 IDs reais do banco
+            // IDs reais do banco
             const TIPO_DELTA = "3";
             const TIPO_SEGURANCA_ORGANICA = "4";
 
@@ -269,7 +272,6 @@
                     grupoDataHoraFim.style.display = "none";
                     inputDataHoraFim.value = null;
                     inputObjeto.value = "Operação DELTA";
-                    
                 }
                 else if (valor === TIPO_SEGURANCA_ORGANICA) {
                     grupoDataHoraFim.style.display = "";
@@ -282,12 +284,8 @@
                 }
             }
 
-            // aplica ao carregar (Create / Edit)
             aplicarRegra();
-
-            // aplica ao mudar o combo
             tipoOperacao.addEventListener("change", aplicarRegra);
-
 
             function getAntiForgeryToken() {
                 const input = form.querySelector('input[name="__RequestVerificationToken"]');
@@ -341,8 +339,175 @@
             }
 
             function getOs() {
-                const v = (inputOs?.value || "").trim();
-                return v;
+                return (inputOs?.value || "").trim();
+            }
+
+            // ==========================
+            // Buffer / sessionStorage
+            // ==========================
+            function obterBuffer() {
+                try {
+                    const raw = sessionStorage.getItem(BUFFER_KEY);
+                    if (!raw) return null;
+
+                    const buffer = JSON.parse(raw);
+
+                    if (!buffer ||
+                        typeof buffer !== "object" ||
+                        !Array.isArray(buffer.operacoes)) {
+                        sessionStorage.removeItem(BUFFER_KEY);
+                        return null;
+                    }
+
+                    return buffer;
+                } catch (e) {
+                    console.warn("Não foi possível ler o buffer de operações.", e);
+                    sessionStorage.removeItem(BUFFER_KEY);
+                    return null;
+                }
+            }
+
+            function salvarBuffer(buffer) {
+                sessionStorage.setItem(BUFFER_KEY, JSON.stringify(buffer));
+            }
+
+            function criarBuffer(ordemServico) {
+                const buffer = {
+                    ordemServico: String(ordemServico || "").trim(),
+                    criadoEm: new Date().toISOString(),
+                    atualizadoEm: new Date().toISOString(),
+                    operacoes: []
+                };
+
+                salvarBuffer(buffer);
+                return buffer;
+            }
+
+            function obterOuCriarBuffer(ordemServico) {
+                const os = String(ordemServico || "").trim();
+                let buffer = obterBuffer();
+
+                // Esta tela trabalha com uma OS por sessão/aba.
+                // Ao iniciar outra OS, começa um novo buffer.
+                if (!buffer || buffer.ordemServico !== os) {
+                    buffer = criarBuffer(os);
+                }
+
+                return buffer;
+            }
+
+            function normalizarOperacao(op) {
+                if (!op) return null;
+
+                const id = pick(op, "ID", "Id", "id", "OperacaoID", "operacaoID", "operacaoId");
+                if (!id || isNaN(Number(id))) return null;
+
+                return {
+                    ID: Number(id),
+                    DataHoraInicio: pick(op, "DataHoraInicio", "dataHoraInicio", "DataHora", "dataHora"),
+                    DataHoraFim: pick(op, "DataHoraFim", "dataHoraFim"),
+                    Objeto: pick(op, "Objeto", "objeto") || "",
+                    QtdOperadores: Number(pick(op, "QtdOperadores", "qtdOperadores") ?? 0),
+                    QtdVagasRestantes: Number(pick(op, "QtdVagasRestantes", "qtdVagasRestantes") ?? 0),
+                    SvgAberto: pick(op, "SvgAberto", "svgAberto") === true
+                };
+            }
+
+            function adicionarOperacaoAoBuffer(ordemServico, operacao) {
+                const normalizada = normalizarOperacao(operacao);
+                if (!normalizada) return false;
+
+                const buffer = obterOuCriarBuffer(ordemServico);
+                const idx = buffer.operacoes.findIndex(x =>
+                    Number(pick(x, "ID", "Id", "id")) === Number(normalizada.ID)
+                );
+
+                if (idx >= 0) {
+                    buffer.operacoes[idx] = normalizada;
+                } else {
+                    buffer.operacoes.push(normalizada);
+                }
+
+                buffer.atualizadoEm = new Date().toISOString();
+                salvarBuffer(buffer);
+
+                return true;
+            }
+
+            function adicionarOperacoesAoBuffer(ordemServico, operacoes) {
+                if (!Array.isArray(operacoes) || operacoes.length === 0) return 0;
+
+                const buffer = obterOuCriarBuffer(ordemServico);
+                let adicionadas = 0;
+
+                operacoes.forEach(op => {
+                    const normalizada = normalizarOperacao(op);
+                    if (!normalizada) return;
+
+                    const idx = buffer.operacoes.findIndex(x =>
+                        Number(pick(x, "ID", "Id", "id")) === Number(normalizada.ID)
+                    );
+
+                    if (idx >= 0) {
+                        buffer.operacoes[idx] = normalizada;
+                    } else {
+                        buffer.operacoes.push(normalizada);
+                        adicionadas++;
+                    }
+                });
+
+                buffer.atualizadoEm = new Date().toISOString();
+                salvarBuffer(buffer);
+
+                return adicionadas;
+            }
+
+            function removerOperacaoDoBuffer(id) {
+                const buffer = obterBuffer();
+                if (!buffer) return;
+
+                buffer.operacoes = buffer.operacoes.filter(x =>
+                    Number(pick(x, "ID", "Id", "id")) !== Number(id)
+                );
+
+                buffer.atualizadoEm = new Date().toISOString();
+                salvarBuffer(buffer);
+            }
+
+            function obterOperacoesDoBuffer(ordemServico = null) {
+                const buffer = obterBuffer();
+                if (!buffer) return [];
+
+                if (ordemServico &&
+                    String(buffer.ordemServico) !== String(ordemServico)) {
+                    return [];
+                }
+
+                return Array.isArray(buffer.operacoes)
+                    ? buffer.operacoes
+                    : [];
+            }
+
+            function restaurarBufferDaSessao() {
+                const buffer = obterBuffer();
+
+                if (!buffer ||
+                    !buffer.ordemServico ||
+                    !Array.isArray(buffer.operacoes) ||
+                    buffer.operacoes.length === 0) {
+                    return false;
+                }
+
+                osSelecionada = buffer.ordemServico;
+
+                if (inputOs) {
+                    inputOs.value = buffer.ordemServico;
+                }
+
+                osAtual.textContent = buffer.ordemServico;
+                renderizarOperacoes(buffer.operacoes);
+
+                return true;
             }
 
             // ==========================
@@ -369,27 +534,26 @@
                     operadorSelect.appendChild(opt);
                 });
 
-                // mantém seleção se possível
                 if (cur) operadorSelect.value = cur;
             }
 
             function atualizarOperadoresCount() {
-              const itens = listaOperadoresSelecionados.querySelectorAll("li");
-              document.getElementById("operadoresCount").textContent = itens.length;
+                const itens = listaOperadoresSelecionados.querySelectorAll("li");
+                document.getElementById("operadoresCount").textContent = itens.length;
 
-              let svgCount = 0;
+                let svgCount = 0;
 
-              itens.forEach(li => {
-                  const inputSvg = li.querySelector(".inputSvgFlag");
-                  if (inputSvg && inputSvg.value === "true") {
-                      svgCount++;
-                  }
-              });
+                itens.forEach(li => {
+                    const inputSvg = li.querySelector(".inputSvgFlag");
+                    if (inputSvg && inputSvg.value === "true") {
+                        svgCount++;
+                    }
+                });
 
-              document.getElementById("totalSvg").textContent = svgCount;
-          }
+                document.getElementById("totalSvg").textContent = svgCount;
+            }
 
-          function reindexarOperadoresHidden() {
+            function reindexarOperadoresHidden() {
                 const itens = listaOperadoresSelecionados.querySelectorAll("li");
 
                 itens.forEach((li, idx) => {
@@ -403,7 +567,6 @@
                 atualizarOperadoresCount();
             }
 
-
             function limparOperadoresUI() {
                 if (operadorBusca) operadorBusca.value = "";
                 if (operadorSelect) operadorSelect.value = "";
@@ -416,89 +579,76 @@
                 atualizarOperadoresCount();
             }
 
-          function addOperadorSelecionado(op) {
-            const id = op.ID;
-            if (!id) return;
+            function addOperadorSelecionado(op) {
+                const id = op.ID;
+                if (!id) return;
 
-            // evita duplicado
-            if (listaOperadoresSelecionados.querySelector(`li[data-id="${id}"]`)) return;
+                if (listaOperadoresSelecionados.querySelector(`li[data-id="${id}"]`)) return;
 
-            const li = document.createElement("li");
-            li.className = "list-group-item d-flex justify-content-between align-items-center";
-            li.dataset.id = id;
+                const li = document.createElement("li");
+                li.className = "list-group-item d-flex justify-content-between align-items-center";
+                li.dataset.id = id;
 
-            // padrão inicial
-            const svgInicial = true;
+                const svgInicial = true;
+                const svgText = svgInicial ? "SVG: Sim" : "SVG: Não";
+                const svgBtnClass = svgInicial ? "btn-outline-success" : "btn-outline-secondary";
 
-            const svgText = svgInicial ? "SVG: Sim" : "SVG: Não";
-            const svgBtnClass = svgInicial ? "btn-outline-success" : "btn-outline-secondary";
+                li.innerHTML = `
+                    <div>
+                        <strong>${op.Nome}</strong>
+                        <span class="text-muted">(${op.Matricula})</span>
+                    </div>
 
-            li.innerHTML = `
-                <div>
-                    <strong>${op.Nome}</strong>
-                    <span class="text-muted">(${op.Matricula})</span>
-                </div>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button"
+                                class="btn ${svgBtnClass} btnToggleSvg">
+                            ${svgText}
+                        </button>
 
-                <div class="btn-group btn-group-sm" role="group">
-                    <button type="button"
-                            class="btn ${svgBtnClass} btnToggleSvg">
-                        ${svgText}
-                    </button>
+                        <button type="button"
+                                class="btn btn-outline-danger btnRemoverOperador">
+                            Remover
+                        </button>
+                    </div>
 
-                    <button type="button"
-                            class="btn btn-outline-danger btnRemoverOperador">
-                        Remover
-                    </button>
-                </div>
+                    <input type="hidden" value="${id}" class="inputOperadorId" />
+                    <input type="hidden" value="${svgInicial ? "true" : "false"}"
+                           class="inputSvgFlag" />
+                `;
 
-                <input type="hidden" value="${id}" class="inputOperadorId" />
-                <input type="hidden" value="${svgInicial ? "true" : "false"}"
-                       class="inputSvgFlag" />
-            `;
+                li.querySelector(".btnRemoverOperador").addEventListener("click", function () {
+                    li.remove();
+                    reindexarOperadoresHidden();
+                });
 
-            // 🔴 remover operador
-            li.querySelector(".btnRemoverOperador").addEventListener("click", function () {
-                li.remove();
-                reindexarOperadoresHidden(); // já atualiza os contadores
-            });
+                li.querySelector(".btnToggleSvg").addEventListener("click", function () {
+                    const inputSvg = li.querySelector(".inputSvgFlag");
 
-            // 🟢 toggle SVG (AQUI estava o problema)
-            li.querySelector(".btnToggleSvg").addEventListener("click", function () {
-                const inputSvg = li.querySelector(".inputSvgFlag");
+                    const atual = (inputSvg.value ?? "").toString().toLowerCase() === "true";
+                    const novo = !atual;
 
-                const atual = (inputSvg.value ?? "").toString().toLowerCase() === "true";
-                const novo = !atual;
+                    inputSvg.value = novo ? "true" : "false";
 
-                inputSvg.value = novo ? "true" : "false";
+                    this.textContent = novo ? "SVG: Sim" : "SVG: Não";
+                    this.classList.toggle("btn-outline-success", novo);
+                    this.classList.toggle("btn-outline-secondary", !novo);
 
-                this.textContent = novo ? "SVG: Sim" : "SVG: Não";
-                this.classList.toggle("btn-outline-success", novo);
-                this.classList.toggle("btn-outline-secondary", !novo);
+                    atualizarOperadoresCount();
+                });
 
-                atualizarOperadoresCount(); // ⭐ ESSENCIAL
-            });
+                listaOperadoresSelecionados.appendChild(li);
+                reindexarOperadoresHidden();
+            }
 
-            listaOperadoresSelecionados.appendChild(li);
-
-            reindexarOperadoresHidden(); // indexa + atualiza contadores
-        }
-
-
-            // init
             renderOperadorOptions("");
 
             operadorBusca.addEventListener("input", function () {
                 const termo = (this.value || "").trim();
                 renderOperadorOptions(termo);
 
-                // pega as opções (ignorando "Selecione...")
                 const options = Array.from(operadorSelect.options).filter(o => o.value);
 
-                if (options.length === 1) {
-                    // 1 resultado: seleciona automaticamente
-                    operadorSelect.value = options[0].value;
-                } else if (options.length > 1) {
-                    // vários: seleciona o primeiro (já deixa pronto)
+                if (options.length >= 1) {
                     operadorSelect.value = options[0].value;
                 } else {
                     operadorSelect.value = "";
@@ -508,6 +658,7 @@
             btnAddOperador.addEventListener("click", function () {
                 const id = parseInt(operadorSelect.value || "0", 10);
                 if (!id) return;
+
                 const op = operadoresData.find(x => x.ID === id);
                 if (!op) return;
 
@@ -517,47 +668,15 @@
             });
 
             // ==========================
-            // Tabela por OS (serviço)
+            // Renderização da tabela
             // ==========================
-                  async function carregarOperacoesPorOS({ silent = false } = {}) {
-            osAtual.textContent = osSelecionada || "—";
+            function renderizarOperacoes(itens) {
+                const lista = Array.isArray(itens) ? itens : [];
 
-            if (!osSelecionada) {
-                if (!silent) {
-                    setInfo("Informe uma OS e clique em <strong>Carregar por OS</strong>.");
-                }
-                return false;
-            }
-
-            if (!silent) {
-                setLoading("Carregando operações...");
-            }
-
-            try {
-                const url = `/Operacao/ListarOperacoesPorOrdemServico?pOrdemServico=${encodeURIComponent(osSelecionada)}`;
-                const resp = await fetch(url, { method: "GET", cache: "no-store" });
-
-                if (!resp.ok) {
-                    if (!silent) {
-                        setError(`Falha ao carregar lista. Status: <strong>${resp.status} ${resp.statusText}</strong>`);
-                    }
-                    return false;
-                }
-
-                const itens = await resp.json();
-
-                if (!Array.isArray(itens) || itens.length === 0) {
-                    if (!silent) {
-                        setInfo("Nenhuma operação encontrada para esta OS.");
-                    }
-                    return false;
-                }
-
-                // 🔹 SOMENTE AQUI renderiza
-                totalOps.textContent = itens.length;
+                totalOps.textContent = lista.length;
                 tbodyOps.innerHTML = "";
 
-                itens.forEach(op => {
+                lista.forEach(op => {
                     const tr = document.createElement("tr");
 
                     const id = pick(op, "ID", "Id", "id");
@@ -587,176 +706,177 @@
                             </span>
                         </td>
                         <td class="text-center">
-                          ${
-                              idValido
-                                  ? `
-                                      <div class="dropdown">
-                                          <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                                  type="button"
-                                                  data-bs-toggle="dropdown"
-                                                  aria-expanded="false">
-                                              Ações
-                                          </button>
+                            ${
+                                idValido
+                                    ? `
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                                    type="button"
+                                                    data-bs-toggle="dropdown"
+                                                    aria-expanded="false">
+                                                Ações
+                                            </button>
 
-                                          <ul class="dropdown-menu dropdown-menu-end">
-                                              <li>
-                                                  <a class="dropdown-item"
-                                                     href="/Operacao/EditarOperacaoSODelta?pOperacaoID=${id}">
-                                                      Editar
-                                                  </a>
-                                              </li>
-                                              <li>
-                                                  <button type="button"
-                                                          class="dropdown-item text-danger btn-remover"
-                                                          data-id="${id}">
-                                                      Remover
-                                                  </button>
-                                              </li>
-                                          </ul>
-                                      </div>
-                                    `
-                                  : `<span class="text-muted">—</span>`
-                          }
-                       </td>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item"
+                                                       href="/Operacao/EditarOperacaoSODelta?pOperacaoID=${id}">
+                                                        Editar
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <button type="button"
+                                                            class="dropdown-item text-danger btn-remover"
+                                                            data-id="${id}">
+                                                        Remover
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                      `
+                                    : `<span class="text-muted">—</span>`
+                            }
+                        </td>
                     `;
 
                     tbodyOps.appendChild(tr);
                 });
 
-                estadoLista.style.display = "none";
-                wrapTabela.style.display = "block";
-
-                return true;
-
-            } catch (e) {
-                console.error(e);
-                if (!silent) {
-                    setError("Erro ao carregar. Verifique sua conexão.");
-                }
-                return false;
-            }
-        }
-
-                function renderizarOperacoes(itens) {
-            totalOps.textContent = itens.length;
-            tbodyOps.innerHTML = "";
-
-            itens.forEach(op => {
-                const tr = document.createElement("tr");
-
-                const id = pick(op, "ID", "Id", "id");
-                const inicio = pick(op, "DataHoraInicio", "dataHoraInicio", "DataHora", "dataHora");
-                const fim = pick(op, "DataHoraFim", "dataHoraFim");
-                const objeto = pick(op, "Objeto", "objeto") || "";
-                const qtdOperadores = pick(op, "QtdOperadores", "qtdOperadores") ?? 0;
-                const vagas = pick(op, "QtdVagasRestantes", "qtdVagasRestantes") ?? 0;
-                const svgAberto = pick(op, "SvgAberto", "svgAberto") === true;
-
-                const idValido = id && !isNaN(Number(id));
-
-                tr.innerHTML = `
-                    <td class="text-center"><strong>#${idValido ? id : "—"}</strong></td>
-                    <td class="text-center small text-muted">${formatarDataHora(inicio)}</td>
-                    <td class="text-center small text-muted">${formatarDataHora(fim)}</td>
-                    <td class="text-center">${objeto}</td>
-                    <td class="text-center">
-                        <span class="badge bg-secondary op-ops-popover" data-opid="${id}">
-                            ${qtdOperadores}
-                        </span>
-                    </td>
-                    <td class="text-center">${vagas}</td>
-                    <td class="text-center">
-                        <span class="badge ${svgAberto ? "bg-success" : "bg-secondary"}">
-                            ${svgAberto ? "Sim" : "Não"}
-                        </span>
-                    </td>
-                   <td class="text-center">
-                          ${
-                              idValido
-                                  ? `
-                                      <div class="dropdown">
-                                          <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                                  type="button"
-                                                  data-bs-toggle="dropdown"
-                                                  aria-expanded="false">
-                                              Ações
-                                          </button>
-
-                                          <ul class="dropdown-menu dropdown-menu-end">
-                                              <li>
-                                                  <a class="dropdown-item"
-                                                     href="/Operacao/EditarOperacaoSODelta?pOperacaoID=${id}">
-                                                      Editar
-                                                  </a>
-                                              </li>
-                                              <li>
-                                                  <button type="button"
-                                                          class="dropdown-item text-danger btn-remover"
-                                                          data-id="${id}">
-                                                      Remover
-                                                  </button>
-                                              </li>
-                                          </ul>
-                                      </div>
-                                    `
-                                  : `<span class="text-muted">—</span>`
-                          }
-                       </td>
-                `;
-
-                tbodyOps.appendChild(tr);
-            });
-
-            estadoLista.style.display = "none";
-            wrapTabela.style.display = "block";
-        }
-
-
-        async function buscarOperacoesPorOS() {
-            if (!osSelecionada) return null;
-
-            const url = `/Operacao/ListarOperacoesPorOrdemServico?pOrdemServico=${encodeURIComponent(osSelecionada)}`;
-
-            try {
-                const resp = await fetch(url, { method: "GET", cache: "no-store" });
-                if (!resp.ok) return null;
-
-                const itens = await resp.json();
-                return Array.isArray(itens) ? itens : null;
-
-            } catch (e) {
-                console.error(e);
-                return null;
-            }
-        }
-
-
-        function delay(ms) {
-            return new Promise(r => setTimeout(r, ms));
-        }
-
-        async function carregarOperacoesPorOSComRetry(tentativas = 6, intervaloMs = 300) {
-
-            // 🔹 Mostra loading UMA VEZ
-            setLoading("Aguardando confirmação da operação...");
-
-            for (let i = 1; i <= tentativas; i++) {
-                const itens = await buscarOperacoesPorOS();
-
-                if (itens && itens.length > 0) {
-                    renderizarOperacoes(itens); // 🔥 UMA ÚNICA RENDERIZAÇÃO
+                if (lista.length === 0) {
+                    setInfo("Nenhuma operação registrada no buffer desta sessão.");
                     return;
                 }
 
-                await delay(intervaloMs);
+                estadoLista.style.display = "none";
+                wrapTabela.style.display = "block";
             }
 
-            setInfo("A operação ainda está sendo processada. Aguarde alguns instantes.");
-        }
+            function renderizarBufferAtual() {
+                osAtual.textContent = osSelecionada || "—";
+                renderizarOperacoes(obterOperacoesDoBuffer(osSelecionada));
+            }
 
+            // ==========================
+            // Serviço por OS - fallback
+            // ==========================
+            async function buscarOperacoesPorOS() {
+                if (!osSelecionada) return null;
 
+                const url = `/Operacao/ListarOperacoesPorOrdemServico?pOrdemServico=${encodeURIComponent(osSelecionada)}`;
 
-            // Remover via AJAX (mantém estado e não sai da página)
+                try {
+                    const resp = await fetch(url, { method: "GET", cache: "no-store" });
+                    if (!resp.ok) return null;
+
+                    const itens = await resp.json();
+                    return Array.isArray(itens) ? itens : null;
+                } catch (e) {
+                    console.error(e);
+                    return null;
+                }
+            }
+
+            function delay(ms) {
+                return new Promise(r => setTimeout(r, ms));
+            }
+
+            async function carregarOperacoesPorOSComRetry(
+                tentativas = 6,
+                intervaloMs = 300,
+                { substituirBufferVazio = false, silent = false } = {}) {
+
+                const bufferAtual = obterOperacoesDoBuffer(osSelecionada);
+
+                // O buffer é a fonte principal.
+                if (bufferAtual.length > 0) {
+                    renderizarOperacoes(bufferAtual);
+                } else if (!silent) {
+                    setLoading("Buscando operações...");
+                }
+
+                for (let i = 1; i <= tentativas; i++) {
+                    const itens = await buscarOperacoesPorOS();
+
+                    if (itens && itens.length > 0) {
+
+                        // Só usamos a busca textual para iniciar o buffer quando
+                        // ele ainda está vazio, ou quando isso foi explicitamente solicitado.
+                        const bufferAindaVazio = obterOperacoesDoBuffer(osSelecionada).length === 0;
+
+                        if (bufferAindaVazio || substituirBufferVazio) {
+                            adicionarOperacoesAoBuffer(osSelecionada, itens);
+                        }
+
+                        renderizarBufferAtual();
+                        return true;
+                    }
+
+                    // IMPORTANTE:
+                    // retorno vazio do serviço nunca apaga o buffer local.
+                    if (obterOperacoesDoBuffer(osSelecionada).length > 0) {
+                        renderizarBufferAtual();
+                        return true;
+                    }
+
+                    await delay(intervaloMs);
+                }
+
+                if (obterOperacoesDoBuffer(osSelecionada).length > 0) {
+                    renderizarBufferAtual();
+                    return true;
+                }
+
+                if (!silent) {
+                    setInfo("Nenhuma operação encontrada para esta OS.");
+                }
+
+                return false;
+            }
+
+            // ==========================
+            // Resposta da criação
+            // ==========================
+            function extrairOperacaoDaResposta(data) {
+                if (!data || typeof data !== "object") return null;
+
+                // Suporta alguns formatos possíveis sem exigir um nome exato.
+                const candidatos = [
+                    data.operacao,
+                    data.Operacao,
+                    data.result,
+                    data.Result,
+                    data.data,
+                    data.Data,
+                    data
+                ];
+
+                for (const candidato of candidatos) {
+                    const normalizada = normalizarOperacao(candidato);
+                    if (normalizada) return normalizada;
+                }
+
+                return null;
+            }
+
+            async function tentarLerOperacaoCriada(resp) {
+                const ct = (resp.headers.get("content-type") || "").toLowerCase();
+
+                if (!ct.includes("application/json")) {
+                    return null;
+                }
+
+                try {
+                    const data = await resp.clone().json();
+                    return extrairOperacaoDaResposta(data);
+                } catch (e) {
+                    console.warn("A criação retornou JSON, mas não foi possível extrair a operação.", e);
+                    return null;
+                }
+            }
+
+            // ==========================
+            // Remover via AJAX
+            // ==========================
             tbodyOps.addEventListener("click", async function (e) {
                 const btn = e.target.closest(".btn-remover");
                 if (!btn) return;
@@ -786,8 +906,6 @@
                         return;
                     }
 
-                    // ✅ Se o controller redirecionar para Index, o fetch vai seguir e trazer HTML.
-                    // Então não podemos assumir que resp.json() vai funcionar.
                     const ct = (resp.headers.get("content-type") || "").toLowerCase();
 
                     if (ct.includes("application/json")) {
@@ -799,31 +917,11 @@
                             alert("Falha ao remover.");
                             return;
                         }
-
-                        // sucesso via JSON -> atualiza UI abaixo
-                    } else {
-                        // veio HTML (provável redirect) -> considera sucesso (operação já removeu no banco)
-                        // Opcional: você pode checar resp.redirected também:
-                        // if (resp.redirected) { ... }
-                        // Aqui só seguimos.
                     }
 
-                    // ✅ Atualiza UI sem sair da página:
-                    // Opção A: remover a linha localmente (mais rápido)
-                    const tr = btn.closest("tr");
-                    if (tr) tr.remove();
-
-                    // atualiza contador
-                    const linhas = tbodyOps.querySelectorAll("tr").length;
-                    totalOps.textContent = linhas;
-
-                    if (linhas === 0) {
-                        setInfo("Nenhuma operação encontrada para esta OS.");
-                    }
-
-                    // Opção B (mais consistente): recarregar do serviço (mantém estado)
-                    // Descomente se preferir garantir que a lista reflete o banco:
-                    // await carregarOperacoesPorOS();
+                    // Remove também do buffer.
+                    removerOperacaoDoBuffer(id);
+                    renderizarBufferAtual();
 
                 } catch (err) {
                     console.error(err);
@@ -833,13 +931,11 @@
                 }
             });
 
-
             // ==========================
             // Eventos OS / Add
             // ==========================
             if (inputOs) {
                 inputOs.addEventListener("input", function () {
-                    // só números (como você deseja buscar 222 em "OS 222")
                     this.value = (this.value || "").replace(/\D/g, "");
                 });
 
@@ -851,13 +947,28 @@
                 });
             }
 
-            // Vagas sempre 1
             if (inputVagas) inputVagas.value = 1;
 
-            btnCarregar.addEventListener("click", function () {
+            btnCarregar.addEventListener("click", async function () {
                 const os = getOs();
-                osSelecionada = os || "";
-                carregarOperacoesPorOSComRetry();
+
+                if (!os) {
+                    setInfo("Informe uma OS válida.");
+                    return;
+                }
+
+                osSelecionada = os;
+                osAtual.textContent = os;
+
+                const buffer = obterBuffer();
+
+                if (buffer && buffer.ordemServico === os && buffer.operacoes.length > 0) {
+                    renderizarOperacoes(buffer.operacoes);
+                    return;
+                }
+
+                // Ao escolher outra OS, inicia um novo buffer.
+                obterOuCriarBuffer(os);
             });
 
             btnAdicionar.addEventListener("click", async function () {
@@ -872,154 +983,181 @@
                     return;
                 }
 
+                // Se mudou de OS, inicia um novo buffer.
                 osSelecionada = os;
+                obterOuCriarBuffer(os);
+                osAtual.textContent = os;
 
-                // NÃO force mais: if (inputVagas) inputVagas.value = 1;
-                if (inputVagas && (!inputVagas.value || inputVagas.value === "0")) inputVagas.value = 1;
+                if (inputVagas && (!inputVagas.value || inputVagas.value === "0")) {
+                    inputVagas.value = 1;
+                }
 
                 const vagasAtual = (inputVagas?.value || "").trim();
                 const tipoSelecionado = (inputTipo?.value || "").trim();
 
                 const formData = new FormData(form);
 
-                // garante valores importantes no payload
                 formData.set("QtdVagasVoluntarios", vagasAtual);
                 formData.set("OrdemServico", os);
-                formData.set("TipoOperacaoID", (inputTipo?.value || ""));
                 formData.set("TipoOperacaoID", tipoSelecionado);
 
                 try {
-                    setLoading("Adicionando operação...");
+                    // Mantém o buffer visível enquanto grava.
+                    const bufferAtual = obterOperacoesDoBuffer(os);
+
+                    if (bufferAtual.length === 0) {
+                        setLoading("Adicionando operação...");
+                    }
 
                     const resp = await fetch(criarUrl, {
                         method: "POST",
                         body: formData,
-                        headers: { "RequestVerificationToken": getAntiForgeryToken() }
+                        headers: {
+                            "RequestVerificationToken": getAntiForgeryToken()
+                        }
                     });
 
                     if (!resp.ok) {
                         const txt = await resp.text();
+
                         setError(`Falha ao adicionar operação.
                                   <br/>Status: <strong>${resp.status} ${resp.statusText}</strong>
                                   <br/><small class="text-muted">${(txt || "").substring(0, 400)}</small>`);
                         return;
                     }
-      
-                    if (inputVagas) inputVagas.value = 1;
 
-                    // ✅ limpa operadores (busca + lista) após criar operação
-                    limparOperadoresUI();
+                    // Cenário ideal:
+                    // o POST retorna JSON contendo o ID/dados da operação criada.
+                      const operacaoCriada = await tentarLerOperacaoCriada(resp);
 
-                    // recarrega lista do serviço (mantém estado)
-                    await carregarOperacoesPorOSComRetry();
+                      if (!operacaoCriada) {
+                          throw new Error("O servidor não retornou a operação criada.");
+                      }
+
+                      adicionarOperacaoAoBuffer(os, operacaoCriada);
+                      renderizarBufferAtual();
+
+                      if (inputVagas)
+                          inputVagas.value = 1;
+
+                      limparOperadoresUI();
 
                 } catch (e) {
                     console.error(e);
-                    setError("Erro ao adicionar. Verifique sua conexão e o endpoint de criação.");
+
+                    // Se já temos operações no buffer, não escondemos a lista.
+                    if (obterOperacoesDoBuffer(osSelecionada).length > 0) {
+                        renderizarBufferAtual();
+                        alert("A operação pode ter sido criada, mas não foi possível confirmar a resposta do servidor.");
+                    } else {
+                        setError("Erro ao adicionar. Verifique sua conexão e o endpoint de criação.");
+                    }
                 }
-                // recarrega lista do serviço (mantém estado)
-                await carregarOperacoesPorOSComRetry();
             });
-        });
 
+            // Restaura automaticamente após F5/reload da página.
+            restaurarBufferDaSessao();
 
-        // POPUP PARA EXIBIR OS OPERADORES
-        function escapeHtml(s) {
-            return String(s ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-        }
-
-        async function buscarOperadoresResumido(opId) {
-            const url = `/Operacao/PegarOperadoresOperacaoResumido?pOperacaoID=${encodeURIComponent(opId)}&_=${Date.now()}`;
-            const resp = await fetch(url, { method: "GET", cache: "no-store" });
-            if (!resp.ok) throw new Error("Falha ao buscar operadores");
-            return await resp.json(); // IEnumerable<XOperadorSelecionado>
-        }
-
-        function montarHtmlOperadores(lista) {
-            if (!Array.isArray(lista) || lista.length === 0) {
-            return `<div class="text-muted">Nenhum operador vinculado.</div>`;
+            // ==========================
+            // POPUP PARA EXIBIR OPERADORES
+            // ==========================
+            function escapeHtml(s) {
+                return String(s ?? "")
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")
+                    .replaceAll("'", "&#039;");
             }
 
-            return `
-            <div style="min-width: 260px;">
-                <ul class="mb-0 ps-3">
-                ${lista.map(o => {
-                    const nome = escapeHtml(o.Nome ?? o.nome ?? "");
-                    const matricula = escapeHtml(o.Matricula ?? o.matricula ?? "");
-                    return `<li>${nome} <span class="text-muted">(${matricula})</span></li>`;
-                }).join("")}
-                </ul>
-            </div>
-            `;
-        }
+            async function buscarOperadoresResumido(opId) {
+                const url = `/Operacao/PegarOperadoresOperacaoResumido?pOperacaoID=${encodeURIComponent(opId)}&_=${Date.now()}`;
+                const resp = await fetch(url, { method: "GET", cache: "no-store" });
 
-        // Hover (delegação)
-        tbodyOps.addEventListener("mouseover", async function (e) {
-            const el = e.target.closest(".op-ops-popover");
-            if (!el) return;
+                if (!resp.ok) throw new Error("Falha ao buscar operadores");
 
-            const opId = el.getAttribute("data-opid");
-            if (!opId) return;
-
-            // remove popover anterior do mesmo elemento
-            const existing = bootstrap.Popover.getInstance(el);
-            if (existing) existing.dispose();
-
-            // placeholder
-            const pop = new bootstrap.Popover(el, {
-            container: "body",
-            trigger: "manual",
-            placement: "top",
-            html: true,
-            title: "Operadores",
-            content: `<div class="text-muted">Carregando...</div>`
-            });
-            pop.show();
-
-            try {
-            // ✅ você pediu: sempre chama o serviço no hover
-            const lista = await buscarOperadoresResumido(opId);
-
-            pop.dispose();
-            const pop2 = new bootstrap.Popover(el, {
-                container: "body",
-                trigger: "manual",
-                placement: "top",
-                html: true,
-                title: "Operadores",
-                content: montarHtmlOperadores(lista)
-            });
-            pop2.show();
-
-            } catch (err) {
-            pop.dispose();
-            const popErr = new bootstrap.Popover(el, {
-                container: "body",
-                trigger: "manual",
-                placement: "top",
-                html: true,
-                title: "Operadores",
-                content: `<div class="text-danger">Erro ao carregar operadores.</div>`
-            });
-            popErr.show();
+                return await resp.json();
             }
+
+            function montarHtmlOperadores(lista) {
+                if (!Array.isArray(lista) || lista.length === 0) {
+                    return `<div class="text-muted">Nenhum operador vinculado.</div>`;
+                }
+
+                return `
+                    <div style="min-width: 260px;">
+                        <ul class="mb-0 ps-3">
+                            ${lista.map(o => {
+                                const nome = escapeHtml(o.Nome ?? o.nome ?? "");
+                                const matricula = escapeHtml(o.Matricula ?? o.matricula ?? "");
+                                return `<li>${nome} <span class="text-muted">(${matricula})</span></li>`;
+                            }).join("")}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            tbodyOps.addEventListener("mouseover", async function (e) {
+                const el = e.target.closest(".op-ops-popover");
+                if (!el) return;
+
+                const opId = el.getAttribute("data-opid");
+                if (!opId) return;
+
+                const existing = bootstrap.Popover.getInstance(el);
+                if (existing) existing.dispose();
+
+                const pop = new bootstrap.Popover(el, {
+                    container: "body",
+                    trigger: "manual",
+                    placement: "top",
+                    html: true,
+                    title: "Operadores",
+                    content: `<div class="text-muted">Carregando...</div>`
+                });
+
+                pop.show();
+
+                try {
+                    const lista = await buscarOperadoresResumido(opId);
+
+                    pop.dispose();
+
+                    const pop2 = new bootstrap.Popover(el, {
+                        container: "body",
+                        trigger: "manual",
+                        placement: "top",
+                        html: true,
+                        title: "Operadores",
+                        content: montarHtmlOperadores(lista)
+                    });
+
+                    pop2.show();
+
+                } catch (err) {
+                    pop.dispose();
+
+                    const popErr = new bootstrap.Popover(el, {
+                        container: "body",
+                        trigger: "manual",
+                        placement: "top",
+                        html: true,
+                        title: "Operadores",
+                        content: `<div class="text-danger">Erro ao carregar operadores.</div>`
+                    });
+
+                    popErr.show();
+                }
+            });
+
+            tbodyOps.addEventListener("mouseout", function (e) {
+                const el = e.target.closest(".op-ops-popover");
+                if (!el) return;
+
+                const instance = bootstrap.Popover.getInstance(el);
+                if (instance) instance.dispose();
+            });
         });
-
-        tbodyOps.addEventListener("mouseout", function (e) {
-            const el = e.target.closest(".op-ops-popover");
-            if (!el) return;
-
-            const instance = bootstrap.Popover.getInstance(el);
-            if (instance) instance.dispose();
-        });
-
-
-       
     </script>
 }
 

@@ -100,9 +100,11 @@ namespace SVG.WebApp.Controllers
       // TIPOS DE OPERAÇÃO
       // =====================
       var tipos = _tipoOperacaoAppService
-          .GetAll()
-          .OrderBy(t => t.Nome)
-          .ToList();
+        .GetAll()
+        .OrderBy(t => t.Nome)
+        .Where(s => s.ID != 2)
+
+        .ToList();
 
       ViewBag.TiposOperacao = tipos;
 
@@ -347,83 +349,89 @@ namespace SVG.WebApp.Controllers
     // POST: Operacao/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public void CreateReforcoPlantao(OperacaoViewModel model)
+    public IActionResult CreateReforcoPlantao(OperacaoViewModel model)
     {
       LimparModelStateCustom();
 
       if (!ModelState.IsValid)
       {
-        PopularCombos(model.TipoOperacaoID, model.CoordenadorOperadorID);
-        //return View(model);
+        var erros = ModelState
+            .Where(x => x.Value?.Errors.Count > 0)
+            .SelectMany(x => x.Value!.Errors)
+            .Select(x => x.ErrorMessage)
+            .ToList();
+
+        return BadRequest(new
+        {
+          ok = false,
+          erros
+        });
       }
 
-      // Exemplo: pegar o nome do coordenador a partir do ID selecionado
       if (model.CoordenadorOperadorID != null)
       {
         var coord = _operadorAppService.GetById(model.CoordenadorOperadorID.Value);
+
         if (coord != null)
           model.Coordenador = coord.Nome;
       }
 
       var entidade = _mapper.Map<Operacao>(model);
+
       entidade.DataHoraCriacao = DateTime.Now;
       entidade.DataHora = model.DataHoraInicio;
+
       if (entidade.TipoOperacaoID == 3)
         entidade.DataHoraFim = null;
 
       entidade.OrdemServico = string.Concat("OS ", model.OrdemServico);
 
-      var opSvg = model.OperadoresSelecionados.Where(s => s.SVG).Select(x => x.OperadorID).ToList();
-      var dataBase = DateTime.Now.AddMonths(-1); // 30 dias.
-
-      var operadoresContemplados = new List<int>();
-      if (opSvg.Count > 0)
-      {
-        if (opSvg.Count > model.QtdVagasVoluntarios)
-        {
-          if (model.QtdVagasVoluntarios == 0)
-            model.QtdVagasVoluntarios = opSvg.Count;
-
-          operadoresContemplados = _operacaoAppService.PegarOperadoresSVG(opSvg.ToArray(), dataBase, model.QtdVagasVoluntarios).ToList();
-        }
-        else
-          operadoresContemplados = opSvg;
-      }
-
-      var operadoresOperacao = model.OperadoresSelecionados.Where(s => !s.SVG).ToList();
-
-      var operadoresSVG = opSvg.Where(id => operadoresContemplados.Contains(id)).ToList();
-
-      operadoresOperacao.AddRange(operadoresSVG.Select(id => new OperadorSelecionadoVM
-      {
-        OperadorID = id,
-        SVG = true
-      }));
-
       if (!entidade.SvgAberto)
       {
+        entidade.QtdVagasTotais = 0;
         entidade.QtdVagasRestantes = 0;
       }
       else
       {
-        var qtdRestante = model.QtdVagasVoluntarios - operadoresSVG.Count;
         entidade.QtdVagasTotais = model.QtdVagasVoluntarios;
-        entidade.QtdVagasRestantes = qtdRestante < 0 ? 0 : qtdRestante;
-        entidade.SvgAberto = qtdRestante > 0 ? true : false;
+        entidade.QtdVagasRestantes = model.QtdVagasVoluntarios;
+        entidade.SvgAberto = true;
       }
 
       _operacaoAppService.Add(entidade);
 
-      foreach (var op in operadoresOperacao)
+      if (model.OperadoresSelecionados != null)
       {
-        var operadorOperacao = new OperadorOperacao
+        foreach (var op in model.OperadoresSelecionados)
         {
-          OperacaoID = entidade.ID,
-          OperadorID = op.OperadorID,
-          SVG = op.SVG
-        };
-        _operadorOperacaoAppService.Add(operadorOperacao);
+          var operadorOperacao = new OperadorOperacao
+          {
+            OperacaoID = entidade.ID,
+            OperadorID = op.OperadorID,
+            SVG = op.SVG
+          };
+
+          _operadorOperacaoAppService.Add(operadorOperacao);
+        }
       }
+
+      return Json(new
+      {
+        ok = true,
+
+        operacao = new
+        {
+          ID = entidade.ID,
+          DataHoraInicio = entidade.DataHora,
+          DataHoraFim = entidade.DataHoraFim,
+          Objeto = entidade.Objeto,
+
+          QtdOperadores = model.OperadoresSelecionados?.Count ?? 0,
+
+          QtdVagasRestantes = entidade.QtdVagasRestantes,
+          SvgAberto = entidade.SvgAberto
+        }
+      });
     }
 
     // GET: Operacao/Create
@@ -583,7 +591,7 @@ namespace SVG.WebApp.Controllers
         .ToList();
 
       var operadoresVagas = prioridades.Take(pQtdVagas).ToList();
-      
+
       var operadoresRestantes = new List<XOperadoresSecaoOrdemSVG>();
 
       if (operadoresVagas.Count() < pQtdVagas)
