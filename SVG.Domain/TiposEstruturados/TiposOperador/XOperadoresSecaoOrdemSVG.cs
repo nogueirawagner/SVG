@@ -9,8 +9,10 @@ namespace SVG.Domain.TiposEstruturados.TiposOperador
   public class XOperadoresSecaoOrdemSVG
   {
     public int OperadorID { get; set; }
+    public int NumericaDOE { get; set; }
     public int QtdOperacoes { get; set; }
     public int QtdHoras { get; set; }
+    public double EngajamentoOperador { get; set; }
     public string Secao { get; set; }
     public string SituacaoEquipe { get; set; }
     public int PesoEquipe { get; set; }

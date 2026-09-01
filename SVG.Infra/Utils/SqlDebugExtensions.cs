@@ -21,7 +21,7 @@ public static class SqlDebugExtensions
       }
       else if (parametro.Value is DateTime data)
       {
-        valor = $"'{data:yyyy-MM-dd HH:mm:ss.fff}'";
+        valor = $"'{data:yyyyMMdd HH:mm:ss.fff}'";
       }
       else if (parametro.Value is string texto)
       {

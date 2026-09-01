@@ -18,6 +18,6 @@ namespace SVG.App.Interface
     IEnumerable<XOperadorSelecionado> PegarOperadoresOperacaoResumido(int pOperacaoID);
     IEnumerable<XEscalaPlantao> PegarEscalaPlantao(DateTime pDataReferencia);
     IEnumerable<XOperacoesSVGAberto> PegarOperacoesSVGAbertoOperador(int pOperadorID);
-    IEnumerable<XOperadoresSecaoOrdemSVG> PegarOperadoresSecaoOrdemPrioridade(int[] pOperadorIDs, DateTime pDataLimite);
+    IEnumerable<XOperadoresSecaoOrdemSVG> PegarOperadoresSecaoOrdemPrioridade(int[] pOperadorIDs, DateTime pDataLimite, DateTime pDataOperacao);
   }
 }

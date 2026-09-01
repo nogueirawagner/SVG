@@ -4,7 +4,9 @@ using SVG.Domain.TiposEstruturados.TiposOperacao;
 using SVG.Domain.TiposEstruturados.TiposOperador;
 using SVG.Infra.Context.SQLServer;
 using SVG.Infra.Repositories;
+using System.Data;
 using System.Data.SqlClient;
+using System.Text;
 
 namespace SVG.Infra.Repositories
 {
@@ -279,7 +281,7 @@ namespace SVG.Infra.Repositories
          );
     }
 
-    public IEnumerable<XOperadoresSecaoOrdemSVG> PegarOperadoresSecaoOrdemPrioridade (int[] pOperadorIDs, DateTime pDataLimite)
+    public IEnumerable<XOperadoresSecaoOrdemSVG> PegarOperadoresSecaoOrdemPrioridade (int[] pOperadorIDs, DateTime pDataLimite, DateTime pDataOperacao)
     {
       if (pOperadorIDs == null || pOperadorIDs.Length == 0)
         return Enumerable.Empty<XOperadoresSecaoOrdemSVG>();
@@ -314,7 +316,8 @@ namespace SVG.Infra.Repositories
         , CTE_QtdOperacoesOperadores AS (
         select 
 	        oo.OperadorID,
-          o.SessaoID,
+			o.SessaoID,
+			o.NumericaDOE,
 	        COUNT(*) QtdOperacoes,
 	        op.TipoOperacaoID,
 	        tp.Peso,
@@ -328,6 +331,7 @@ namespace SVG.Infra.Repositories
 	      where oo.OperadorID in ({operadoresIn})
         group by 
 	        oo.OperadorID,
+			o.NumericaDOE,
 	        op.TipoOperacaoID,
 	        tp.Peso,
 	        tp.Nome,
@@ -338,6 +342,7 @@ namespace SVG.Infra.Repositories
 	        select 
             o.ID as OperadorID,
             o.SessaoID,
+			o.NumericaDOE,
 	        0 QtdOperacoes, 
 	        NULL TipoOperacaoID,
 	        10 Peso,
@@ -352,6 +357,7 @@ namespace SVG.Infra.Repositories
         where o.ID in ({operadoresIn})
         group by 
           o.ID,
+		  o.NumericaDOE,
           o.SessaoID
         having count(op.ID) = 0
         )
@@ -362,13 +368,27 @@ namespace SVG.Infra.Repositories
         select *, 0 QtdHoras from CTE_OperadoresNaoOperou
         )
 
+		, CTE_MediaOperadores AS (
 
-		      /*
-		      Atual = 0,
-		      Proxima = 1,
-		      Fantasma = 2
+			SELECT 
+				OperadorID,
+				NumericaDOE,
+				SUM(QtdOperacoes) QtdOperacoes, 
+				SUM(QtdHoras) QtdHoras,
+				SessaoID,
+				SUM(QtdOperacoes * Peso) AS SomaPonderada,
+				SUM(Peso) AS SomaPesos,
+				(CEILING(
+					(CAST(SUM(QtdOperacoes * Peso) AS FLOAT) / NULLIF(SUM(Peso), 0)) * 100
+				) / 100.0) MediaPonderada
 		
-		      */
+			FROM CTE_QuantitativoOperacoes c
+			GROUP BY 
+				OperadorID,
+				NumericaDOE,
+				SessaoID
+		)
+
         , CTE_SecaoPlantao AS (
 	        select 
 		        *,
@@ -383,7 +403,7 @@ namespace SVG.Infra.Repositories
 					WHEN Situacao = 2 THEN 5
 				END) 'PesoEquipe'
 
-	        from fn_Escala_Plantao_PorData(@pDataLimite) 
+	        from fn_Escala_Plantao_PorData(@pDataOperacao) 
 			where SecaoID not in (5, 6)
 	        --where Situacao = 1
         )
@@ -400,7 +420,7 @@ namespace SVG.Infra.Repositories
 		)
 
 		, CTE_SecaoExpedienteDia AS (
-			select *, 2 PesoEquipe from fn_Escala_Sobreaviso_PorData(@pDataLimite)
+			select *, 2 PesoEquipe from fn_Escala_Sobreaviso_PorData(@pDataOperacao)
 		)
 
 		, CTE_SituacaoSecaoExpediente AS (
@@ -415,7 +435,7 @@ namespace SVG.Infra.Repositories
 					WHEN esc.SecaoID is not null THEN 4
 				END), 2) PesoEquipe
 			from Sessao s 
-				left join fn_Escala_Sobreaviso_PorData(@pDataLimite) esc on esc.SecaoID = s.ID
+				left join fn_Escala_Sobreaviso_PorData(@pDataOperacao) esc on esc.SecaoID = s.ID
 			where s.ID in (5, 6, 7)
 		),
 		
@@ -427,30 +447,28 @@ namespace SVG.Infra.Repositories
 	
 		select 
 			op.OperadorID,
+			op.NumericaDOE,
 			op.QtdOperacoes,
 			op.QtdHoras,
+			op.MediaPonderada EngajamentoOperador,
 			sc.Nome Secao,
 			sc.SituacaoEquipe,
 			COALESCE(PesoEquipe, 0) PesoEquipe,
 			CAST(
-        ROW_NUMBER() OVER (
+				ROW_NUMBER() OVER (
 				  PARTITION BY SituacaoEquipe
-				  ORDER BY QtdHoras ASC
-			  ) 
-      AS INT) OrdemNaEquipe
-		from CTE_QuantitativoOperacoes Op 
+				  ORDER BY QtdHoras ASC, op.MediaPonderada DESC, NumericaDOE 
+			  ) AS INT) OrdemNaEquipe
+		from CTE_MediaOperadores Op 
 			left join CTE_SecoesOrdemPrioridade sc on sc.SecaoID = Op.SessaoID
-		--where op.QtdHoras < 12
 		order by PesoEquipe desc
-
-
-			 
 
       ";
 
       var parametros = new List<SqlParameter>
       {
-        new SqlParameter("@pDataLimite", pDataLimite)
+        new SqlParameter("@pDataLimite", pDataLimite),
+        new SqlParameter("@pDataOperacao", pDataOperacao)
       };
       parametros.AddRange(parametrosOperadores);
 
@@ -463,6 +481,7 @@ namespace SVG.Infra.Repositories
       //var sqlDebug = sql.ToDebugSql(
       //    parametros.ToArray()
       //);
+
 
       return result;
     }

@@ -76,9 +76,9 @@ namespace SVG.App.Services
       return _operacaoService.PegarOperacoesSVGAbertoOperador(pOperadorID);
     }
 
-    public IEnumerable<XOperadoresSecaoOrdemSVG> PegarOperadoresSecaoOrdemPrioridade(int[] pOperadorIDs, DateTime pDataLimite)
+    public IEnumerable<XOperadoresSecaoOrdemSVG> PegarOperadoresSecaoOrdemPrioridade(int[] pOperadorIDs, DateTime pDataLimite, DateTime pDataOperacao)
     {
-      return _operacaoService.PegarOperadoresSecaoOrdemPrioridade(pOperadorIDs, pDataLimite);
+      return _operacaoService.PegarOperadoresSecaoOrdemPrioridade(pOperadorIDs, pDataLimite, pDataOperacao);
     }
   }
 }

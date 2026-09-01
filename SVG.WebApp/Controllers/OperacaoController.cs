@@ -180,7 +180,7 @@ namespace SVG.WebApp.Controllers
       var operadores = _operacaoAppService.PegaCandidatoSVG(pOperacaoID).ToList();
       var opSvg = operadores.Select(o => o.OperadorID).ToList();
 
-      var operadoresSVG = AplicarRegraSVG(opSvg, operacao.QtdVagasRestantes)
+      var operadoresSVG = AplicarRegraSVG(opSvg, operacao.QtdVagasRestantes, operacao.DataHora)
         .Select(o => new OperadorSelecionadoVM { OperadorID = o, SVG = true }).ToList();
 
       //var operadoresSVG = CalcularOperdoresSVG(opSvg, operacao.QtdVagasRestantes)
@@ -568,7 +568,7 @@ namespace SVG.WebApp.Controllers
       }
     }
 
-    private List<int> AplicarRegraSVG(List<int> pOperadoresID, int pQtdVagas)
+    private List<int> AplicarRegraSVG(List<int> pOperadoresID, int pQtdVagas, DateTime pDataOperacao)
     {
       /*
        Regras do SVG
@@ -582,15 +582,17 @@ namespace SVG.WebApp.Controllers
 
       var opSvg = pOperadoresID;
       var dataBase = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-      var operadoresPrioridades = _operacaoAppService.PegarOperadoresSecaoOrdemPrioridade(opSvg.ToArray(), dataBase);
-      var operMais12h = operadoresPrioridades.Where(s => s.QtdHoras >= 12);
-      var operMenos12h = operadoresPrioridades.Where(s => s.QtdHoras < 12);
+      var operadoresPrioridades = _operacaoAppService.PegarOperadoresSecaoOrdemPrioridade(opSvg.ToArray(), dataBase, pDataOperacao);
+      var operMais12h = operadoresPrioridades.Where(s => s.QtdHoras >= 12).ToList();
+      var operMenos12h = operadoresPrioridades.Where(s => s.QtdHoras < 12).ToList();
       var prioridades = operMenos12h
         .OrderByDescending(s => s.PesoEquipe)
         .ThenBy(s => s.OrdemNaEquipe)
+        .ThenBy(s => s.EngajamentoOperador)
+        .ThenBy(s => s.NumericaDOE)
         .ToList();
 
-      var operadoresVagas = prioridades.Take(pQtdVagas).ToList();
+      var operadoresVagas = operMenos12h.Take(pQtdVagas).ToList();
 
       var operadoresRestantes = new List<XOperadoresSecaoOrdemSVG>();
 
@@ -600,16 +602,10 @@ namespace SVG.WebApp.Controllers
 
         if (operMais12h.Count() > 0)
         {
-          var operadoresFora = operMais12h
-          .OrderByDescending(s => s.PesoEquipe)
-          .ThenBy(s => s.OrdemNaEquipe)
-          .ToList();
-
-          operadoresRestantes = operadoresFora.Take(qtdFalta).ToList();
+          operadoresVagas.AddRange(operMais12h.Take(qtdFalta).ToList());
         }
       }
-
-      operadoresVagas.AddRange(operadoresRestantes);
+      
       var operadoresId = operadoresVagas.Select(s => s.OperadorID).ToList();
       return operadoresId;
     }
