@@ -40,16 +40,20 @@ namespace SVG.WebApp.Controllers
           .OrderBy(o => o.Nome)
           .ToList();
 
-      operadores.AddRange(PegarUsuariosAdmin());
+      var usuariosAdmin = PegarUsuariosAdmin();
+      operadores.AddRange(usuariosAdmin);
 
       var operadoresDto = operadores.Select(o => new
       {
         o.ID,
         o.Nome,
+        o.NumericaDOE,
+        o.Alcunha,
         Matricula = o.Matricula
           .Replace(".", "")
           .Replace("-", ""),
-        o.SessaoID
+        o.SessaoID,
+        EhAdmin = usuariosAdmin.Any(s => s.Matricula == o.Matricula.Replace(".", "").Replace("-", ""))
       }).ToList();
 
       ViewBag.OperadoresJson = JsonConvert.SerializeObject(operadoresDto);
@@ -144,82 +148,157 @@ namespace SVG.WebApp.Controllers
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CriarUsuario(
-     string login,
-     string nome,
-     string senha,
-     string senhaConfirmacao)
+    string login,
+    string alcunha,
+    int? numericaDOE,
+    string senha,
+    string senhaConfirmacao)
     {
-      // 🔒 validações básicas
-      if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(nome))
+      login = login?.Replace(".", "").Replace("-", "").Trim();
+
+      // Validação básica
+      if (string.IsNullOrWhiteSpace(login))
       {
-        ModelState.AddModelError("", "Login e nome são obrigatórios.");
+        ModelState.AddModelError("", "A matrícula é obrigatória.");
         return View();
       }
 
-      if (string.IsNullOrWhiteSpace(senha) || senha != senhaConfirmacao)
+      if (string.IsNullOrWhiteSpace(senha))
       {
-        if (!Regex.IsMatch(senha, @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$"))
-          ModelState.AddModelError("", "Senha não atende aos critérios de segurança.");
+        ModelState.AddModelError("", "A senha é obrigatória.");
+        return View();
+      }
 
+      // Validação da senha
+      if (!Regex.IsMatch(
+          senha,
+          @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$"))
+      {
+        ModelState.AddModelError(
+            "",
+            "Senha não atende aos critérios de segurança.");
+
+        return View();
+      }
+
+      if (senha != senhaConfirmacao)
+      {
         ModelState.AddModelError("", "As senhas não conferem.");
         return View();
       }
 
-      login = login.Replace(".", "").Replace("-", "");
-      var usuarioExistente = await _usuarioAppService.ObterPorLoginAsync(login);
+      // Verifica se usuário já existe
+      var usuarioExistente =
+          await _usuarioAppService.ObterPorLoginAsync(login);
+
       if (usuarioExistente != null)
       {
         ModelState.AddModelError("", "Usuário já existente.");
         return View();
       }
 
-      var normOperadores = _operadorAppService
+      // Operadores
+      var operadores = _operadorAppService
           .GetAll()
           .OrderBy(o => o.Nome)
           .ToList();
 
+      // Administradores
       var admins = PegarUsuariosAdmin();
-      normOperadores.AddRange(admins);
-      
-      var operador = normOperadores.FirstOrDefault(s => s.Matricula.Replace(".", "").Replace("-", "") == login);
-      //if (operador != null)
-      //  operador.Alcunha = nome;
 
-      if (operador == null)
+      // Verifica primeiro se é admin
+      var admin = admins.FirstOrDefault(a =>
+          !string.IsNullOrWhiteSpace(a.Matricula) &&
+          a.Matricula
+              .Replace(".", "")
+              .Replace("-", "")
+              .Trim() == login);
+
+      var ehAdmin = admin != null;
+
+      // Se não for admin, procura na base de operadores
+      Operador operador = null;
+
+      if (!ehAdmin)
       {
-        ModelState.AddModelError("", "Matrícula não encontrada entre os operadores.");
-        return View();
+        operador = operadores.FirstOrDefault(o =>
+            !string.IsNullOrWhiteSpace(o.Matricula) &&
+            o.Matricula
+                .Replace(".", "")
+                .Replace("-", "")
+                .Trim() == login);
+
+        if (operador == null)
+        {
+          ModelState.AddModelError(
+              "",
+              "Matrícula não encontrada entre os operadores.");
+
+          return View();
+        }
+
+        /*
+         * Numérica e Nome de Guerra são obrigatórios
+         * somente para operadores.
+         */
+        if (string.IsNullOrWhiteSpace(alcunha))
+        {
+          ModelState.AddModelError(
+              "",
+              "O nome de guerra é obrigatório.");
+
+          return View();
+        }
+
+        if (!numericaDOE.HasValue || numericaDOE.Value <= 0)
+        {
+          ModelState.AddModelError(
+              "",
+              "A numérica é obrigatória.");
+
+          return View();
+        }
       }
 
       try
       {
-        var usuario = new Usuario();
+        Usuario usuario;
 
-        if (!admins.Any(a => a.Matricula == login))
+        if (ehAdmin)
         {
-          // 🔹 cria usuário
+          /*
+           * Admin não possui Numérica nem Nome de Guerra.
+           */
           usuario = new Usuario
           {
             Login = login,
-            Nome = nome.Trim(),
-            Ativo = true,
-            Operador = operador
-          };
-
-          _operadorAppService.Update(operador);
-        }
-        else
-        {
-          // 🔹 cria usuário
-          usuario = new Usuario
-          {
-            Login = login,
-            Nome = nome.Trim(),
+            Nome = admin.Nome,
             Ativo = true
           };
         }
+        else
+        {
+          /*
+           * Atualiza os dados do operador.
+           * Caso tenham sido corrigidos na tela,
+           * sobrescrevemos os valores atuais.
+           */
+          operador.Alcunha = alcunha.Trim();
+          operador.NumericaDOE = numericaDOE.Value;
 
-        await _usuarioAppService.CriarUsuarioComSenhaAsync(usuario, senha);
+          _operadorAppService.Update(operador);
+
+          usuario = new Usuario
+          {
+            Login = login,
+            Nome = operador.Nome,
+            Ativo = true,
+            Operador = operador
+          };
+        }
+
+        await _usuarioAppService
+            .CriarUsuarioComSenhaAsync(usuario, senha);
       }
       catch (Exception ex)
       {
@@ -227,7 +306,9 @@ namespace SVG.WebApp.Controllers
         return View();
       }
 
-      TempData["Mensagem"] = "Usuário criado com sucesso. Você já pode entrar no sistema.";
+      TempData["Mensagem"] =
+          "Usuário criado com sucesso. Você já pode entrar no sistema.";
+
       return RedirectToAction("Login");
     }
 

@@ -27,14 +27,25 @@
             </div>
         </div>
 
-        <!-- Nome -->
-        <div class="mb-3">
-            <label class="form-label">Nome de Guerra</label>
-            <input type="text"
-                   id="nome"
-                   name="nome"
-                   class="form-control"
-                   required />
+        <!-- Numérica / Nome de Guerra -->
+        <div id="dadosOperador" class="row mb-3">
+            <div class="col-4">
+                <label class="form-label">Numérica</label>
+                <input type="text"
+                       id="numericaDOE"
+                       name="numericaDOE"
+                       class="form-control"
+                       autocomplete="off" />
+            </div>
+
+            <div class="col-8">
+                <label class="form-label">Nome de Guerra</label>
+                <input type="text"
+                       id="alcunha"
+                       name="alcunha"
+                       class="form-control"
+                       autocomplete="off" />
+            </div>
         </div>
 
         <!-- Senha -->
@@ -74,7 +85,6 @@
             <div id="senhaIgualErro" class="text-danger mt-1 d-none">
                 As senhas não conferem.
             </div>
-
         </div>
 
         <button type="submit"
@@ -94,9 +104,12 @@
     const operadores = @Html.Raw(operadoresJson);
 
     const matriculaInput = document.getElementById("matricula");
-    const nomeInput = document.getElementById("nome");
+    const numericaInput = document.getElementById("numericaDOE");
+    const alcunhaInput = document.getElementById("alcunha");
     const senhaInput = document.getElementById("senha");
     const senhaConfirmacaoInput = document.getElementById("senhaConfirmacao");
+
+    const dadosOperadorDiv = document.getElementById("dadosOperador");
 
     const erroMatricula = document.getElementById("matriculaErro");
     const erroSenhaIgual = document.getElementById("senhaIgualErro");
@@ -108,14 +121,89 @@
     const regraEspecial = document.getElementById("regraEspecial");
 
     function normalizar(valor) {
-        return valor.replace(/\D/g, "");
+        return String(valor ?? "").replace(/\D/g, "");
     }
 
-    function primeiroEUltimoNome(nomeCompleto) {
-        if (!nomeCompleto) return "";
-        const partes = nomeCompleto.trim().split(/\s+/);
-        if (partes.length === 1) return partes[0];
-        return partes[0] + " " + partes[partes.length - 1];
+    function localizarOperador() {
+        const matricula = normalizar(matriculaInput.value);
+
+        if (!matricula)
+            return null;
+
+        return operadores.find(o =>
+            normalizar(o.Matricula) === matricula
+        );
+    }
+
+    function formatarNumerica(valor) {
+        if (valor === null || valor === undefined || valor === "")
+            return "";
+
+        const numero = String(valor).trim();
+
+        // Exemplo:
+        // 7 -> 07
+        // 18 -> 18
+        if (/^\d+$/.test(numero)) {
+            return numero.padStart(2, "0");
+        }
+
+        return numero;
+    }
+
+    function preencherDadosOperador() {
+        const matricula = normalizar(matriculaInput.value);
+        const operador = localizarOperador();
+
+        erroMatricula.classList.toggle(
+            "d-none",
+            !!operador || !matricula
+        );
+
+        /*
+         * Matrícula ainda não encontrada.
+         */
+        if (!operador) {
+            numericaInput.value = "";
+            alcunhaInput.value = "";
+
+            // Mantém os campos visíveis enquanto
+            // nenhuma matrícula válida foi localizada.
+            dadosOperadorDiv.classList.remove("d-none");
+
+            validarFormulario();
+            return;
+        }
+
+        /*
+         * ADMIN
+         *
+         * Não possui Numérica nem Nome de Guerra.
+         * Portanto, limpamos e escondemos os campos.
+         */
+        if (operador.EhAdmin === true) {
+            numericaInput.value = "";
+            alcunhaInput.value = "";
+
+            dadosOperadorDiv.classList.add("d-none");
+        }
+        else {
+            /*
+             * OPERADOR
+             *
+             * Carrega os dados já existentes no banco.
+             * Os campos continuam editáveis para permitir correção.
+             */
+            numericaInput.value =
+                formatarNumerica(operador.NumericaDOE);
+
+            alcunhaInput.value =
+                operador.Alcunha ?? "";
+
+            dadosOperadorDiv.classList.remove("d-none");
+        }
+
+        validarFormulario();
     }
 
     function validarSenha(senha) {
@@ -131,7 +219,8 @@
         if (valida) {
             elemento.classList.remove("text-danger");
             elemento.classList.add("text-success");
-        } else {
+        }
+        else {
             elemento.classList.remove("text-success");
             elemento.classList.add("text-danger");
         }
@@ -139,26 +228,43 @@
 
     function validarFormulario() {
         const matricula = normalizar(matriculaInput.value);
+
+        const numerica = numericaInput.value.trim();
+        const alcunha = alcunhaInput.value.trim();
+
         const senha = senhaInput.value;
         const confirmacao = senhaConfirmacaoInput.value;
 
-        const operador = operadores.find(o => o.Matricula === matricula);
+        const operador = localizarOperador();
+
         const matriculaValida = !!operador;
 
-        erroMatricula.classList.toggle("d-none", matriculaValida || !matricula);
-
-        if (operador) {
-            nomeInput.value = primeiroEUltimoNome(operador.Nome);
-        } else {
-            nomeInput.value = "";
-        }
+        erroMatricula.classList.toggle(
+            "d-none",
+            matriculaValida || !matricula
+        );
 
         const regras = validarSenha(senha);
 
-        atualizarRegra(regraMaiuscula, regras.maiuscula);
-        atualizarRegra(regraMinuscula, regras.minuscula);
-        atualizarRegra(regraNumero, regras.numero);
-        atualizarRegra(regraEspecial, regras.especial);
+        atualizarRegra(
+            regraMaiuscula,
+            regras.maiuscula
+        );
+
+        atualizarRegra(
+            regraMinuscula,
+            regras.minuscula
+        );
+
+        atualizarRegra(
+            regraNumero,
+            regras.numero
+        );
+
+        atualizarRegra(
+            regraEspecial,
+            regras.especial
+        );
 
         const senhaForte =
             regras.maiuscula &&
@@ -166,17 +272,76 @@
             regras.numero &&
             regras.especial;
 
-        const senhaIgual = senha && confirmacao && senha === confirmacao;
+        const senhaIgual =
+            senha.length > 0 &&
+            confirmacao.length > 0 &&
+            senha === confirmacao;
 
-        erroSenhaIgual.classList.toggle("d-none", senhaIgual || !confirmacao);
+        erroSenhaIgual.classList.toggle(
+            "d-none",
+            senhaIgual || !confirmacao
+        );
 
-        botao.disabled = !(matriculaValida && senhaForte && senhaIgual);
+        /*
+         * Por padrão, os dados específicos do operador
+         * são considerados válidos.
+         *
+         * Isso permite que ADMIN não precise informar
+         * Numérica nem Nome de Guerra.
+         */
+        let dadosOperadorValidos = true;
+
+        /*
+         * Se encontrou a matrícula e NÃO é admin,
+         * então Numérica e Nome de Guerra são obrigatórios.
+         */
+        if (operador && operador.EhAdmin !== true) {
+            dadosOperadorValidos =
+                numerica.length > 0 &&
+                alcunha.length > 0;
+        }
+
+        botao.disabled = !(
+            matriculaValida &&
+            dadosOperadorValidos &&
+            senhaForte &&
+            senhaIgual
+        );
     }
 
-    matriculaInput.addEventListener("input", validarFormulario);
-    senhaInput.addEventListener("input", validarFormulario);
-    senhaConfirmacaoInput.addEventListener("input", validarFormulario);
+    /*
+     * Mudou a matrícula:
+     * localiza usuário e identifica se é Admin ou Operador.
+     */
+    matriculaInput.addEventListener(
+        "input",
+        preencherDadosOperador
+    );
+
+    /*
+     * Numérica e Nome de Guerra podem ser corrigidos
+     * manualmente quando for Operador.
+     *
+     * Ao editar, apenas revalidamos o formulário.
+     * Não buscamos novamente os dados do banco.
+     */
+    numericaInput.addEventListener(
+        "input",
+        validarFormulario
+    );
+
+    alcunhaInput.addEventListener(
+        "input",
+        validarFormulario
+    );
+
+    senhaInput.addEventListener(
+        "input",
+        validarFormulario
+    );
+
+    senhaConfirmacaoInput.addEventListener(
+        "input",
+        validarFormulario
+    );
 </script>
-
-
-
