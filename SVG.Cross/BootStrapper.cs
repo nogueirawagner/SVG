@@ -45,15 +45,13 @@ namespace SVG.IoC
       container.Register<ISessaoAppService, SessaoAppService>(Lifestyle.Scoped);
       container.Register<ISessaoService, SessaoService>(Lifestyle.Scoped);
 
-      // [REMOVER] Viatura
       container.Register<IViaturaRepository, ViaturaRepository>(Lifestyle.Scoped);
       container.Register<IViaturaAppService, ViaturaAppService>(Lifestyle.Scoped);
       container.Register<IViaturaService, ViaturaService>(Lifestyle.Scoped);
 
-      // [REMOVER] ViaturaOperacao
-      container.Register<IViaturaOperacaoRepository, ViaturaOperacaoRepository>(Lifestyle.Scoped);
-      container.Register<IViaturaOperacaoAppService, ViaturaOperacaoAppService>(Lifestyle.Scoped);
-      container.Register<IViaturaOperacaoService, ViaturaOperacaoService>(Lifestyle.Scoped);
+      container.Register<IViaturaMovimentacaoRepository, ViaturaMovimentacaoRepository>(Lifestyle.Scoped);
+      container.Register<IViaturaMovimentacaoAppService, ViaturaMovimentacaoAppService>(Lifestyle.Scoped);
+      container.Register<IViaturaMovimentacaoService, ViaturaMovimentacaoService>(Lifestyle.Scoped);
 
       container.Register<ITipoOperacaoRepository, TipoOperacaoRepository>(Lifestyle.Scoped);
       container.Register<ITipoOperacaoService, TipoOperacaoService>(Lifestyle.Scoped);

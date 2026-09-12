@@ -26,6 +26,102 @@
         </div>
     }
 
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-4">
+                    <label class="form-label">Pesquisar</label>
+                    <input type="text"
+                           id="filtroTexto"
+                           class="form-control"
+                           placeholder="Prefixo, placa, modelo ou responsável..." />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Seção</label>
+                    <select id="filtroSecao"
+                            class="form-select">
+                        <option value="">Todas</option>
+
+                        @foreach (var secao in Model
+                                                .Where(x => x.Sessao != null)
+                                                .Select(x => x.Sessao)
+                                                .GroupBy(x => x.ID)
+                                                .Select(x => x.First())
+                                                .OrderBy(x => x.Nome))
+                        {
+                            <option value="@secao.ID">
+                                @secao.Nome
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Tipo</label>
+                    <select id="filtroTipo"
+                            class="form-select">
+                        <option value="">Todos</option>
+
+                        <option value="@((int)XTipoCaracterizacaoViatura.Caracterizada)">
+                            Caracterizada
+                        </option>
+
+                        <option value="@((int)XTipoCaracterizacaoViatura.Descaracterizada)">
+                            Descaracterizada
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Situação</label>
+                    <select id="filtroSituacao"
+                            class="form-select">
+                        <option value="">Todas</option>
+
+                        <option value="@((int)XSituacaoViatura.Disponivel)">
+                            Disponível
+                        </option>
+
+                        <option value="@((int)XSituacaoViatura.EmUso)">
+                            Em uso
+                        </option>
+
+                        <option value="@((int)XSituacaoViatura.Manutencao)">
+                            Manutenção
+                        </option>
+
+                        <option value="@((int)XSituacaoViatura.Indisponivel)">
+                            Indisponível
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button"
+                            id="btnLimparFiltros"
+                            class="btn btn-outline-secondary w-100">
+                        Limpar filtros
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="mt-3">
+                <small class="text-muted">
+                    Exibindo
+                    <strong id="contadorExibidas">@Model.Count()</strong>
+                    de
+                    <strong id="contadorTotal">@Model.Count()</strong>
+                    viaturas
+                </small>
+            </div>
+
+        </div>
+    </div>
+
     <div class="card shadow-sm">
         <div class="card-body">
 
@@ -47,11 +143,29 @@
                         </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody id="tbodyViaturas">
 
                         @foreach (var viatura in Model)
                         {
-                            <tr>
+                            var responsavel = "";
+
+                            if (viatura.Operador != null)
+                            {
+                                responsavel =
+                                $"{viatura.Operador.NumericaDOE} {viatura.Operador.Alcunha}";
+                            }
+
+                            var textoPesquisa =
+                            $"{viatura.Prefixo} " +
+                            $"{viatura.Placa} " +
+                            $"{viatura.Modelo} " +
+                            $"{responsavel}";
+
+                            <tr class="linha-viatura"
+                                data-texto="@textoPesquisa.ToLower()"
+                                data-secao="@viatura.SessaoID"
+                                data-tipo="@((int)viatura.TipoCaracterizacao)"
+                                data-situacao="@((int)viatura.Situacao)">
 
                                 <td>
                                     <strong>@viatura.Prefixo</strong>
@@ -66,7 +180,20 @@
                                 </td>
 
                                 <td>
-                                    @viatura.TipoCaracterizacao
+                                    @if (viatura.TipoCaracterizacao ==
+                                                                    XTipoCaracterizacaoViatura.Caracterizada)
+                                    {
+                                        <span>Caracterizada</span>
+                                    }
+                                    else if (viatura.TipoCaracterizacao ==
+                                    XTipoCaracterizacaoViatura.Descaracterizada)
+                                    {
+                                        <span>Descaracterizada</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@viatura.TipoCaracterizacao</span>
+                                    }
                                 </td>
 
                                 <td>
@@ -95,19 +222,22 @@
 
                                 <td>
 
-                                    @if (viatura.Situacao == XSituacaoViatura.Disponivel)
+                                    @if (viatura.Situacao ==
+                                                                    XSituacaoViatura.Disponivel)
                                     {
                                         <span class="badge bg-success">
                                             Disponível
                                         </span>
                                     }
-                                    else if (viatura.Situacao == XSituacaoViatura.EmUso)
+                                    else if (viatura.Situacao ==
+                                    XSituacaoViatura.EmUso)
                                     {
                                         <span class="badge bg-primary">
                                             Em uso
                                         </span>
                                     }
-                                    else if (viatura.Situacao == XSituacaoViatura.Manutencao)
+                                    else if (viatura.Situacao ==
+                                    XSituacaoViatura.Manutencao)
                                     {
                                         <span class="badge bg-warning text-dark">
                                             Manutenção
@@ -124,9 +254,8 @@
 
                                 <td class="text-end">
 
-                                    @if (
-                                        viatura.Situacao == XSituacaoViatura.Disponivel ||
-                                        viatura.Situacao == XSituacaoViatura.EmUso)
+                                    @if (viatura.Situacao ==
+                                                                    XSituacaoViatura.Disponivel)
                                     {
                                         <a asp-action="Retirar"
                                            asp-route-pViaturaID="@viatura.ID"
@@ -135,7 +264,8 @@
                                         </a>
                                     }
 
-                                    @if (viatura.Situacao == XSituacaoViatura.EmUso)
+                                    @if (viatura.Situacao ==
+                                                                    XSituacaoViatura.EmUso)
                                     {
                                         <a asp-action="Devolver"
                                            asp-route-pViaturaID="@viatura.ID"
@@ -155,6 +285,14 @@
                             </tr>
                         }
 
+                        <tr id="linhaSemResultados"
+                            style="display:none;">
+                            <td colspan="9"
+                                class="text-center text-muted py-4">
+                                Nenhuma viatura encontrada para os filtros informados.
+                            </td>
+                        </tr>
+
                     </tbody>
 
                 </table>
@@ -165,3 +303,156 @@
     </div>
 
 </div>
+
+@section Scripts {
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const filtroTexto =
+                document.getElementById('filtroTexto');
+
+            const filtroSecao =
+                document.getElementById('filtroSecao');
+
+            const filtroTipo =
+                document.getElementById('filtroTipo');
+
+            const filtroSituacao =
+                document.getElementById('filtroSituacao');
+
+            const btnLimparFiltros =
+                document.getElementById('btnLimparFiltros');
+
+            const contadorExibidas =
+                document.getElementById('contadorExibidas');
+
+            const linhaSemResultados =
+                document.getElementById('linhaSemResultados');
+
+            const linhas =
+                Array.from(
+                    document.querySelectorAll('.linha-viatura')
+                );
+
+            function normalizarTexto(texto) {
+
+                return (texto || '')
+                    .toString()
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '');
+            }
+
+            function aplicarFiltros() {
+
+                const texto =
+                    normalizarTexto(filtroTexto.value);
+
+                const secao =
+                    filtroSecao.value;
+
+                const tipo =
+                    filtroTipo.value;
+
+                const situacao =
+                    filtroSituacao.value;
+
+                let exibidas = 0;
+
+                linhas.forEach(function (linha) {
+
+                    const textoLinha =
+                        normalizarTexto(
+                            linha.dataset.texto
+                        );
+
+                    const secaoLinha =
+                        linha.dataset.secao || '';
+
+                    const tipoLinha =
+                        linha.dataset.tipo || '';
+
+                    const situacaoLinha =
+                        linha.dataset.situacao || '';
+
+                    const matchTexto =
+                        !texto ||
+                        textoLinha.includes(texto);
+
+                    const matchSecao =
+                        !secao ||
+                        secao === secaoLinha;
+
+                    const matchTipo =
+                        !tipo ||
+                        tipo === tipoLinha;
+
+                    const matchSituacao =
+                        !situacao ||
+                        situacao === situacaoLinha;
+
+                    const exibir =
+                        matchTexto &&
+                        matchSecao &&
+                        matchTipo &&
+                        matchSituacao;
+
+                    linha.style.display =
+                        exibir ? '' : 'none';
+
+                    if (exibir) {
+                        exibidas++;
+                    }
+                });
+
+                contadorExibidas.textContent =
+                    exibidas;
+
+                linhaSemResultados.style.display =
+                    exibidas === 0
+                        ? ''
+                        : 'none';
+            }
+
+            filtroTexto.addEventListener(
+                'input',
+                aplicarFiltros
+            );
+
+            filtroSecao.addEventListener(
+                'change',
+                aplicarFiltros
+            );
+
+            filtroTipo.addEventListener(
+                'change',
+                aplicarFiltros
+            );
+
+            filtroSituacao.addEventListener(
+                'change',
+                aplicarFiltros
+            );
+
+            btnLimparFiltros.addEventListener(
+                'click',
+                function () {
+
+                    filtroTexto.value = '';
+                    filtroSecao.value = '';
+                    filtroTipo.value = '';
+                    filtroSituacao.value = '';
+
+                    aplicarFiltros();
+
+                    filtroTexto.focus();
+                }
+            );
+
+            aplicarFiltros();
+        });
+
+    </script>
+}

@@ -28,6 +28,6 @@ namespace SVG.Domain.Entities
 
     public XSituacaoViatura Situacao { get; set; }
 
-    public virtual ICollection<XViaturaMovimentacao> Movimentacoes { get; set; }
+    public virtual ICollection<ViaturaMovimentacao> Movimentacoes { get; set; }
   }
 }
