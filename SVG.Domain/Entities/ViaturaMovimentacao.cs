@@ -17,7 +17,11 @@ namespace SVG.Domain.Entities
     public int OperadorID { get; set; }
     public virtual Operador Operador { get; set; }
 
+    public DateTime DataHora { get; set; }
+
     public XFinalidadeViatura Finalidade { get; set; }
+
+    public XSituacaoViatura Situacao { get; set; }  
 
     public DateTime DataHoraRetirada { get; set; }
     public DateTime? DataHoraDevolucao { get; set; }

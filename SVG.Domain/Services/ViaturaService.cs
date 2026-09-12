@@ -13,5 +13,15 @@ namespace SVG.Domain.Services
     {
       _viaturaRepository = viaturaRepository;
     }
+
+    public IEnumerable<Viatura> PegarDisponiveis()
+    {
+      return _viaturaRepository.PegarDisponiveis();
+    }
+
+    public IEnumerable<Viatura> PegarPorSecao(int pSecaoID)
+    {
+      return _viaturaRepository.PegarPorSecao(pSecaoID);
+    }
   }
 }

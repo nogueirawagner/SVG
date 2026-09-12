@@ -1,0 +1,116 @@
+﻿@using SVG.Domain.Entities
+@using SVG.Domain.TiposEstruturados.Enums
+
+@model IEnumerable<ViaturaMovimentacao>
+
+@{
+    Layout = "_LayoutOperador";
+    ViewData["Title"] = "Histórico da Viatura";
+
+    var viatura = (Viatura)ViewBag.Viatura;
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h3 class="mb-0">
+                Histórico - @viatura.Prefixo
+            </h3>
+
+            <small class="text-muted">
+                @viatura.Modelo | @viatura.Placa
+            </small>
+
+        </div>
+
+        <a asp-action="Listar"
+           class="btn btn-secondary">
+            Voltar
+        </a>
+
+    </div>
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead>
+
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Situação</th>
+                            <th>Operador</th>
+                            <th>Finalidade</th>
+                            <th>Observação</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var movimentacao in Model)
+                        {
+                            <tr>
+
+                                <td>
+                                    @movimentacao.DataHora.ToString("dd/MM/yyyy HH:mm")
+                                </td>
+
+                                <td>
+
+                                    @if (movimentacao.Situacao == XSituacaoViatura.EmUso)
+                                    {
+                                        <span class="badge bg-primary">
+                                            Retirada
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">
+                                            Devolução
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    @if (movimentacao.Operador != null)
+                                    {
+                                        <span>
+                                            @movimentacao.Operador.NumericaDOE -
+                                            @movimentacao.Operador.Alcunha
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+                                    @movimentacao.Finalidade
+                                </td>
+
+                                <td>
+                                    @movimentacao.Observacao
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

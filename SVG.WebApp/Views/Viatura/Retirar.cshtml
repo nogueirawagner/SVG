@@ -1,0 +1,136 @@
+﻿@model SVG.WebApp.Models.ViaturaRetiradaViewModel
+
+@{
+    Layout = "_LayoutOperador";
+    ViewData["Title"] = "Retirar Viatura";
+}
+
+<div class="container mt-4" style="max-width: 700px;">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h5 class="mb-0">
+                Retirada de Viatura
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div asp-validation-summary="All"
+                 class="text-danger mb-3">
+            </div>
+
+            <div class="mb-4">
+
+                <h4>
+                    @Model.Prefixo
+                </h4>
+
+                <div class="text-muted">
+                    @Model.Modelo
+                    |
+                    @Model.Placa
+                </div>
+
+                <div class="text-muted">
+                    Seção: @Model.Secao
+                </div>
+
+                <div class="text-muted">
+                    KM atual:
+                    @Model.QuilometragemAtual.ToString("N0")
+                </div>
+
+            </div>
+
+            <form asp-action="Retirar"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="ViaturaID"
+                       type="hidden" />
+
+                <input asp-for="Prefixo"
+                       type="hidden" />
+
+                <input asp-for="Placa"
+                       type="hidden" />
+
+                <input asp-for="Modelo"
+                       type="hidden" />
+
+                <input asp-for="Secao"
+                       type="hidden" />
+
+                <input asp-for="QuilometragemAtual"
+                       type="hidden" />
+
+                <div class="mb-3">
+
+                    <label asp-for="OperadorID"
+                           class="form-label">
+                        Operador
+                    </label>
+
+                    <select asp-for="OperadorID"
+                            asp-items="Model.Operadores"
+                            class="form-select">
+                    </select>
+
+                    <div class="form-text">
+                        O operador logado é selecionado automaticamente.
+                    </div>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label asp-for="Finalidade"
+                           class="form-label">
+                        Finalidade
+                    </label>
+
+                    <select asp-for="Finalidade"
+                            asp-items="Html.GetEnumSelectList<SVG.Domain.TiposEstruturados.Enums.XFinalidadeViatura>()"
+                            class="form-select">
+                    </select>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label asp-for="Observacao"
+                           class="form-label">
+                        Observação
+                    </label>
+
+                    <textarea asp-for="Observacao"
+                              class="form-control"
+                              rows="3">
+                    </textarea>
+
+                </div>
+
+                <div class="d-flex justify-content-between">
+
+                    <a asp-action="Listar"
+                       class="btn btn-secondary">
+                        Voltar
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Confirmar Retirada
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

@@ -39,6 +39,7 @@ namespace SVG.Infra.Context.SQLServer
     public DbSet<Usuario> Usuario { get; set; }
     public DbSet<Role> Role { get; set; }
     public DbSet<UsuarioRole> UsuarioRole { get; set; }
+    public DbSet<ViaturaMovimentacao> ViaturaMovimentacao { get; set; }
 
     #endregion
 

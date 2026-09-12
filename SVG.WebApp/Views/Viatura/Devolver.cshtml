@@ -1,0 +1,89 @@
+﻿@model SVG.WebApp.Models.ViaturaDevolucaoViewModel
+
+@{
+    Layout = "_LayoutOperador";
+    ViewData["Title"] = "Devolver Viatura";
+}
+
+<div class="container mt-4" style="max-width: 650px;">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h5 class="mb-0">
+                Devolução de Viatura
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div asp-validation-summary="All"
+                 class="text-danger mb-3">
+            </div>
+
+            <div class="mb-4">
+
+                <h4>
+                    @Model.Prefixo
+                </h4>
+
+                <div class="text-muted">
+                    @Model.Modelo
+                    |
+                    @Model.Placa
+                </div>
+
+            </div>
+
+            <form asp-action="Devolver"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="ViaturaID"
+                       type="hidden" />
+
+                <input asp-for="Prefixo"
+                       type="hidden" />
+
+                <input asp-for="Placa"
+                       type="hidden" />
+
+                <input asp-for="Modelo"
+                       type="hidden" />
+
+                <div class="mb-3">
+
+                    <label asp-for="OperadorID"
+                           class="form-label">
+                        Operador responsável pela devolução
+                    </label>
+
+                    <select asp-for="OperadorID"
+                            asp-items="Model.Operadores"
+                            class="form-select">
+                    </select>
+
+                </div>
+
+                <div class="d-flex justify-content-between">
+
+                    <a asp-action="Listar"
+                       class="btn btn-secondary">
+                        Voltar
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-success">
+                        Confirmar Devolução
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

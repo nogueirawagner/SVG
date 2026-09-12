@@ -4,5 +4,8 @@ namespace SVG.App.Interface
 {
   public interface IViaturaAppService : IAppServiceBase<Viatura>
   {
+    IEnumerable<Viatura> PegarPorSecao(int pSecaoID);
+
+    IEnumerable<Viatura> PegarDisponiveis();
   }
 }

@@ -1,0 +1,167 @@
+﻿@using SVG.Domain.Entities
+@using SVG.Domain.TiposEstruturados.Enums
+
+@model IEnumerable<Viatura>
+
+@{
+    Layout = "_LayoutOperador";
+    ViewData["Title"] = "Controle de Viaturas";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-0">Controle de Viaturas</h3>
+            <small class="text-muted">
+                Viaturas disponíveis e em utilização
+            </small>
+        </div>
+    </div>
+
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Sucesso"]
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Prefixo</th>
+                            <th>Placa</th>
+                            <th>Modelo</th>
+                            <th>Tipo</th>
+                            <th>Seção</th>
+                            <th>Responsável</th>
+                            <th>KM</th>
+                            <th>Situação</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var viatura in Model)
+                        {
+                            <tr>
+
+                                <td>
+                                    <strong>@viatura.Prefixo</strong>
+                                </td>
+
+                                <td>
+                                    @viatura.Placa
+                                </td>
+
+                                <td>
+                                    @viatura.Modelo
+                                </td>
+
+                                <td>
+                                    @viatura.TipoCaracterizacao
+                                </td>
+
+                                <td>
+                                    @viatura.Sessao?.Nome
+                                </td>
+
+                                <td>
+                                    @if (viatura.Operador != null)
+                                    {
+                                        <span>
+                                            @viatura.Operador.NumericaDOE -
+                                            @viatura.Operador.Alcunha
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            Não definido
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @viatura.QuilometragemAtual.ToString("N0")
+                                </td>
+
+                                <td>
+
+                                    @if (viatura.Situacao == XSituacaoViatura.Disponivel)
+                                    {
+                                        <span class="badge bg-success">
+                                            Disponível
+                                        </span>
+                                    }
+                                    else if (viatura.Situacao == XSituacaoViatura.EmUso)
+                                    {
+                                        <span class="badge bg-primary">
+                                            Em uso
+                                        </span>
+                                    }
+                                    else if (viatura.Situacao == XSituacaoViatura.Manutencao)
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            Manutenção
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            Indisponível
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td class="text-end">
+
+                                    @if (
+                                        viatura.Situacao == XSituacaoViatura.Disponivel ||
+                                        viatura.Situacao == XSituacaoViatura.EmUso)
+                                    {
+                                        <a asp-action="Retirar"
+                                           asp-route-pViaturaID="@viatura.ID"
+                                           class="btn btn-sm btn-primary">
+                                            Retirar
+                                        </a>
+                                    }
+
+                                    @if (viatura.Situacao == XSituacaoViatura.EmUso)
+                                    {
+                                        <a asp-action="Devolver"
+                                           asp-route-pViaturaID="@viatura.ID"
+                                           class="btn btn-sm btn-success">
+                                            Devolver
+                                        </a>
+                                    }
+
+                                    <a asp-action="ExibirHistorico"
+                                       asp-route-pViaturaID="@viatura.ID"
+                                       class="btn btn-sm btn-outline-secondary">
+                                        Histórico
+                                    </a>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>

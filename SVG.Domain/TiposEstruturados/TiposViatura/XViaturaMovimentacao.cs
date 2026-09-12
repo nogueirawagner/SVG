@@ -1,11 +1,7 @@
 ﻿using SVG.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SVG.Domain.TiposEstruturados.Enums;
 
-namespace SVG.Domain.TiposEstruturados.Viatura
+namespace SVG.Domain.TiposEstruturados.TiposViatura
 {
   public class XViaturaMovimentacao
   {
@@ -17,7 +13,7 @@ namespace SVG.Domain.TiposEstruturados.Viatura
     public int OperadorID { get; set; }
     public virtual Operador Operador { get; set; }
 
-    public FinalidadeViatura Finalidade { get; set; }
+    public XFinalidadeViatura Finalidade { get; set; }
 
     public DateTime DataHoraRetirada { get; set; }
     public DateTime? DataHoraDevolucao { get; set; }
