@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SVG.App.Interface;
+using SVG.App.Services;
 using SVG.Domain.Entities;
 using SVG.WebApp.Models;
 using System.Security.Claims;
@@ -14,22 +15,25 @@ namespace SVG.WebApp.Controllers
     private readonly IViaturaAppService _viaturaAppService;
     private readonly IViaturaMovimentacaoAppService _viaturaMovimentacaoAppService;
     private readonly IOperadorAppService _operadorAppService;
+    private readonly ISessaoAppService _sessaoAppService;
 
     public ViaturaController(
       IViaturaAppService pViaturaAppService,
       IViaturaMovimentacaoAppService pViaturaMovimentacaoAppService,
-      IOperadorAppService pOperadorAppService)
+      IOperadorAppService pOperadorAppService,
+      ISessaoAppService sessaoAppService)
     {
       _viaturaAppService = pViaturaAppService;
       _viaturaMovimentacaoAppService = pViaturaMovimentacaoAppService;
       _operadorAppService = pOperadorAppService;
+      _sessaoAppService = sessaoAppService;
     }
 
     // GET: Viatura/Listar
     [HttpGet]
     public IActionResult Listar()
     {
-      var viaturas = _viaturaAppService.GetAll();
+      var viaturas = _viaturaAppService.PegarViaturas();
 
       return View(viaturas);
     }
@@ -38,12 +42,17 @@ namespace SVG.WebApp.Controllers
     [HttpGet]
     public IActionResult Retirar(int pViaturaID)
     {
-      var viatura = _viaturaAppService.GetById(pViaturaID);
+      var viaturas = _viaturaAppService.PegarViaturas();
+      var viatura = viaturas.FirstOrDefault(s => s.ID == pViaturaID);
 
       if (viatura == null)
         return NotFound();
 
       var operadorIDLogado = PegarOperadorIDLogado();
+
+      var operadorLogado = operadorIDLogado > 0
+        ? _operadorAppService.GetById(operadorIDLogado)
+        : null;
 
       var model = new ViaturaRetiradaViewModel
       {
@@ -52,12 +61,45 @@ namespace SVG.WebApp.Controllers
         Placa = viatura.Placa,
         Modelo = viatura.Modelo,
         Secao = viatura.Sessao?.Nome,
-        QuilometragemAtual = viatura.QuilometragemAtual,
-        OperadorID = operadorIDLogado,
-        Operadores = MontarOperadores()
+        KmAtual = viatura.KmAtual,
+
+        OperadorID = operadorLogado?.ID ?? 0,
+
+        OperadorNome = operadorLogado == null
+          ? string.Empty
+          : MontarNomeOperador(operadorLogado)
       };
 
+      PopularOperadoresPesquisa();
+
       return View(model);
+    }
+
+    private void PopularOperadoresPesquisa()
+    {
+      var operadores = _operadorAppService
+        .GetAll()
+        .OrderBy(x => x.Nome)
+        .Select(x => new
+        {
+          id = x.ID,
+          nome = x.Nome,
+          alcunha = x.Alcunha,
+          numerica = x.NumericaDOE,
+          descricao = MontarNomeOperador(x)
+        })
+        .ToList();
+
+      ViewBag.OperadoresJson =
+        System.Text.Json.JsonSerializer.Serialize(operadores);
+    }
+
+    private string MontarNomeOperador(Operador pOperador)
+    {
+      if (string.IsNullOrWhiteSpace(pOperador.Alcunha))
+        return pOperador.Nome;
+
+      return $"{pOperador.NumericaDOE:00} - {pOperador.Alcunha}";
     }
 
     // POST: Viatura/Retirar
@@ -65,9 +107,16 @@ namespace SVG.WebApp.Controllers
     [ValidateAntiForgeryToken]
     public IActionResult Retirar(ViaturaRetiradaViewModel pModel)
     {
+      if (pModel.OperadorID <= 0)
+      {
+        ModelState.AddModelError(
+          nameof(pModel.OperadorID),
+          "Selecione um operador.");
+      }
+
       if (!ModelState.IsValid)
       {
-        pModel.Operadores = MontarOperadores();
+        PopularOperadoresPesquisa();
 
         return View(pModel);
       }
@@ -93,7 +142,7 @@ namespace SVG.WebApp.Controllers
       {
         ModelState.AddModelError(string.Empty, ex.Message);
 
-        pModel.Operadores = MontarOperadores();
+        PopularOperadoresPesquisa();
 
         return View(pModel);
       }
@@ -103,12 +152,17 @@ namespace SVG.WebApp.Controllers
     [HttpGet]
     public IActionResult Devolver(int pViaturaID)
     {
-      var viatura = _viaturaAppService.GetById(pViaturaID);
+      var viaturas = _viaturaAppService.PegarViaturas();
+      var viatura = viaturas.FirstOrDefault(s => s.ID == pViaturaID);
 
       if (viatura == null)
         return NotFound();
 
       var operadorIDLogado = PegarOperadorIDLogado();
+
+      var operadorLogado = operadorIDLogado > 0
+        ? _operadorAppService.GetById(operadorIDLogado)
+        : null;
 
       var model = new ViaturaDevolucaoViewModel
       {
@@ -116,9 +170,15 @@ namespace SVG.WebApp.Controllers
         Prefixo = viatura.Prefixo,
         Placa = viatura.Placa,
         Modelo = viatura.Modelo,
-        OperadorID = operadorIDLogado,
-        Operadores = MontarOperadores()
+
+        OperadorID = operadorLogado?.ID ?? 0,
+
+        OperadorNome = operadorLogado == null
+          ? string.Empty
+          : MontarNomeOperador(operadorLogado)
       };
+
+      PopularOperadoresPesquisa();
 
       return View(model);
     }
@@ -128,9 +188,35 @@ namespace SVG.WebApp.Controllers
     [ValidateAntiForgeryToken]
     public IActionResult Devolver(ViaturaDevolucaoViewModel pModel)
     {
+      if (pModel.OperadorID <= 0)
+      {
+        ModelState.AddModelError(
+          nameof(pModel.OperadorID),
+          "Selecione um operador.");
+      }
+
+      // Se informou que abasteceu, o KM do abastecimento é obrigatório
+      if (pModel.Abastecimento && !pModel.KmAbastecimento.HasValue)
+      {
+        ModelState.AddModelError(
+          nameof(pModel.KmAbastecimento),
+          "Informe o KM em que a viatura foi abastecida.");
+      }
+
+      // O KM do abastecimento não pode ser maior que o KM da devolução
+      if (pModel.Abastecimento &&
+          pModel.KmAbastecimento.HasValue &&
+          pModel.KmFinal.HasValue &&
+          pModel.KmAbastecimento.Value > pModel.KmFinal.Value)
+      {
+        ModelState.AddModelError(
+          nameof(pModel.KmAbastecimento),
+          "O KM do abastecimento não pode ser maior que o KM da devolução.");
+      }
+
       if (!ModelState.IsValid)
       {
-        pModel.Operadores = MontarOperadores();
+        PopularOperadoresPesquisa();
 
         return View(pModel);
       }
@@ -139,7 +225,10 @@ namespace SVG.WebApp.Controllers
       {
         _viaturaMovimentacaoAppService.DevolverViatura(
           pModel.ViaturaID,
-          pModel.OperadorID);
+          pModel.OperadorID,
+          pModel.KmFinal.Value,
+          pModel.Abastecimento,
+          pModel.KmAbastecimento);
 
         TempData["Sucesso"] = "Viatura devolvida com sucesso.";
 
@@ -149,7 +238,7 @@ namespace SVG.WebApp.Controllers
       {
         ModelState.AddModelError(string.Empty, ex.Message);
 
-        pModel.Operadores = MontarOperadores();
+        PopularOperadoresPesquisa();
 
         return View(pModel);
       }

@@ -93,7 +93,9 @@ namespace SVG.Domain.Services
        */
       pMovimentacao.OperadorID = pOperadorID;
       pMovimentacao.DataHora = dataHoraMovimentacao;
+      pMovimentacao.DataHoraRetirada = dataHoraMovimentacao;
       pMovimentacao.Situacao = XSituacaoViatura.EmUso;
+      pMovimentacao.KmInicial = viatura.KmAtual;
 
       _viaturaMovimentacaoRepository.Add(pMovimentacao);
 
@@ -110,7 +112,10 @@ namespace SVG.Domain.Services
 
     public void DevolverViatura(
       int pViaturaID,
-      int pOperadorID)
+      int pOperadorID,
+      int pKmFinal,
+      bool pAbastecimento,
+      int? pKmAbastecimento)
     {
       var viatura = _viaturaRepository
         .GetById(pViaturaID);
@@ -130,18 +135,21 @@ namespace SVG.Domain.Services
         throw new Exception(
           "A viatura não possui uma retirada em aberto.");
 
-      var devolucao = new ViaturaMovimentacao
-      {
-        ViaturaID = pViaturaID,
-        OperadorID = pOperadorID,
-        Finalidade = ultimaMovimentacao.Finalidade,
-        DataHora = DateTime.Now,
-        Situacao = XSituacaoViatura.Disponivel
-      };
+      ultimaMovimentacao.KmFinal = pKmFinal;
+      ultimaMovimentacao.DataHoraDevolucao = DateTime.Now;
+      ultimaMovimentacao.Situacao = XSituacaoViatura.Disponivel;
+      ultimaMovimentacao.DataHora = DateTime.Now;
+      ultimaMovimentacao.OperadorID = pOperadorID;
+      ultimaMovimentacao.Abastecimento = pAbastecimento;
+      ultimaMovimentacao.KmAbastecimento = pKmAbastecimento;
 
-      _viaturaMovimentacaoRepository.Add(devolucao);
+      _viaturaMovimentacaoRepository.Update(ultimaMovimentacao);
 
       viatura.Situacao = XSituacaoViatura.Disponivel;
+      viatura.KmAtual = ultimaMovimentacao.KmFinal.Value;
+
+      if (pAbastecimento && pKmAbastecimento.HasValue)
+        viatura.KmUltimoAbastecimento = pKmAbastecimento;
 
       _viaturaRepository.Update(viatura);
     }

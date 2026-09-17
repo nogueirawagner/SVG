@@ -23,5 +23,10 @@ namespace SVG.App.Services
     {
       return _viaturaService.PegarPorSecao(pSecaoID);
     }
+
+    public IEnumerable<Viatura> PegarViaturas()
+    {
+      return _viaturaService.PegarViaturas();
+    }
   }
 }

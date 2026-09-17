@@ -7,5 +7,7 @@ namespace SVG.Domain.Interfaces.Repositories
     IEnumerable<Viatura> PegarPorSecao(int pSecaoID);
 
     IEnumerable<Viatura> PegarDisponiveis();
+
+    IEnumerable<Viatura> PegarViaturas();
   }
 }

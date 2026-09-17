@@ -6,6 +6,8 @@
 @{
     Layout = "_LayoutOperador";
     ViewData["Title"] = "Controle de Viaturas";
+
+    var sessoes = (IEnumerable<Sessao>)ViewBag.Sessoes;
 }
 
 <div class="container-fluid mt-4">
@@ -137,9 +139,10 @@
                             <th>Tipo</th>
                             <th>Seção</th>
                             <th>Responsável</th>
-                            <th>KM</th>
+                            <th>KM Atual</th>
+                            <th>KM Ult. Abast.</th>
                             <th>Situação</th>
-                            <th class="text-end">Ações</th>
+                            <th class="text-center">Ações</th>
                         </tr>
                     </thead>
 
@@ -217,13 +220,20 @@
                                 </td>
 
                                 <td>
-                                    @viatura.QuilometragemAtual.ToString("N0")
+                                    @viatura.KmAtual.ToString("N0")
+                                </td>
+
+                                <td>
+                                    @if (viatura.KmUltimoAbastecimento != null 
+                                        && viatura.KmUltimoAbastecimento > 0)
+                                    {
+                                      @viatura.KmUltimoAbastecimento.Value.ToString("N0")
+                                    }
                                 </td>
 
                                 <td>
 
-                                    @if (viatura.Situacao ==
-                                                                    XSituacaoViatura.Disponivel)
+                                    @if (viatura.Situacao == XSituacaoViatura.Disponivel)
                                     {
                                         <span class="badge bg-success">
                                             Disponível

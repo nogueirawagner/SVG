@@ -15,6 +15,9 @@ namespace SVG.App.Interface
 
     void DevolverViatura(
       int pViaturaID,
-      int pOperadorID);
+      int pOperadorID,
+      int pKmFinal,
+      bool pAbastecimento,
+      int? pKmAbastecimento);
   }
 }

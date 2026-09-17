@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using SVG.Domain.TiposEstruturados.Enums;
 
 namespace SVG.WebApp.Models
 {
@@ -6,14 +6,20 @@ namespace SVG.WebApp.Models
   {
     public int ViaturaID { get; set; }
 
-    public string Prefixo { get; set; }
+    public string? Prefixo { get; set; }
 
-    public string Placa { get; set; }
+    public string? Placa { get; set; }
 
-    public string Modelo { get; set; }
+    public string? Modelo { get; set; }
 
     public int OperadorID { get; set; }
 
-    public IEnumerable<SelectListItem> Operadores { get; set; }
+    public string? OperadorNome { get; set; }
+
+    public int? KmFinal { get; set; }
+
+    public bool Abastecimento { get; set; }
+
+    public int? KmAbastecimento { get; set; }
   }
 }

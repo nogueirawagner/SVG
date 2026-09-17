@@ -17,6 +17,14 @@ namespace SVG.Infra.Repositories
       _db = dbContext;
     }
 
+    public IEnumerable<Viatura> PegarViaturas()
+    {
+      return _db.Viatura
+            .Include(x => x.Sessao)
+            .Include(x => x.Operador)
+            .ToList();
+    }
+
     public IEnumerable<Viatura> PegarDisponiveis()
     {
       return _db.Viatura

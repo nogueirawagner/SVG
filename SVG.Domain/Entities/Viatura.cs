@@ -10,6 +10,7 @@ namespace SVG.Domain.Entities
 
     public string Prefixo { get; set; }
     public string Placa { get; set; }
+    public string PlacaOficial { get; set; }
     public string Marca { get; set; }
     public string Modelo { get; set; }
     public int? Ano { get; set; }
@@ -24,7 +25,12 @@ namespace SVG.Domain.Entities
 
     public XTipoCaracterizacaoViatura TipoCaracterizacao { get; set; }
 
-    public int QuilometragemAtual { get; set; }
+    public int KmAtual { get; set; }
+    public int? KmUltimoAbastecimento { get; set; }
+    public int? KmProximaRevisao  { get; set; }
+
+    public string Chassi { get; set; }
+
 
     public XSituacaoViatura Situacao { get; set; }
 

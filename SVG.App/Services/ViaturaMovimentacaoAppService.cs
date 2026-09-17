@@ -38,10 +38,13 @@ namespace SVG.App.Services
 
     public void DevolverViatura(
       int pViaturaID,
-      int pOperadorID)
+      int pOperadorID,
+      int pKmFinal,
+      bool pAbastecimento,
+      int? pKmAbastecimento)
     {
       _viaturaMovimentacaoService
-        .DevolverViatura(pViaturaID, pOperadorID);
+        .DevolverViatura(pViaturaID, pOperadorID, pKmFinal, pAbastecimento, pKmAbastecimento);
     }
   }
 }

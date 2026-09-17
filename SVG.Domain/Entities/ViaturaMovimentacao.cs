@@ -28,6 +28,9 @@ namespace SVG.Domain.Entities
 
     public int KmInicial { get; set; }
     public int? KmFinal { get; set; }
+    public int? KmAbastecimento { get; set; }
+    public bool Abastecimento { get; set; }
+
 
     public string Observacao { get; set; }
   }

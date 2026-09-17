@@ -7,5 +7,6 @@ namespace SVG.App.Interface
     IEnumerable<Viatura> PegarPorSecao(int pSecaoID);
 
     IEnumerable<Viatura> PegarDisponiveis();
+    IEnumerable<Viatura> PegarViaturas();
   }
 }

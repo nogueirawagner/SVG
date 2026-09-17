@@ -9,7 +9,7 @@ namespace SVG.Infra.Context.SQLServer
 {
   public class SQLServerContext : DbContext, ISQLServerContext
   {
-    
+
 #if DEBUG
     static string connectionName = "ConnectionLocal";
 #else
@@ -58,7 +58,7 @@ namespace SVG.Infra.Context.SQLServer
           .Configure(p => p.HasColumnType("varchar"));
 
       modelBuilder.Properties<string>()
-          .Configure(p => p.HasMaxLength(500));
+          .Configure(p => p.HasMaxLength(100));
 
       modelBuilder.Entity<Usuario>()
         .HasOptional(u => u.Operador)      // Usuario pode NÃO ter Operador
@@ -68,6 +68,32 @@ namespace SVG.Infra.Context.SQLServer
       modelBuilder.Entity<CandidatoSVGOperacao>()
       .HasIndex(c => new { c.OperadorID, c.OperacaoID })
       .IsUnique();
+
+      modelBuilder.Entity<Viatura>()
+        .Property(v => v.PlacaOficial)
+        .HasMaxLength(10)
+        .IsOptional();
+
+      modelBuilder.Entity<Operacao>()
+      .Property(x => x.Objeto)
+      .HasMaxLength(500);
+
+      modelBuilder.Entity<Operacao>()
+      .Property(x => x.OrdemServico)
+      .HasMaxLength(500);
+
+      modelBuilder.Entity<TipoOperacao>()
+      .Property(x => x.Nome)
+      .HasMaxLength(500);
+
+      modelBuilder.Entity<Viatura>()
+        .Property(v => v.Placa)
+        .HasMaxLength(10)
+        .IsOptional();
+
+      modelBuilder.Entity<Viatura>()
+        .Property(v => v.Chassi)
+        .HasMaxLength(17);
     }
   }
 }

@@ -3,6 +3,8 @@
 @{
     Layout = "_LayoutOperador";
     ViewData["Title"] = "Devolver Viatura";
+
+    var operadoresJson = (string)(ViewBag.OperadoresJson ?? "[]");
 }
 
 <div class="container mt-4" style="max-width: 650px;">
@@ -36,7 +38,8 @@
             </div>
 
             <form asp-action="Devolver"
-                  method="post">
+                  method="post"
+                  id="formDevolucao">
 
                 @Html.AntiForgeryToken()
 
@@ -52,17 +55,106 @@
                 <input asp-for="Modelo"
                        type="hidden" />
 
+                <input asp-for="OperadorID"
+                       type="hidden"
+                       id="OperadorID" />
+
+                <input asp-for="OperadorNome"
+                       type="hidden"
+                       id="OperadorNome" />
+
+                <!-- OPERADOR -->
                 <div class="mb-3">
 
-                    <label asp-for="OperadorID"
-                           class="form-label">
+                    <label class="form-label">
                         Operador responsável pela devolução
                     </label>
 
-                    <select asp-for="OperadorID"
-                            asp-items="Model.Operadores"
-                            class="form-select">
-                    </select>
+                    <input type="text"
+                           id="pesquisaOperador"
+                           class="form-control"
+                           value="@Model.OperadorNome"
+                           placeholder="Digite o nome, alcunha ou numérica..."
+                           autocomplete="off" />
+
+                    <div id="resultadoOperadores"
+                         class="list-group mt-1"
+                         style="display:none; max-height:250px; overflow-y:auto;">
+                    </div>
+
+                    <span asp-validation-for="OperadorID"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        O operador logado é selecionado automaticamente.
+                        Para alterar, pesquise outro operador.
+                    </div>
+
+                </div>
+
+                <!-- KM FINAL -->
+                <div class="mb-3">
+
+                    <label asp-for="KmFinal"
+                           class="form-label">
+                        KM da devolução
+                    </label>
+
+                    <input asp-for="KmFinal"
+                           type="number"
+                           min="0"
+                           class="form-control"
+                           placeholder="Informe o KM atual da viatura" />
+
+                    <span asp-validation-for="KmFinal"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+                <!-- ABASTECIMENTO -->
+                <div class="mb-3">
+
+                    <div class="form-check form-switch">
+
+                        <input asp-for="Abastecimento"
+                               class="form-check-input"
+                               type="checkbox"
+                               id="abastecimento" />
+
+                        <label class="form-check-label"
+                               for="abastecimento">
+                            Viatura foi abastecida?
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <!-- KM ABASTECIMENTO -->
+                <div class="mb-4"
+                     id="divKmAbastecimento"
+                     style="display:none;">
+
+                    <label asp-for="KmAbastecimento"
+                           class="form-label">
+                        KM do abastecimento
+                    </label>
+
+                    <input asp-for="KmAbastecimento"
+                           type="number"
+                           min="0"
+                           class="form-control"
+                           placeholder="Informe o KM em que a viatura foi abastecida" />
+
+                    <span asp-validation-for="KmAbastecimento"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        Informe a quilometragem indicada no momento do abastecimento.
+                    </div>
 
                 </div>
 
@@ -87,3 +179,206 @@
     </div>
 
 </div>
+
+@section Scripts {
+
+    <script>
+
+        const operadores = @Html.Raw(operadoresJson);
+
+        const pesquisa = document.getElementById('pesquisaOperador');
+        const resultado = document.getElementById('resultadoOperadores');
+        const operadorID = document.getElementById('OperadorID');
+        const operadorNome = document.getElementById('OperadorNome');
+        const form = document.getElementById('formDevolucao');
+
+        const abastecimento =
+            document.getElementById('abastecimento');
+
+        const divKmAbastecimento =
+            document.getElementById('divKmAbastecimento');
+
+        const kmAbastecimento =
+            document.getElementById('KmAbastecimento');
+
+
+        function normalizarTexto(texto) {
+
+            return (texto || '')
+                .toString()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+        }
+
+
+        function esconderResultados() {
+
+            resultado.innerHTML = '';
+            resultado.style.display = 'none';
+        }
+
+
+        function selecionarOperador(operador) {
+
+            operadorID.value = operador.id;
+            operadorNome.value = operador.descricao;
+
+            pesquisa.value = operador.descricao;
+
+            esconderResultados();
+        }
+
+
+        pesquisa.addEventListener('input', function () {
+
+            const termo = normalizarTexto(this.value);
+
+            operadorID.value = '';
+            operadorNome.value = '';
+
+            resultado.innerHTML = '';
+
+            if (!termo) {
+
+                esconderResultados();
+
+                return;
+            }
+
+            const filtrados = operadores
+                .filter(function (operador) {
+
+                    const nome =
+                        normalizarTexto(operador.nome);
+
+                    const alcunha =
+                        normalizarTexto(operador.alcunha);
+
+                    const numerica =
+                        normalizarTexto(operador.numerica);
+
+                    const descricao =
+                        normalizarTexto(operador.descricao);
+
+                    return nome.includes(termo)
+                        || alcunha.includes(termo)
+                        || numerica.includes(termo)
+                        || descricao.includes(termo);
+                })
+                .slice(0, 15);
+
+
+            if (filtrados.length === 0) {
+
+                resultado.innerHTML =
+                    '<div class="list-group-item text-muted">' +
+                        'Nenhum operador encontrado.' +
+                    '</div>';
+
+                resultado.style.display = 'block';
+
+                return;
+            }
+
+
+            filtrados.forEach(function (operador) {
+
+                const item =
+                    document.createElement('button');
+
+                item.type = 'button';
+
+                item.className =
+                    'list-group-item list-group-item-action';
+
+                item.textContent =
+                    operador.descricao;
+
+                item.addEventListener('click', function () {
+
+                    selecionarOperador(operador);
+
+                });
+
+                resultado.appendChild(item);
+            });
+
+
+            resultado.style.display = 'block';
+        });
+
+
+        pesquisa.addEventListener('focus', function () {
+
+            if (this.value.trim() !== '')
+                this.select();
+        });
+
+
+        document.addEventListener('click', function (event) {
+
+            if (!pesquisa.contains(event.target) &&
+                !resultado.contains(event.target)) {
+
+                esconderResultados();
+            }
+        });
+
+
+        function atualizarAbastecimento() {
+
+            if (abastecimento.checked) {
+
+                divKmAbastecimento.style.display = 'block';
+
+                kmAbastecimento.required = true;
+
+            }
+            else {
+
+                divKmAbastecimento.style.display = 'none';
+
+                kmAbastecimento.required = false;
+
+                kmAbastecimento.value = '';
+            }
+        }
+
+
+        abastecimento.addEventListener(
+            'change',
+            atualizarAbastecimento);
+
+        atualizarAbastecimento();
+
+
+        form.addEventListener('submit', function (event) {
+
+            if (!operadorID.value ||
+                parseInt(operadorID.value) <= 0) {
+
+                event.preventDefault();
+
+                alert('Selecione um operador na pesquisa.');
+
+                pesquisa.focus();
+
+                return;
+            }
+
+            if (abastecimento.checked &&
+                !kmAbastecimento.value) {
+
+                event.preventDefault();
+
+                alert('Informe o KM do abastecimento.');
+
+                kmAbastecimento.focus();
+            }
+        });
+
+    </script>
+
+}
