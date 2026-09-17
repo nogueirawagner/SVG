@@ -21,7 +21,7 @@ namespace SVG.Infra.Repositories
     {
       return _db.Viatura
             .Include(x => x.Sessao)
-            .Include(x => x.Operador)
+            .Include(x => x.OperadorResponsavel)
             .ToList();
     }
 
@@ -29,7 +29,7 @@ namespace SVG.Infra.Repositories
     {
       return _db.Viatura
             .Include(x => x.Sessao)
-            .Include(x => x.Operador)
+            .Include(x => x.OperadorResponsavel)
             .Where(x => x.Situacao == XSituacaoViatura.Disponivel)
             .ToList();
     }
@@ -38,7 +38,7 @@ namespace SVG.Infra.Repositories
     {
       return _db.Viatura
                .Include(x => x.Sessao)
-               .Include(x => x.Operador)
+               .Include(x => x.OperadorResponsavel)
                .Where(x => x.SessaoID == pSecaoID)
                .ToList();
     }

@@ -41,7 +41,7 @@ namespace SVG.Infra.Repositories
     {
       return _db.ViaturaMovimentacao
                .Where(x => x.ViaturaID == pViaturaID)
-               .OrderByDescending(x => x.DataHora)
+               .OrderByDescending(x => x.DataHoraRetirada)
                .ThenByDescending(x => x.ID)
                .FirstOrDefault();
     }

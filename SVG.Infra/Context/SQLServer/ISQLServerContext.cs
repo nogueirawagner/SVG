@@ -9,6 +9,5 @@ namespace SVG.Infra.Context.SQLServer
     DbEntityEntry Entry(object entity);
     int SaveChanges();
     DbSet<T> Set<T>() where T : class;
-    DbSet<Operador> Operador { get; set; }
   }
 }

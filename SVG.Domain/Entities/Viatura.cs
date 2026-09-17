@@ -21,17 +21,13 @@ namespace SVG.Domain.Entities
 
     // Operador responsável pela viatura
     public int? OperadorResponsavelID { get; set; }
-    public virtual Operador Operador { get; set; }
+    public virtual Operador OperadorResponsavel { get; set; }
 
     public XTipoCaracterizacaoViatura TipoCaracterizacao { get; set; }
-
     public int KmAtual { get; set; }
     public int? KmUltimoAbastecimento { get; set; }
     public int? KmProximaRevisao  { get; set; }
-
     public string Chassi { get; set; }
-
-
     public XSituacaoViatura Situacao { get; set; }
 
     public virtual ICollection<ViaturaMovimentacao> Movimentacoes { get; set; }

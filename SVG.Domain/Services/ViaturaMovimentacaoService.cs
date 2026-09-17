@@ -54,8 +54,6 @@ namespace SVG.Domain.Services
         throw new Exception(
           "A viatura está indisponível e não pode ser retirada.");
 
-      var dataHoraMovimentacao = DateTime.Now;
-
       var ultimaMovimentacao =
         _viaturaMovimentacaoRepository
           .PegarUltimaMovimentacao(pMovimentacao.ViaturaID);
@@ -70,30 +68,19 @@ namespace SVG.Domain.Services
       if (ultimaMovimentacao != null &&
           ultimaMovimentacao.Situacao == XSituacaoViatura.EmUso)
       {
-        var devolucaoAutomatica = new ViaturaMovimentacao
-        {
-          ViaturaID = pMovimentacao.ViaturaID,
 
-          // Importantíssimo:
-          // permanece o operador responsável pela retirada anterior.
-          OperadorID = ultimaMovimentacao.OperadorID,
 
-          Finalidade = ultimaMovimentacao.Finalidade,
+        ultimaMovimentacao.DataHoraDevolucao = DateTime.Now;
+        
 
-          DataHora = dataHoraMovimentacao,
-
-          Situacao = XSituacaoViatura.Disponivel
-        };
-
-        _viaturaMovimentacaoRepository.Add(devolucaoAutomatica);
+        _viaturaMovimentacaoRepository.Update(ultimaMovimentacao);
       }
 
       /*
        * Registra o novo fato de retirada.
        */
       pMovimentacao.OperadorID = pOperadorID;
-      pMovimentacao.DataHora = dataHoraMovimentacao;
-      pMovimentacao.DataHoraRetirada = dataHoraMovimentacao;
+      pMovimentacao.DataHoraRetirada = DateTime.Now;
       pMovimentacao.Situacao = XSituacaoViatura.EmUso;
       pMovimentacao.KmInicial = viatura.KmAtual;
 
@@ -138,7 +125,6 @@ namespace SVG.Domain.Services
       ultimaMovimentacao.KmFinal = pKmFinal;
       ultimaMovimentacao.DataHoraDevolucao = DateTime.Now;
       ultimaMovimentacao.Situacao = XSituacaoViatura.Disponivel;
-      ultimaMovimentacao.DataHora = DateTime.Now;
       ultimaMovimentacao.OperadorID = pOperadorID;
       ultimaMovimentacao.Abastecimento = pAbastecimento;
       ultimaMovimentacao.KmAbastecimento = pKmAbastecimento;

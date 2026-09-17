@@ -152,10 +152,10 @@
                         {
                             var responsavel = "";
 
-                            if (viatura.Operador != null)
+                            if (viatura.OperadorResponsavel != null)
                             {
                                 responsavel =
-                                $"{viatura.Operador.NumericaDOE} {viatura.Operador.Alcunha}";
+                                $"{viatura.OperadorResponsavel.NumericaDOE} {viatura.OperadorResponsavel.Alcunha}";
                             }
 
                             var textoPesquisa =
@@ -204,11 +204,11 @@
                                 </td>
 
                                 <td>
-                                    @if (viatura.Operador != null)
+                                    @if (viatura.OperadorResponsavel != null)
                                     {
                                         <span>
-                                            @viatura.Operador.NumericaDOE -
-                                            @viatura.Operador.Alcunha
+                                            @viatura.OperadorResponsavel.NumericaDOE -
+                                            @viatura.OperadorResponsavel.Alcunha
                                         </span>
                                     }
                                     else

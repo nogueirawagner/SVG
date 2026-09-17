@@ -31,14 +31,14 @@ namespace SVG.Infra.Context.SQLServer
     public DbSet<Operacao> Operacao { get; set; }
     public DbSet<OperadorOperacao> OperadorOperacao { get; set; }
     public DbSet<Sessao> Sessao { get; set; }
-    public DbSet<Viatura> Viatura { get; set; }
-    public DbSet<ViaturaOperacao> ViaturaOperacao { get; set; }
     public DbSet<TipoOperacao> TipoOperacoes { get; set; }
     public DbSet<CandidatoSVGOperacao> CandidatoSVGOperacao { get; set; }
     public DbSet<CalendarioPlantao> CalendarioPlantao { get; set; }
     public DbSet<Usuario> Usuario { get; set; }
     public DbSet<Role> Role { get; set; }
     public DbSet<UsuarioRole> UsuarioRole { get; set; }
+    public DbSet<Viatura> Viatura { get; set; }
+    public DbSet<ViaturaOperacao> ViaturaOperacao { get; set; }
     public DbSet<ViaturaMovimentacao> ViaturaMovimentacao { get; set; }
 
     #endregion
@@ -64,6 +64,11 @@ namespace SVG.Infra.Context.SQLServer
         .HasOptional(u => u.Operador)      // Usuario pode NÃO ter Operador
         .WithOptionalDependent(o => o.Usuario)
         .Map(m => m.MapKey("OperadorID")); // Operador é dependente
+
+      //modelBuilder.Entity<Viatura>()
+      //  .HasOptional(v => v.OperadorResponsavel)
+      //  .WithMany().HasForeignKey(v => v.OperadorResponsavelID)
+      //  .WillCascadeOnDelete(false);
 
       modelBuilder.Entity<CandidatoSVGOperacao>()
       .HasIndex(c => new { c.OperadorID, c.OperacaoID })

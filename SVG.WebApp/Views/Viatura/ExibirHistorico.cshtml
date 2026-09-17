@@ -1,5 +1,4 @@
 ﻿@using SVG.Domain.Entities
-@using SVG.Domain.TiposEstruturados.Enums
 
 @model IEnumerable<ViaturaMovimentacao>
 
@@ -13,39 +12,25 @@
 <div class="container-fluid mt-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-
         <div>
-
-            <h3 class="mb-0">
-                Histórico - @viatura.Prefixo
-            </h3>
-
-            <small class="text-muted">
-                @viatura.Modelo | @viatura.Placa
-            </small>
-
+            <h3 class="mb-0">Histórico - @viatura.Prefixo</h3>
+            <small class="text-muted">@viatura.Modelo | @viatura.Placa</small>
         </div>
 
-        <a asp-action="Listar"
-           class="btn btn-secondary">
+        <a asp-action="Listar" class="btn btn-secondary">
             Voltar
         </a>
-
     </div>
 
     <div class="card shadow-sm">
-
         <div class="card-body">
-
             <div class="table-responsive">
 
                 <table class="table table-hover align-middle">
-
                     <thead>
-
                         <tr>
-                            <th>Data/Hora</th>
-                            <th>Situação</th>
+                            <th>Retirada</th>
+                            <th>Devolução</th>
                             <th>Operador</th>
                             <th>Finalidade</th>
                             <th>KM Inicial</th>
@@ -55,41 +40,37 @@
                             <th>Próx. Revisão</th>
                             <th>Observação</th>
                         </tr>
-
                     </thead>
 
                     <tbody>
 
                         @foreach (var movimentacao in Model)
                         {
-                            <tr>
+                            var emUso = !movimentacao.DataHoraDevolucao.HasValue;
 
-                                <!-- DATA/HORA -->
+                            <tr class="@(emUso ? "table-danger" : "")">
+
+                                <!-- RETIRADA -->
                                 <td class="text-nowrap">
-                                    @movimentacao.DataHora.ToString("dd/MM/yyyy HH:mm")
+                                    @movimentacao.DataHoraRetirada.ToString("dd/MM/yyyy HH:mm")
                                 </td>
 
-                                <!-- SITUAÇÃO -->
-                                <td>
-
-                                    @if (movimentacao.Situacao == XSituacaoViatura.EmUso)
+                                <!-- DEVOLUÇÃO -->
+                                <td class="text-nowrap">
+                                    @if (movimentacao.DataHoraDevolucao.HasValue)
                                     {
-                                        <span class="badge bg-primary">
-                                            Retirada
-                                        </span>
+                                        @movimentacao.DataHoraDevolucao.Value.ToString("dd/MM/yyyy HH:mm")
                                     }
                                     else
                                     {
-                                        <span class="badge bg-success">
-                                            Devolução
+                                        <span class="badge bg-danger">
+                                            Em uso
                                         </span>
                                     }
-
                                 </td>
 
                                 <!-- OPERADOR -->
                                 <td class="text-nowrap">
-
                                     @if (movimentacao.Operador != null)
                                     {
                                         <span>
@@ -101,7 +82,6 @@
                                     {
                                         <span class="text-muted">-</span>
                                     }
-
                                 </td>
 
                                 <!-- FINALIDADE -->
@@ -111,7 +91,6 @@
 
                                 <!-- KM INICIAL -->
                                 <td class="text-nowrap">
-
                                     @if (movimentacao.KmInicial > 0)
                                     {
                                         @movimentacao.KmInicial.ToString("N0")
@@ -120,12 +99,10 @@
                                     {
                                         <span class="text-muted">-</span>
                                     }
-
                                 </td>
 
                                 <!-- KM FINAL -->
                                 <td class="text-nowrap">
-
                                     @if (movimentacao.KmFinal.HasValue)
                                     {
                                         @movimentacao.KmFinal.Value.ToString("N0")
@@ -134,30 +111,22 @@
                                     {
                                         <span class="text-muted">-</span>
                                     }
-
                                 </td>
 
                                 <!-- ABASTECIMENTO -->
                                 <td>
-
                                     @if (movimentacao.Abastecimento)
                                     {
-                                        <span class="badge bg-success">
-                                            Sim
-                                        </span>
+                                        <span class="badge bg-success">Sim</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary">
-                                            Não
-                                        </span>
+                                        <span class="badge bg-secondary">Não</span>
                                     }
-
                                 </td>
 
                                 <!-- KM ABASTECIMENTO -->
                                 <td class="text-nowrap">
-
                                     @if (movimentacao.Abastecimento &&
                                                                     movimentacao.KmAbastecimento.HasValue)
                                     {
@@ -167,13 +136,12 @@
                                     {
                                         <span class="text-muted">-</span>
                                     }
-
                                 </td>
 
-                                <!-- KM PROXIMA REVISÃO -->
+                                <!-- PRÓXIMA REVISÃO -->
                                 <td class="text-nowrap">
-
-                                    @if (viatura.KmProximaRevisao > 0)
+                                    @if (viatura.KmProximaRevisao.HasValue &&
+                                                                    viatura.KmProximaRevisao.Value > 0)
                                     {
                                         @viatura.KmProximaRevisao.Value.ToString("N0")
                                     }
@@ -181,12 +149,10 @@
                                     {
                                         <span class="text-muted">-</span>
                                     }
-
                                 </td>
 
                                 <!-- OBSERVAÇÃO -->
                                 <td>
-
                                     @if (!string.IsNullOrWhiteSpace(movimentacao.Observacao))
                                     {
                                         @movimentacao.Observacao
@@ -195,20 +161,16 @@
                                     {
                                         <span class="text-muted">-</span>
                                     }
-
                                 </td>
 
                             </tr>
                         }
 
                     </tbody>
-
                 </table>
 
             </div>
-
         </div>
-
     </div>
 
 </div>
