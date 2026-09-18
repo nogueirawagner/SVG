@@ -18,6 +18,10 @@ namespace SVG.WebApp.Models
 
     public int? KmFinal { get; set; }
 
+    public int? KmProximaRevisao { get; set; }
+
+    public int KmAtual { get; set; }
+
     public bool Abastecimento { get; set; }
 
     public int? KmAbastecimento { get; set; }

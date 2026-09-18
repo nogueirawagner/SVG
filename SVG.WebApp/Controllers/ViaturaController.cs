@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SVG.App.Interface;
@@ -34,6 +35,13 @@ namespace SVG.WebApp.Controllers
     public IActionResult Listar()
     {
       var viaturas = _viaturaAppService.PegarViaturas();
+      var kmAlterado = 7000;
+
+      foreach (var v in viaturas)
+      {
+        v.KmAtual = kmAlterado;
+        kmAlterado += 500;
+      }
 
       return View(viaturas);
     }
@@ -62,6 +70,7 @@ namespace SVG.WebApp.Controllers
         Modelo = viatura.Modelo,
         Secao = viatura.Sessao?.Nome,
         KmAtual = viatura.KmAtual,
+        KmProximaRevisao = viatura.KmProximaRevisao,
 
         OperadorID = operadorLogado?.ID ?? 0,
 
@@ -69,6 +78,9 @@ namespace SVG.WebApp.Controllers
           ? string.Empty
           : MontarNomeOperador(operadorLogado)
       };
+
+      var rnd = new Random();
+      model.KmAtual = rnd.Next(7500, 12000);
 
       PopularOperadoresPesquisa();
 
@@ -170,6 +182,8 @@ namespace SVG.WebApp.Controllers
         Prefixo = viatura.Prefixo,
         Placa = viatura.Placa,
         Modelo = viatura.Modelo,
+        KmProximaRevisao = viatura.KmProximaRevisao,
+        KmAtual = viatura.KmAtual,
 
         OperadorID = operadorLogado?.ID ?? 0,
 
@@ -177,6 +191,9 @@ namespace SVG.WebApp.Controllers
           ? string.Empty
           : MontarNomeOperador(operadorLogado)
       };
+
+      var rnd = new Random();
+      model.KmAtual = rnd.Next(7500, 12000);
 
       PopularOperadoresPesquisa();
 

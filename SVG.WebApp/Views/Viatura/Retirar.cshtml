@@ -5,6 +5,12 @@
     ViewData["Title"] = "Retirar Viatura";
 
     var operadoresJson = (string)(ViewBag.OperadoresJson ?? "[]");
+
+    const int limiteAlertaRevisao = 2800;
+
+    int? kmRestanteRevisao = Model.KmProximaRevisao.HasValue
+        ? Model.KmProximaRevisao.Value - Model.KmAtual
+        : (int?)null;
 }
 
 <div class="container mt-4" style="max-width: 700px;">
@@ -46,6 +52,29 @@
 
             </div>
 
+            @if (kmRestanteRevisao.HasValue && kmRestanteRevisao.Value <= 0)
+            {
+                <div class="alert alert-danger shadow-sm">
+                    <strong>⚠ Revisão vencida</strong><br />
+                    Esta viatura ultrapassou a quilometragem da próxima revisão em
+                    <strong>@Math.Abs(kmRestanteRevisao.Value).ToString("N0") km</strong>.
+                    Próxima revisão cadastrada:
+                    <strong>@Model.KmProximaRevisao!.Value.ToString("N0") km</strong>.
+                </div>
+            }
+            else if (kmRestanteRevisao.HasValue &&
+            kmRestanteRevisao.Value <= limiteAlertaRevisao)
+            {
+                <div class="alert alert-warning shadow-sm">
+                    <strong>⚠ Atenção à revisão</strong><br />
+                    Faltam apenas
+                    <strong>@kmRestanteRevisao.Value.ToString("N0") km</strong>
+                    para a próxima revisão desta viatura.
+                    Revisão prevista em
+                    <strong>@Model.KmProximaRevisao!.Value.ToString("N0") km</strong>.
+                </div>
+            }
+
             <form asp-action="Retirar"
                   method="post"
                   id="formRetirada">
@@ -68,6 +97,9 @@
                        type="hidden" />
 
                 <input asp-for="KmAtual"
+                       type="hidden" />
+
+                <input asp-for="KmProximaRevisao"
                        type="hidden" />
 
                 <input asp-for="OperadorID"

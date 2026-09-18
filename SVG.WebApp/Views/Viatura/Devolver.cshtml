@@ -5,6 +5,12 @@
     ViewData["Title"] = "Devolver Viatura";
 
     var operadoresJson = (string)(ViewBag.OperadoresJson ?? "[]");
+
+    const int limiteAlertaRevisao = 2800;
+
+    int? kmRestanteRevisao = Model.KmProximaRevisao.HasValue
+        ? Model.KmProximaRevisao.Value - Model.KmAtual
+        : (int?)null;
 }
 
 <div class="container mt-4" style="max-width: 650px;">
@@ -35,7 +41,39 @@
                     @Model.Placa
                 </div>
 
+                <div class="text-muted">
+                    KM atual:
+                    @Model.KmAtual.ToString("N0")
+                </div>
+
             </div>
+
+            @if (kmRestanteRevisao.HasValue && kmRestanteRevisao.Value <= 0)
+            {
+                <div id="alertaRevisao"
+                     class="alert alert-danger shadow-sm">
+                    <strong>⚠ Revisão vencida</strong><br />
+                    Esta viatura já ultrapassou a quilometragem cadastrada para revisão.
+                </div>
+            }
+            else if (kmRestanteRevisao.HasValue &&
+            kmRestanteRevisao.Value <= limiteAlertaRevisao)
+            {
+                <div id="alertaRevisao"
+                     class="alert alert-warning shadow-sm">
+                    <strong>⚠ Atenção à revisão</strong><br />
+                    Faltam
+                    <strong>@kmRestanteRevisao.Value.ToString("N0") km</strong>
+                    para a próxima revisão.
+                </div>
+            }
+            else
+            {
+                <div id="alertaRevisao"
+                     class="alert alert-warning shadow-sm"
+                     style="display:none;">
+                </div>
+            }
 
             <form asp-action="Devolver"
                   method="post"
@@ -54,6 +92,13 @@
 
                 <input asp-for="Modelo"
                        type="hidden" />
+
+                <input asp-for="KmAtual"
+                       type="hidden" />
+
+                <input asp-for="KmProximaRevisao"
+                       type="hidden"
+                       id="KmProximaRevisao" />
 
                 <input asp-for="OperadorID"
                        type="hidden"
@@ -200,6 +245,17 @@
 
         const kmAbastecimento =
             document.getElementById('KmAbastecimento');
+
+        const kmFinal =
+            document.getElementById('KmFinal');
+
+        const kmProximaRevisao =
+            document.getElementById('KmProximaRevisao');
+
+        const alertaRevisao =
+            document.getElementById('alertaRevisao');
+
+        const limiteAlertaRevisao = 2800;
 
 
         function normalizarTexto(texto) {
@@ -353,6 +409,86 @@
 
         atualizarAbastecimento();
 
+
+               function atualizarAlertaRevisao() {
+
+            if (!kmFinal || !kmProximaRevisao || !alertaRevisao)
+                return;
+
+            const kmFinalValor = parseInt(kmFinal.value);
+            const kmRevisaoValor = parseInt(kmProximaRevisao.value);
+
+            /*
+             * Enquanto o valor estiver vazio ou incompleto,
+             * não altera o alerta que já está sendo exibido.
+             */
+            if (isNaN(kmFinalValor) || isNaN(kmRevisaoValor))
+                return;
+
+            const restante = kmRevisaoValor - kmFinalValor;
+
+            /*
+             * REVISÃO VENCIDA
+             * É o nível mais crítico.
+             */
+            if (restante <= 0) {
+
+                alertaRevisao.classList.remove('alert-warning');
+                alertaRevisao.classList.add('alert-danger');
+
+                alertaRevisao.innerHTML =
+                    '<strong>⚠ Revisão vencida</strong><br />' +
+                    'Com o KM informado na devolução, esta viatura ultrapassou ' +
+                    'a revisão em <strong>' +
+                    Math.abs(restante).toLocaleString('pt-BR') +
+                    ' km</strong>.';
+
+                alertaRevisao.style.display = 'block';
+
+                return;
+            }
+
+            /*
+             * REVISÃO PRÓXIMA
+             */
+            if (restante <= limiteAlertaRevisao) {
+
+                /*
+                 * Se já ficou vermelho, não volta para laranja.
+                 */
+                if (alertaRevisao.classList.contains('alert-danger'))
+                    return;
+
+                alertaRevisao.classList.remove('alert-danger');
+                alertaRevisao.classList.add('alert-warning');
+
+                alertaRevisao.innerHTML =
+                    '<strong>⚠ Atenção à revisão</strong><br />' +
+                    'Com o KM informado na devolução, faltarão apenas <strong>' +
+                    restante.toLocaleString('pt-BR') +
+                    ' km</strong> para a próxima revisão.';
+
+                alertaRevisao.style.display = 'block';
+
+                return;
+            }
+
+            /*
+             * IMPORTANTE:
+             * Se ainda não entrou na faixa de revisão,
+             * não fazemos nada.
+             *
+             * Um alerta que já apareceu não deve desaparecer
+             * durante a edição do KM.
+             */
+        }
+
+        if (kmFinal) {
+            kmFinal.addEventListener(
+                'input',
+                atualizarAlertaRevisao
+            );
+        }
 
         form.addEventListener('submit', function (event) {
 

@@ -8,6 +8,17 @@
     ViewData["Title"] = "Controle de Viaturas";
 
     var sessoes = (IEnumerable<Sessao>)ViewBag.Sessoes;
+
+    const int limiteAlertaRevisao = 2800;
+
+    var qtdRevisaoProxima = Model.Count(x =>
+        x.KmProximaRevisao.HasValue &&
+        (x.KmProximaRevisao.Value - x.KmAtual) > 0 &&
+        (x.KmProximaRevisao.Value - x.KmAtual) <= limiteAlertaRevisao);
+
+    var qtdRevisaoVencida = Model.Count(x =>
+        x.KmProximaRevisao.HasValue &&
+        (x.KmProximaRevisao.Value - x.KmAtual) <= 0);
 }
 
 <div class="container-fluid mt-4">
@@ -25,6 +36,37 @@
     {
         <div class="alert alert-success">
             @TempData["Sucesso"]
+        </div>
+    }
+
+    @if (qtdRevisaoProxima > 0 || qtdRevisaoVencida > 0)
+    {
+        <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 shadow-sm"
+             role="alert">
+            <div>
+                <strong>⚠ Atenção às revisões</strong>
+                <div class="mt-1">
+                    @if (qtdRevisaoVencida > 0)
+                    {
+                        <span class="badge bg-danger me-2">
+                            @qtdRevisaoVencida revisão(ões) vencida(s)
+                        </span>
+                    }
+
+                    @if (qtdRevisaoProxima > 0)
+                    {
+                        <span class="badge bg-warning text-dark">
+                            @qtdRevisaoProxima próxima(s) da revisão
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <button type="button"
+                    id="btnVerAlertasRevisao"
+                    class="btn btn-sm btn-outline-dark">
+                Ver viaturas com alerta
+            </button>
         </div>
     }
 
@@ -101,6 +143,18 @@
                     </select>
                 </div>
 
+                <div class="col-md-2">
+                    <label class="form-label">Revisão</label>
+                    <select id="filtroRevisao"
+                            class="form-select">
+                        <option value="">Todas</option>
+                        <option value="normal">Normal</option>
+                        <option value="proxima">Próxima</option>
+                        <option value="vencida">Vencida</option>
+                        <option value="alerta">Com alerta</option>
+                    </select>
+                </div>
+
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="button"
                             id="btnLimparFiltros"
@@ -141,6 +195,7 @@
                             <th>Responsável</th>
                             <th>KM Atual</th>
                             <th>KM Ult. Abast.</th>
+                            <th>Revisão</th>
                             <th>Situação</th>
                             <th class="text-center">Ações</th>
                         </tr>
@@ -164,11 +219,28 @@
                             $"{viatura.Modelo} " +
                             $"{responsavel}";
 
-                            <tr class="linha-viatura"
+                            int? kmRestanteRevisao = viatura.KmProximaRevisao.HasValue
+                                ? viatura.KmProximaRevisao.Value - viatura.KmAtual
+                                : (int?)null;
+
+                            var statusRevisao = "normal";
+
+                            if (kmRestanteRevisao.HasValue && kmRestanteRevisao.Value <= 0)
+                            {
+                                statusRevisao = "vencida";
+                            }
+                            else if (kmRestanteRevisao.HasValue &&
+                                     kmRestanteRevisao.Value <= limiteAlertaRevisao)
+                            {
+                                statusRevisao = "proxima";
+                            }
+
+                            <tr class="linha-viatura @(statusRevisao == "vencida" ? "table-danger" : statusRevisao == "proxima" ? "table-warning" : "")"
                                 data-texto="@textoPesquisa.ToLower()"
                                 data-secao="@viatura.SessaoID"
                                 data-tipo="@((int)viatura.TipoCaracterizacao)"
-                                data-situacao="@((int)viatura.Situacao)">
+                                data-situacao="@((int)viatura.Situacao)"
+                                data-revisao="@statusRevisao">
 
                                 <td>
                                     <strong>@viatura.Prefixo</strong>
@@ -228,6 +300,31 @@
                                         && viatura.KmUltimoAbastecimento > 0)
                                     {
                                       @viatura.KmUltimoAbastecimento.Value.ToString("N0")
+                                    }
+                                </td>
+
+                                <td class="text-nowrap">
+                                    @if (!viatura.KmProximaRevisao.HasValue)
+                                    {
+                                        <span class="text-muted">Não informada</span>
+                                    }
+                                    else if (statusRevisao == "vencida")
+                                    {
+                                        <span class="badge bg-danger">
+                                            Vencida há @Math.Abs(kmRestanteRevisao!.Value).ToString("N0") km
+                                        </span>
+                                    }
+                                    else if (statusRevisao == "proxima")
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            Em @kmRestanteRevisao!.Value.ToString("N0") km
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark border">
+                                            @viatura.KmProximaRevisao.Value.ToString("N0") km
+                                        </span>
                                     }
                                 </td>
 
@@ -297,7 +394,7 @@
 
                         <tr id="linhaSemResultados"
                             style="display:none;">
-                            <td colspan="9"
+                            <td colspan="11"
                                 class="text-center text-muted py-4">
                                 Nenhuma viatura encontrada para os filtros informados.
                             </td>
@@ -331,6 +428,12 @@
 
             const filtroSituacao =
                 document.getElementById('filtroSituacao');
+
+            const filtroRevisao =
+                document.getElementById('filtroRevisao');
+
+            const btnVerAlertasRevisao =
+                document.getElementById('btnVerAlertasRevisao');
 
             const btnLimparFiltros =
                 document.getElementById('btnLimparFiltros');
@@ -369,6 +472,9 @@
                 const situacao =
                     filtroSituacao.value;
 
+                const revisao =
+                    filtroRevisao.value;
+
                 let exibidas = 0;
 
                 linhas.forEach(function (linha) {
@@ -387,6 +493,9 @@
                     const situacaoLinha =
                         linha.dataset.situacao || '';
 
+                    const revisaoLinha =
+                        linha.dataset.revisao || 'normal';
+
                     const matchTexto =
                         !texto ||
                         textoLinha.includes(texto);
@@ -403,11 +512,18 @@
                         !situacao ||
                         situacao === situacaoLinha;
 
+                    const matchRevisao =
+                        !revisao ||
+                        revisao === revisaoLinha ||
+                        (revisao === 'alerta' &&
+                         (revisaoLinha === 'proxima' || revisaoLinha === 'vencida'));
+
                     const exibir =
                         matchTexto &&
                         matchSecao &&
                         matchTipo &&
-                        matchSituacao;
+                        matchSituacao &&
+                        matchRevisao;
 
                     linha.style.display =
                         exibir ? '' : 'none';
@@ -446,6 +562,23 @@
                 aplicarFiltros
             );
 
+            filtroRevisao.addEventListener(
+                'change',
+                aplicarFiltros
+            );
+
+            if (btnVerAlertasRevisao) {
+                btnVerAlertasRevisao.addEventListener(
+                    'click',
+                    function () {
+                        filtroRevisao.value = 'alerta';
+                        aplicarFiltros();
+                        document.getElementById('tbodyViaturas')
+                            .scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                );
+            }
+
             btnLimparFiltros.addEventListener(
                 'click',
                 function () {
@@ -454,6 +587,7 @@
                     filtroSecao.value = '';
                     filtroTipo.value = '';
                     filtroSituacao.value = '';
+                    filtroRevisao.value = '';
 
                     aplicarFiltros();
 

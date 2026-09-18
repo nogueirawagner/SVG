@@ -16,6 +16,8 @@ namespace SVG.WebApp.Models
 
     public int KmAtual { get; set; }
 
+    public int? KmProximaRevisao { get; set; }
+
     public int OperadorID { get; set; }
 
     public string? OperadorNome { get; set; }
