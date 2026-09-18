@@ -48,16 +48,22 @@
                 <div class="mt-1">
                     @if (qtdRevisaoVencida > 0)
                     {
-                        <span class="badge bg-danger me-2">
+                        <button type="button"
+                                class="badge bg-danger border-0 me-2 btn-filtro-revisao"
+                                data-revisao="vencida"
+                                title="Mostrar somente revisões vencidas">
                             @qtdRevisaoVencida revisão(ões) vencida(s)
-                        </span>
+                        </button>
                     }
 
                     @if (qtdRevisaoProxima > 0)
                     {
-                        <span class="badge bg-warning text-dark">
+                        <button type="button"
+                                class="badge bg-warning text-dark border-0 btn-filtro-revisao"
+                                data-revisao="proxima"
+                                title="Mostrar somente viaturas próximas da revisão">
                             @qtdRevisaoProxima próxima(s) da revisão
-                        </span>
+                        </button>
                     }
                 </div>
             </div>
@@ -220,8 +226,8 @@
                             $"{responsavel}";
 
                             int? kmRestanteRevisao = viatura.KmProximaRevisao.HasValue
-                                ? viatura.KmProximaRevisao.Value - viatura.KmAtual
-                                : (int?)null;
+                            ? viatura.KmProximaRevisao.Value - viatura.KmAtual
+                            : (int?)null;
 
                             var statusRevisao = "normal";
 
@@ -230,7 +236,7 @@
                                 statusRevisao = "vencida";
                             }
                             else if (kmRestanteRevisao.HasValue &&
-                                     kmRestanteRevisao.Value <= limiteAlertaRevisao)
+                            kmRestanteRevisao.Value <= limiteAlertaRevisao)
                             {
                                 statusRevisao = "proxima";
                             }
@@ -296,10 +302,10 @@
                                 </td>
 
                                 <td>
-                                    @if (viatura.KmUltimoAbastecimento != null 
-                                        && viatura.KmUltimoAbastecimento > 0)
+                                    @if (viatura.KmUltimoAbastecimento != null
+                                                                    && viatura.KmUltimoAbastecimento > 0)
                                     {
-                                      @viatura.KmUltimoAbastecimento.Value.ToString("N0")
+                                        @viatura.KmUltimoAbastecimento.Value.ToString("N0")
                                     }
                                 </td>
 
@@ -435,6 +441,9 @@
             const btnVerAlertasRevisao =
                 document.getElementById('btnVerAlertasRevisao');
 
+            const botoesFiltroRevisao =
+                document.querySelectorAll('.btn-filtro-revisao');
+
             const btnLimparFiltros =
                 document.getElementById('btnLimparFiltros');
 
@@ -516,7 +525,8 @@
                         !revisao ||
                         revisao === revisaoLinha ||
                         (revisao === 'alerta' &&
-                         (revisaoLinha === 'proxima' || revisaoLinha === 'vencida'));
+                         (revisaoLinha === 'proxima' ||
+                          revisaoLinha === 'vencida'));
 
                     const exibir =
                         matchTexto &&
@@ -536,10 +546,28 @@
                 contadorExibidas.textContent =
                     exibidas;
 
-                linhaSemResultados.style.display =
-                    exibidas === 0
-                        ? ''
-                        : 'none';
+                if (linhaSemResultados) {
+                    linhaSemResultados.style.display =
+                        exibidas === 0
+                            ? ''
+                            : 'none';
+                }
+            }
+
+            function aplicarFiltroRevisao(valor) {
+
+                filtroRevisao.value = valor;
+                aplicarFiltros();
+
+                const tabela =
+                    document.getElementById('tbodyViaturas');
+
+                if (tabela) {
+                    tabela.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             }
 
             filtroTexto.addEventListener(
@@ -571,13 +599,21 @@
                 btnVerAlertasRevisao.addEventListener(
                     'click',
                     function () {
-                        filtroRevisao.value = 'alerta';
-                        aplicarFiltros();
-                        document.getElementById('tbodyViaturas')
-                            .scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        aplicarFiltroRevisao('alerta');
                     }
                 );
             }
+
+            botoesFiltroRevisao.forEach(function (botao) {
+                botao.addEventListener(
+                    'click',
+                    function () {
+                        aplicarFiltroRevisao(
+                            botao.dataset.revisao
+                        );
+                    }
+                );
+            });
 
             btnLimparFiltros.addEventListener(
                 'click',
@@ -591,9 +627,39 @@
 
                     aplicarFiltros();
 
+                    // Remove o parâmetro da URL sem recarregar a página.
+                    if (window.history.replaceState) {
+                        window.history.replaceState(
+                            {},
+                            document.title,
+                            window.location.pathname
+                        );
+                    }
+
                     filtroTexto.focus();
                 }
             );
+
+            /*
+             * Permite abrir esta tela já filtrada:
+             * /Viatura/Listar?revisao=alerta
+             * /Viatura/Listar?revisao=proxima
+             * /Viatura/Listar?revisao=vencida
+             */
+            const parametrosUrl =
+                new URLSearchParams(window.location.search);
+
+            const revisaoUrl =
+                parametrosUrl.get('revisao');
+
+            const filtrosRevisaoValidos =
+                ['normal', 'proxima', 'vencida', 'alerta'];
+
+            if (revisaoUrl &&
+                filtrosRevisaoValidos.includes(revisaoUrl)) {
+
+                filtroRevisao.value = revisaoUrl;
+            }
 
             aplicarFiltros();
         });

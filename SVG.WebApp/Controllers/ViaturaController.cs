@@ -35,14 +35,6 @@ namespace SVG.WebApp.Controllers
     public IActionResult Listar()
     {
       var viaturas = _viaturaAppService.PegarViaturas();
-      var kmAlterado = 7000;
-
-      foreach (var v in viaturas)
-      {
-        v.KmAtual = kmAlterado;
-        kmAlterado += 500;
-      }
-
       return View(viaturas);
     }
 
@@ -78,9 +70,6 @@ namespace SVG.WebApp.Controllers
           ? string.Empty
           : MontarNomeOperador(operadorLogado)
       };
-
-      var rnd = new Random();
-      model.KmAtual = rnd.Next(7500, 12000);
 
       PopularOperadoresPesquisa();
 
@@ -191,9 +180,6 @@ namespace SVG.WebApp.Controllers
           ? string.Empty
           : MontarNomeOperador(operadorLogado)
       };
-
-      var rnd = new Random();
-      model.KmAtual = rnd.Next(7500, 12000);
 
       PopularOperadoresPesquisa();
 

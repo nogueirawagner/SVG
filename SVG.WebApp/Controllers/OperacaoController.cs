@@ -16,6 +16,7 @@ namespace SVG.WebApp.Controllers
   public class OperacaoController : Controller
   {
     private readonly IOperacaoAppService _operacaoAppService;
+    private readonly IViaturaAppService _viaturaAppService;
     private readonly IOperadorOperacaoAppService _operadorOperacaoAppService;
     private readonly IOperadorAppService _operadorAppService;
     private readonly ISessaoAppService _sessaoAppService;
@@ -29,6 +30,7 @@ namespace SVG.WebApp.Controllers
       ITipoOperacaoAppService tipoOperacaoAppService,
       ISessaoAppService sessaoAppService,
       IOperadorOperacaoAppService operadorOperacaoAppService,
+      IViaturaAppService viaturaAppService,
       IMapper mapper,
       IUserContext userContext)
     {
@@ -39,6 +41,7 @@ namespace SVG.WebApp.Controllers
       _operadorOperacaoAppService = operadorOperacaoAppService;
       _mapper = mapper;
       _userContext = userContext;
+      _viaturaAppService = viaturaAppService;
     }
 
     private void CriarViewBagsEscalas()
@@ -118,19 +121,26 @@ namespace SVG.WebApp.Controllers
     {
       CriarViewBagsEscalas();
 
-      var operacoes = _operacaoAppService.PegarOperacoesRealizadas().ToList();
-      if (User.IsInRole("Admin"))
-      {
-        return View(operacoes);
-      }
-      else if (User.IsInRole("Operador"))
-      {
-        return RedirectToAction("Index", "OperacaoOperador");
-      }
-      else
-      {
-        return RedirectToAction("Login", "Auth");
-      }
+      const int limiteAlertaRevisao = 2800;
+
+      var operacoes = _operacaoAppService
+        .PegarOperacoesRealizadas()
+        .ToList();
+
+      var viaturas = _viaturaAppService
+        .GetAll()
+        .ToList();
+
+      ViewBag.QtdRevisaoProxima = viaturas.Count(v =>
+        v.KmProximaRevisao.HasValue &&
+        v.KmProximaRevisao.Value > v.KmAtual &&
+        (v.KmProximaRevisao.Value - v.KmAtual) <= limiteAlertaRevisao);
+
+      ViewBag.QtdRevisaoVencida = viaturas.Count(v =>
+        v.KmProximaRevisao.HasValue &&
+        v.KmProximaRevisao.Value <= v.KmAtual);
+
+      return View(operacoes);
     }
 
     [HttpGet]
