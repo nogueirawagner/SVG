@@ -40,6 +40,7 @@ namespace SVG.Infra.Context.SQLServer
     public DbSet<Viatura> Viatura { get; set; }
     public DbSet<ViaturaOperacao> ViaturaOperacao { get; set; }
     public DbSet<ViaturaMovimentacao> ViaturaMovimentacao { get; set; }
+    public DbSet<AfastamentoOperador> AfastamentoOperador { get; set; }
 
     #endregion
 
