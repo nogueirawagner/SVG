@@ -25,5 +25,7 @@ namespace SVG.Domain.Interfaces.Repositories
       int pOperadorID,
       DateTime pDataInicio,
       DateTime pDataFim);
+
+    IEnumerable<int> PegarAnosComImpedimentos();
   }
 }

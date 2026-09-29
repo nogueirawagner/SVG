@@ -105,5 +105,40 @@ namespace SVG.Infra.Repositories
         .OrderBy(x => x.DataInicio)
         .ToList();
     }
+
+    public IEnumerable<int> PegarAnosComImpedimentos()
+    {
+      var anoAtual = DateTime.Now.Year;
+
+      var periodos = _db.ImpedimentoOperador
+        .Select(x => new
+        {
+          x.DataInicio,
+          x.DataFim
+        })
+        .ToList();
+
+      return periodos
+        .SelectMany(x =>
+        {
+          /*
+           * Impedimento sem DataFim continua vigente.
+           * Nesse caso, consideramos até o ano atual
+           * para composição do filtro de anos.
+           */
+          var anoFim = x.DataFim.HasValue
+            ? x.DataFim.Value.Year
+            : Math.Max(
+                anoAtual,
+                x.DataInicio.Year);
+
+          return Enumerable.Range(
+            x.DataInicio.Year,
+            anoFim - x.DataInicio.Year + 1);
+        })
+        .Distinct()
+        .OrderByDescending(x => x)
+        .ToList();
+    }
   }
 }

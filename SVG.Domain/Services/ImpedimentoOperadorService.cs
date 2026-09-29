@@ -49,5 +49,16 @@ namespace SVG.Domain.Services
         pDataFim,
         pImpedimentoOperadorID);
     }
+
+    public IEnumerable<int> PegarAnosComImpedimentos()
+    {
+      return _impedimentoOperadorRepository
+        .PegarAnosComImpedimentos();
+    }
+
+    public IEnumerable<ImpedimentoOperador> PegarPorOperadorEPeriodo(int pOperadorID, DateTime pDataInicio, DateTime pDataFim)
+    {
+      return _impedimentoOperadorRepository.PegarPorOperadorEPeriodo(pOperadorID, pDataInicio, pDataFim);
+    }
   }
 }

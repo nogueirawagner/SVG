@@ -20,5 +20,12 @@ namespace SVG.Domain.Interfaces.Services
       DateTime pDataInicio,
       DateTime? pDataFim,
       int? pImpedimentoOperadorID = null);
+
+    IEnumerable<ImpedimentoOperador> PegarPorOperadorEPeriodo(
+      int pOperadorID,
+      DateTime pDataInicio,
+      DateTime pDataFim);
+
+    IEnumerable<int> PegarAnosComImpedimentos();
   }
 }

@@ -97,12 +97,31 @@
                                 Viatura
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="AfastamentoOperador"
-                               asp-action="Index">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               id="afastamentosDropdown"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
                                 Afastamentos
                             </a>
+                            <ul class="dropdown-menu" aria-labelledby="afastamentosDropdown">
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="AfastamentoOperador"
+                                       asp-action="Index">
+                                        Afastamentos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="ImpedimentoOperador"
+                                       asp-action="Index">
+                                        Impedimentos
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
 
                     </ul>

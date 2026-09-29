@@ -1,0 +1,973 @@
+﻿@model SVG.App.ViewModels.ImpedimentoOperadorListarViewModel
+
+@using SVG.Domain.TiposEstruturados.TiposOperador
+@using SVG.Utilities.ExtensionsMethods
+
+@{
+    ViewData["Title"] = "Impedimentos";
+
+    var anoVisual = Model.Ano;
+}
+
+<div class="container-fluid mt-4">
+
+    <!-- ========================================================= -->
+    <!-- CABEÇALHO -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">
+                Impedimentos dos Operadores
+            </h3>
+
+            <small class="text-muted">
+                Cadastro e consulta dos períodos de impedimento.
+            </small>
+        </div>
+
+        <a asp-action="Create"
+           class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>
+            Novo impedimento
+        </a>
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- MENSAGENS -->
+    <!-- ========================================================= -->
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+
+            @TempData["Sucesso"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    }
+
+    @if (TempData["Erro"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+
+            @TempData["Erro"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    }
+
+    <!-- ========================================================= -->
+    <!-- FILTROS -->
+    <!-- ========================================================= -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-light p-0">
+
+            <button type="button"
+                    class="btn w-100 d-flex justify-content-between align-items-center px-3 py-3 text-start border-0"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapseFiltros"
+                    aria-expanded="true"
+                    aria-controls="collapseFiltros"
+                    id="btnCollapseFiltros">
+
+                <strong>
+                    <i class="bi bi-funnel me-2"></i>
+                    Filtros
+                </strong>
+
+                <i class="bi bi-chevron-up"
+                   id="iconeCollapseFiltros">
+                </i>
+
+            </button>
+
+        </div>
+
+        <!-- "show" = aberto por padrão -->
+        <div id="collapseFiltros"
+             class="collapse show">
+
+            <div class="card-body">
+                <div class="row g-3">
+
+                    <!-- OPERADOR -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">Operador</label>
+
+                        <input type="hidden"
+                               id="filtroOperadorID"
+                               value="" />
+
+                        <div class="position-relative">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+
+                                <input type="text"
+                                       id="pesquisaFiltroOperador"
+                                       class="form-control"
+                                       placeholder="Todos os operadores"
+                                       autocomplete="off" />
+
+                                <button type="button"
+                                        id="limparFiltroOperador"
+                                        class="btn btn-outline-secondary d-none"
+                                        title="Limpar operador">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+
+                            <div id="listaFiltroOperadores"
+                                 class="list-group position-absolute w-100 shadow d-none"
+                                 style="z-index: 1050; max-height: 280px; overflow-y: auto; top: 100%; left: 0;">
+
+                                @foreach (var operador in Model.Operadores)
+                                {
+                                    <button type="button"
+                                            class="list-group-item list-group-item-action filtro-operador-item"
+                                            data-id="@operador.Value"
+                                            data-nome="@operador.Text">
+                                        <i class="bi bi-person me-2 text-muted"></i>
+                                        @operador.Text
+                                    </button>
+                                }
+
+                                <div id="nenhumFiltroOperador"
+                                     class="list-group-item text-muted d-none">
+                                    Nenhum operador encontrado.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- SEÇÃO -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">
+                            Seção
+                        </label>
+
+                        <select id="filtroSessao"
+                                class="form-select">
+
+                            <option value="">
+                                Todas
+                            </option>
+
+                            @foreach (var sessao in Model.Sessoes)
+                            {
+                                <option value="@sessao.Value">
+                                    @sessao.Text
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- TIPO -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Tipo de impedimento
+                        </label>
+
+                        <select id="filtroTipoImpedimento"
+                                class="form-select">
+
+                            <option value="">
+                                Todos
+                            </option>
+
+                            @foreach (XTipoImpedimentoOperador tipo
+                                                        in Enum.GetValues(typeof(XTipoImpedimentoOperador)))
+                            {
+                                <option value="@((int)tipo)">
+                                    @tipo.GetDescription()
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- ANO -->
+
+                    <div class="col-md-1">
+
+                        <label class="form-label">
+                            Ano
+                        </label>
+
+                        <select id="filtroAno"
+                                class="form-select">
+
+                            @foreach (var ano in Model.Anos)
+                            {
+                                var selecionado =
+                                ano.Value ==
+                                anoVisual.ToString();
+
+                                if (selecionado)
+                                {
+                                    <option value="@ano.Value"
+                                            selected>
+                                        @ano.Text
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@ano.Value">
+                                        @ano.Text
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- MÊS -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">
+                            Mês
+                        </label>
+
+                        <select id="filtroMes"
+                                class="form-select">
+
+                            <option value="">
+                                Todos
+                            </option>
+
+                            @for (var mes = 1; mes <= 12; mes++)
+                            {
+                                var nomeMes =
+                                new DateTime(2000, mes, 1)
+                                .ToString(
+                                "MMMM",
+                                new System.Globalization.CultureInfo("pt-BR"));
+
+                                nomeMes =
+                                char.ToUpper(nomeMes[0]) +
+                                nomeMes.Substring(1);
+
+                                <option value="@mes">
+                                    @nomeMes
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SEGUNDA LINHA -->
+
+                <div class="row g-3 mt-1">
+
+                    <!-- PERÍODO INICIAL -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Período inicial
+                        </label>
+
+                        <input type="date"
+                               id="periodoInicio"
+                               class="form-control"
+                               min="@($"{anoVisual}-01-01")"
+                               max="@($"{anoVisual}-12-31")" />
+
+                    </div>
+
+
+                    <!-- PERÍODO FINAL -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Período final
+                        </label>
+
+                        <input type="date"
+                               id="periodoFim"
+                               class="form-control"
+                               min="@($"{anoVisual}-01-01")"
+                               max="@($"{anoVisual}-12-31")" />
+
+                    </div>
+
+
+                    <!-- BOTÃO LIMPAR -->
+
+                    <div class="col-md-6 d-flex align-items-end justify-content-end">
+
+                        <button type="button"
+                                id="btnLimparFiltros"
+                                class="btn btn-outline-secondary">
+
+                            <i class="bi bi-x-circle me-1"></i>
+                            Limpar filtros
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- RESULTADO -->
+    <!-- ========================================================= -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+
+            <strong>
+                Impedimentos de @anoVisual
+            </strong>
+
+            <span class="badge bg-secondary"
+                  id="contadorImpedimentos">
+                @(Model.Impedimentos?.Count() ?? 0)
+            </span>
+
+        </div>
+
+        <div class="card-body p-0">
+
+            @if (Model.Impedimentos == null ||
+                        !Model.Impedimentos.Any())
+            {
+                <div class="text-center text-muted py-5">
+
+                    <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+
+                    Nenhum impedimento encontrado.
+
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+
+                            <tr>
+                                <th>Operador</th>
+                                <th>Seção</th>
+                                <th>Tipo de impedimento</th>
+                                <th class="text-center">
+                                    Data inicial
+                                </th>
+                                <th class="text-center">
+                                    Data final
+                                </th>
+                                <th class="text-center">
+                                    Dias
+                                </th>
+                                <th class="text-center">
+                                    Ações
+                                </th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var item in Model.Impedimentos)
+                            {
+                                int? quantidadeDias = item.DataFim.HasValue
+                                ? (item.DataFim.Value.Date - item.DataInicio.Date).Days + 1
+                                : null;
+
+                                <tr class="linha-impedimento"
+                                    data-operador-id="@item.OperadorID"
+                                    data-sessao="@item.SessaoNome"
+                                    data-tipo="@(item.TipoImpedimento.HasValue ? ((int)item.TipoImpedimento.Value).ToString() : "")"
+                                    data-inicio="@item.DataInicio.ToString("yyyy-MM-dd")"
+                                    data-fim="@(item.DataFim.HasValue? item.DataFim.Value.ToString("yyyy-MM-dd") : "")">
+
+                                    <td>
+                                        <strong>
+                                            @item.OperadorNome
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        @(string.IsNullOrWhiteSpace(item.SessaoNome)
+                                                                        ? "-"
+                                                                        : item.SessaoNome)
+                                                                                      </td>
+
+                                    <td>
+                                        @item.TipoImpedimento.GetDescription()
+                                    </td>
+
+                                    <td class="text-center">
+                                        @item.DataInicio.ToString("dd/MM/yyyy")
+                                    </td>
+
+                                    <td class="text-center">
+                                        @(item.DataFim.HasValue
+                                                                        ? item.DataFim.Value.ToString("dd/MM/yyyy")
+                                                                        : "Sem data final")
+                                                                                       </td>
+
+                                    <td class="text-center">
+                                        @(quantidadeDias.HasValue
+                                                                        ? quantidadeDias.Value.ToString()
+                                                                        : "Em vigor")
+                            </td>
+
+                                    <td class="text-center">
+
+                                        <div class="btn-group btn-group-sm">
+
+                                            <a asp-action="Edit"
+                                               asp-route-id="@item.ID"
+                                               class="btn btn-outline-primary"
+                                               title="Editar">
+
+                                                <i class="bi bi-pencil"></i>
+
+                                            </a>
+
+                                            <a asp-action="Delete"
+                                               asp-route-id="@item.ID"
+                                               class="btn btn-outline-danger"
+                                               title="Excluir">
+
+                                                <i class="bi bi-trash"></i>
+
+                                            </a>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                                                }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div id="semResultadosClient"
+                     class="text-center text-muted py-5 d-none">
+
+                    <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+
+                    Nenhum impedimento encontrado para os filtros selecionados.
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // =====================================================
+            // ELEMENTOS
+            // =====================================================
+
+            const pesquisa = document.getElementById("pesquisaFiltroOperador");
+            const operadorID = document.getElementById("filtroOperadorID");
+            const lista = document.getElementById("listaFiltroOperadores");
+            const limparOperador = document.getElementById("limparFiltroOperador");
+            const nenhumOperador = document.getElementById("nenhumFiltroOperador");
+            const operadores = Array.from(document.querySelectorAll(".filtro-operador-item"));
+
+            const filtroSessao = document.getElementById("filtroSessao");
+            const filtroTipo = document.getElementById("filtroTipoImpedimento");
+            const filtroAno = document.getElementById("filtroAno");
+            const filtroMes = document.getElementById("filtroMes");
+            const periodoInicio = document.getElementById("periodoInicio");
+            const periodoFim = document.getElementById("periodoFim");
+            const btnLimparFiltros = document.getElementById("btnLimparFiltros");
+
+            const linhas = Array.from(document.querySelectorAll(".linha-impedimento"));
+            const contador = document.getElementById("contadorImpedimentos");
+            const semResultadosClient = document.getElementById("semResultadosClient");
+            const tabelaResponsiva = document.querySelector(".table-responsive");
+
+
+            // =====================================================
+            // UTILITÁRIOS
+            // =====================================================
+
+            function normalizar(texto) {
+                if (!texto)
+                    return "";
+
+                return texto
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .toLowerCase()
+                    .trim();
+            }
+
+            function dataLocal(valor) {
+                if (!valor)
+                    return null;
+
+                const partes = valor.split("-");
+
+                return new Date(
+                    Number(partes[0]),
+                    Number(partes[1]) - 1,
+                    Number(partes[2])
+                );
+            }
+
+            function ultimoDiaMes(ano, mes) {
+                return new Date(ano, mes, 0);
+            }
+
+
+            // =====================================================
+            // FILTRAGEM DA TABELA - 100% CLIENT-SIDE
+            // =====================================================
+
+            function aplicarFiltros() {
+
+                const operadorSelecionado = operadorID.value;
+
+                const sessaoSelecionada =
+                    filtroSessao.value === ""
+                        ? ""
+                        : normalizar(
+                            filtroSessao.options[
+                                filtroSessao.selectedIndex
+                            ].text
+                        );
+
+                const tipoSelecionado = filtroTipo.value;
+                const mesSelecionado = filtroMes.value;
+
+                const inicioPeriodo = dataLocal(periodoInicio.value);
+                const fimPeriodo = dataLocal(periodoFim.value);
+
+                const anoSelecionado = Number(filtroAno.value);
+
+                let inicioMes = null;
+                let fimMes = null;
+
+                if (mesSelecionado !== "") {
+                    const mes = Number(mesSelecionado);
+
+                    inicioMes = new Date(
+                        anoSelecionado,
+                        mes - 1,
+                        1
+                    );
+
+                    fimMes = ultimoDiaMes(
+                        anoSelecionado,
+                        mes
+                    );
+                }
+
+                let quantidadeVisivel = 0;
+
+                linhas.forEach(function (linha) {
+
+                    const linhaOperadorID =
+                        linha.dataset.operadorId;
+
+                    const linhaSessao =
+                        normalizar(linha.dataset.sessao);
+
+                    const linhaTipo =
+                        linha.dataset.tipo;
+
+                    const linhaInicio =
+                        dataLocal(linha.dataset.inicio);
+
+                    const linhaFim =
+                        dataLocal(linha.dataset.fim);
+
+                    const atendeOperador =
+                        operadorSelecionado === "" ||
+                        linhaOperadorID === operadorSelecionado;
+
+                    const atendeSessao =
+                        sessaoSelecionada === "" ||
+                        linhaSessao === sessaoSelecionada;
+
+                    const atendeTipo =
+                        tipoSelecionado === "" ||
+                        linhaTipo === tipoSelecionado;
+
+                    /*
+                     * Interseção com o mês selecionado.
+                     * Ex.: 29/09 a 10/10 aparece em Outubro.
+                     */
+                    const atendeMes =
+                        inicioMes === null ||
+                        (
+                            linhaInicio <= fimMes &&
+                            (linhaFim === null ||
+                             linhaFim >= inicioMes)
+                        );
+
+                    /*
+                     * Interseção com o período informado.
+                     * Cada ponta pode ser usada isoladamente.
+                     */
+                    const atendePeriodoInicio =
+                        inicioPeriodo === null ||
+                        linhaFim === null ||
+                        linhaFim >= inicioPeriodo;
+
+                    const atendePeriodoFim =
+                        fimPeriodo === null ||
+                        linhaInicio <= fimPeriodo;
+
+                    const mostrar =
+                        atendeOperador &&
+                        atendeSessao &&
+                        atendeTipo &&
+                        atendeMes &&
+                        atendePeriodoInicio &&
+                        atendePeriodoFim;
+
+                    linha.classList.toggle(
+                        "d-none",
+                        !mostrar
+                    );
+
+                    if (mostrar)
+                        quantidadeVisivel++;
+                });
+
+                if (contador)
+                    contador.textContent = quantidadeVisivel;
+
+                if (semResultadosClient) {
+                    semResultadosClient.classList.toggle(
+                        "d-none",
+                        quantidadeVisivel > 0
+                    );
+                }
+
+                if (tabelaResponsiva) {
+                    tabelaResponsiva.classList.toggle(
+                        "d-none",
+                        quantidadeVisivel === 0
+                    );
+                }
+            }
+
+
+            // =====================================================
+            // PESQUISA / SELEÇÃO DO OPERADOR
+            // =====================================================
+
+            function fecharListaOperadores() {
+                lista.classList.add("d-none");
+            }
+
+            function filtrarListaOperadores() {
+
+                const termo = normalizar(pesquisa.value);
+                let encontrados = 0;
+
+                operadores.forEach(function (item) {
+
+                    const mostrar =
+                        normalizar(item.dataset.nome)
+                            .includes(termo);
+
+                    item.classList.toggle(
+                        "d-none",
+                        !mostrar
+                    );
+
+                    if (mostrar)
+                        encontrados++;
+                });
+
+                nenhumOperador.classList.toggle(
+                    "d-none",
+                    encontrados > 0
+                );
+
+                lista.classList.remove("d-none");
+            }
+
+            function selecionarOperador(item) {
+
+                operadorID.value = item.dataset.id;
+                pesquisa.value = item.dataset.nome;
+
+                limparOperador.classList.remove("d-none");
+
+                fecharListaOperadores();
+                aplicarFiltros();
+            }
+
+            function limparSelecaoOperador(abrirLista) {
+
+                operadorID.value = "";
+                pesquisa.value = "";
+
+                limparOperador.classList.add("d-none");
+                nenhumOperador.classList.add("d-none");
+
+                operadores.forEach(function (item) {
+                    item.classList.remove("d-none");
+                });
+
+                if (abrirLista) {
+                    pesquisa.focus();
+                    lista.classList.remove("d-none");
+                } else {
+                    fecharListaOperadores();
+                }
+
+                aplicarFiltros();
+            }
+
+            pesquisa.addEventListener(
+                "focus",
+                filtrarListaOperadores
+            );
+
+            pesquisa.addEventListener(
+                "input",
+                function () {
+
+                    /*
+                     * Digitar apenas pesquisa a lista.
+                     * O filtro da tabela só assume um operador
+                     * quando uma opção válida é selecionada.
+                     */
+                    if (operadorID.value !== "") {
+                        operadorID.value = "";
+                        limparOperador.classList.add("d-none");
+                        aplicarFiltros();
+                    }
+
+                    filtrarListaOperadores();
+                }
+            );
+
+            operadores.forEach(function (item) {
+
+                item.addEventListener(
+                    "click",
+                    function () {
+                        selecionarOperador(this);
+                    }
+                );
+            });
+
+            limparOperador.addEventListener(
+                "click",
+                function () {
+                    limparSelecaoOperador(true);
+                }
+            );
+
+            pesquisa.addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (event.key === "Escape") {
+                        fecharListaOperadores();
+                        pesquisa.blur();
+                    }
+
+                    if (event.key === "Enter") {
+
+                        const visiveis =
+                            operadores.filter(function (item) {
+                                return !item.classList.contains("d-none");
+                            });
+
+                        if (visiveis.length === 1) {
+                            event.preventDefault();
+                            selecionarOperador(visiveis[0]);
+                        }
+                    }
+                }
+            );
+
+            document.addEventListener(
+                "click",
+                function (event) {
+
+                    if (!pesquisa.contains(event.target) &&
+                        !lista.contains(event.target) &&
+                        !limparOperador.contains(event.target)) {
+
+                        fecharListaOperadores();
+                    }
+                }
+            );
+
+
+            // =====================================================
+            // FILTROS CLIENT-SIDE
+            // =====================================================
+
+            filtroSessao.addEventListener(
+                "change",
+                aplicarFiltros
+            );
+
+            filtroTipo.addEventListener(
+                "change",
+                aplicarFiltros
+            );
+
+            filtroMes.addEventListener(
+                "change",
+                aplicarFiltros
+            );
+
+            periodoInicio.addEventListener(
+                "change",
+                aplicarFiltros
+            );
+
+            periodoFim.addEventListener(
+                "change",
+                aplicarFiltros
+            );
+
+
+            // =====================================================
+            // ANO - ÚNICO FILTRO QUE VOLTA AO CONTROLLER
+            // =====================================================
+
+            filtroAno.addEventListener(
+                "change",
+                function () {
+
+                    const ano = this.value;
+
+                    window.location.href =
+                        '@Url.Action("Index", "ImpedimentoOperador")' +
+                        '?pAno=' +
+                        encodeURIComponent(ano);
+                }
+            );
+
+
+            // =====================================================
+            // LIMPAR FILTROS
+            // O ANO É MANTIDO, POIS É O RECORTE SERVER-SIDE.
+            // =====================================================
+
+            btnLimparFiltros.addEventListener(
+                "click",
+                function () {
+
+                    limparSelecaoOperador(false);
+
+                    filtroSessao.value = "";
+                    filtroTipo.value = "";
+                    filtroMes.value = "";
+
+                    periodoInicio.value = "";
+                    periodoFim.value = "";
+
+                    aplicarFiltros();
+                }
+            );
+
+
+            // =====================================================
+            // COLLAPSE DOS FILTROS
+            // =====================================================
+
+            const collapseFiltros =
+                document.getElementById("collapseFiltros");
+
+            const iconeCollapseFiltros =
+                document.getElementById("iconeCollapseFiltros");
+
+            if (collapseFiltros &&
+                iconeCollapseFiltros) {
+
+                collapseFiltros.addEventListener(
+                    "show.bs.collapse",
+                    function () {
+
+                        iconeCollapseFiltros
+                            .classList
+                            .remove("bi-chevron-down");
+
+                        iconeCollapseFiltros
+                            .classList
+                            .add("bi-chevron-up");
+                    }
+                );
+
+                collapseFiltros.addEventListener(
+                    "hide.bs.collapse",
+                    function () {
+
+                        iconeCollapseFiltros
+                            .classList
+                            .remove("bi-chevron-up");
+
+                        iconeCollapseFiltros
+                            .classList
+                            .add("bi-chevron-down");
+                    }
+                );
+            }
+
+
+            // Estado inicial
+            aplicarFiltros();
+        });
+    </script>
+}
