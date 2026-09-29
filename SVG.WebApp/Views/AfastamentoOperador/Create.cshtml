@@ -1,0 +1,198 @@
+﻿@model SVG.App.ViewModels.AfastamentoOperadorViewModel
+
+@using SVG.Domain.TiposEstruturados.TiposOperador
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using SVG.Utilities.ExtensionsMethods
+
+@{
+    ViewData["Title"] = "Novo Afastamento";
+
+    var operadores =
+        ViewBag.Operadores as IEnumerable<SelectListItem>;
+}
+
+<div class="container mt-4"
+     style="max-width: 850px;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h3 class="mb-1">
+                Novo Afastamento
+            </h3>
+
+            <small class="text-muted">
+                Informe o operador e o período do afastamento.
+            </small>
+        </div>
+
+        <a asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Voltar
+
+        </a>
+
+    </div>
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-body p-4">
+
+            <form asp-action="Create"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger">
+                </div>
+
+
+                <!-- OPERADOR -->
+
+                <div class="mb-3">
+
+                    <label asp-for="OperadorID"
+                           class="form-label">
+                    </label>
+
+                    <select asp-for="OperadorID"
+                            asp-items="operadores"
+                            class="form-select">
+
+                        <option value="">
+                            Selecione o operador
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="OperadorID"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- TIPO -->
+
+                <div class="mb-3">
+
+                    <label asp-for="TipoAfastamento"
+                           class="form-label">
+                    </label>
+
+                    <select asp-for="TipoAfastamento"
+                            class="form-select">
+
+                        <option value="">
+                            Selecione o tipo de afastamento
+                        </option>
+
+                        @foreach (XTipoAfastamento tipo
+                                                in Enum.GetValues(typeof(XTipoAfastamento)))
+                        {
+                            <option value="@((int)tipo)">
+                                @tipo.GetDescription()
+                            </option>
+                        }
+
+                    </select>
+
+                    <span asp-validation-for="TipoAfastamento"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- DATAS -->
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="DataInicio"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="DataInicio"
+                               type="date"
+                               class="form-control" />
+
+                        <span asp-validation-for="DataInicio"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="DataFim"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="DataFim"
+                               type="date"
+                               class="form-control" />
+
+                        <span asp-validation-for="DataFim"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- OBSERVAÇÃO -->
+
+                <div class="mb-4">
+
+                    <label asp-for="Observacao"
+                           class="form-label">
+                    </label>
+
+                    <textarea asp-for="Observacao"
+                              class="form-control"
+                              rows="4"
+                              maxlength="500"
+                              placeholder="Informações adicionais sobre o afastamento...">
+                    </textarea>
+
+                    <span asp-validation-for="Observacao"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary">
+
+                        Cancelar
+
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        <i class="bi bi-check-circle me-1"></i>
+                        Salvar afastamento
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

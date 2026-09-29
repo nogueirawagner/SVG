@@ -1,0 +1,133 @@
+﻿@model SVG.App.ViewModels.AfastamentoOperadorViewModel
+
+@using SVG.Domain.TiposEstruturados.TiposOperador
+@using SVG.Utilities.ExtensionsMethods
+
+@{
+    ViewData["Title"] = "Excluir Afastamento";
+}
+
+<div class="container mt-4"
+     style="max-width: 750px;">
+
+    <div class="mb-4">
+
+        <h3 class="mb-1">
+            Excluir Afastamento
+        </h3>
+
+        <small class="text-muted">
+            Confirme a exclusão do registro.
+        </small>
+
+    </div>
+
+
+    <div class="card shadow-sm border-danger">
+
+        <div class="card-header bg-danger text-white">
+
+            <strong>
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Atenção
+            </strong>
+
+        </div>
+
+        <div class="card-body p-4">
+
+            <p>
+                Deseja realmente excluir este afastamento?
+            </p>
+
+
+            <dl class="row mb-4">
+
+                <dt class="col-sm-4">
+                    Operador
+                </dt>
+
+                <dd class="col-sm-8">
+                    @Model.OperadorNome
+                </dd>
+
+
+                <dt class="col-sm-4">
+                    Tipo
+                </dt>
+
+                <dd class="col-sm-8">
+                    @(Model.TipoAfastamento.HasValue
+                    ? Model.TipoAfastamento.Value.GetDescription()
+                    : "-")
+                </dd>
+
+
+                <dt class="col-sm-4">
+                    Data inicial
+                </dt>
+
+                <dd class="col-sm-8">
+                    @Model.DataInicio.ToString("dd/MM/yyyy")
+                </dd>
+
+
+                <dt class="col-sm-4">
+                    Data final
+                </dt>
+
+                <dd class="col-sm-8">
+                    @Model.DataFim.ToString("dd/MM/yyyy")
+                </dd>
+
+
+                @if (!string.IsNullOrWhiteSpace(Model.Observacao))
+                {
+                    <dt class="col-sm-4">
+                        Observação
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @Model.Observacao
+                    </dd>
+                }
+
+            </dl>
+
+
+            <form asp-action="Delete"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       name="id"
+                       value="@Model.ID" />
+
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary">
+
+                        Cancelar
+
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-danger">
+
+                        <i class="bi bi-trash me-1"></i>
+                        Excluir afastamento
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
