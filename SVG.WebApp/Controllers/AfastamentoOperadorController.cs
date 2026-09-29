@@ -30,136 +30,38 @@ namespace SVG.WebApp.Controllers
     // ============================================================
 
     [HttpGet]
-    public IActionResult Index(
-      int? pOperadorID,
-      int? pSessaoID,
-      XTipoAfastamento? pTipoAfastamento,
-      int? pAno,
-      int? pMes,
-      DateTime? pPeriodoInicio,
-      DateTime? pPeriodoFim)
+    public IActionResult Index(int? pAno)
     {
+      /*
+       * O ano é o único filtro processado no servidor.
+       * Na primeira abertura usamos o ano atual.
+       */
+      var anoSelecionado = pAno ?? DateTime.Now.Year;
+
+      var inicioAno = new DateTime(
+        anoSelecionado,
+        1,
+        1);
+
+      var fimAno = new DateTime(
+        anoSelecionado,
+        12,
+        31);
+
+      /*
+       * A consulta por período é executada no Repository/SQL.
+       * Assim, somente os afastamentos que interceptam o ano
+       * selecionado são enviados para o navegador.
+       */
       var afastamentos = _afastamentoOperadorAppService
-        .PegarAfastamentos()
-        .ToList();
-
-      // =========================
-      // OPERADOR
-      // =========================
-
-      if (pOperadorID.HasValue)
-      {
-        afastamentos = afastamentos
-          .Where(x => x.OperadorID == pOperadorID.Value)
-          .ToList();
-      }
-
-      // =========================
-      // SEÇÃO
-      // =========================
-
-      if (pSessaoID.HasValue)
-      {
-        afastamentos = afastamentos
-          .Where(x =>
-            x.Operador != null &&
-            x.Operador.SessaoID == pSessaoID.Value)
-          .ToList();
-      }
-
-      // =========================
-      // TIPO
-      // =========================
-
-      if (pTipoAfastamento.HasValue)
-      {
-        afastamentos = afastamentos
-          .Where(x =>
-            x.TipoAfastamento == pTipoAfastamento.Value)
-          .ToList();
-      }
-
-      // =========================
-      // ANO
-      // =========================
-
-      if (pAno.HasValue)
-      {
-        var inicioAno = new DateTime(
-          pAno.Value,
-          1,
-          1);
-
-        var fimAno = new DateTime(
-          pAno.Value,
-          12,
-          31);
-
-        afastamentos = afastamentos
-          .Where(x =>
-            x.DataInicio.Date <= fimAno &&
-            x.DataFim.Date >= inicioAno)
-          .ToList();
-      }
-
-      // =========================
-      // MÊS
-      // =========================
-
-      if (pMes.HasValue)
-      {
-        var anoMes = pAno ?? DateTime.Now.Year;
-
-        var inicioMes = new DateTime(
-          anoMes,
-          pMes.Value,
-          1);
-
-        var fimMes = inicioMes
-          .AddMonths(1)
-          .AddDays(-1);
-
-        afastamentos = afastamentos
-          .Where(x =>
-            x.DataInicio.Date <= fimMes &&
-            x.DataFim.Date >= inicioMes)
-          .ToList();
-      }
-
-      // =========================
-      // PERÍODO
-      // =========================
-
-      if (pPeriodoInicio.HasValue)
-      {
-        afastamentos = afastamentos
-          .Where(x =>
-            x.DataFim.Date >= pPeriodoInicio.Value.Date)
-          .ToList();
-      }
-
-      if (pPeriodoFim.HasValue)
-      {
-        afastamentos = afastamentos
-          .Where(x =>
-            x.DataInicio.Date <= pPeriodoFim.Value.Date)
-          .ToList();
-      }
-
-      afastamentos = afastamentos
+        .PegarPorPeriodo(inicioAno, fimAno)
         .OrderBy(x => x.DataInicio)
         .ThenBy(x => x.Operador?.Nome)
         .ToList();
 
       var model = new AfastamentoOperadorListarViewModel
       {
-        OperadorID = pOperadorID,
-        SessaoID = pSessaoID,
-        TipoAfastamento = pTipoAfastamento,
-        Ano = pAno,
-        Mes = pMes,
-        PeriodoInicio = pPeriodoInicio,
-        PeriodoFim = pPeriodoFim,
+        Ano = anoSelecionado,
 
         Afastamentos = afastamentos
           .Select(MontarViewModel)
@@ -170,6 +72,7 @@ namespace SVG.WebApp.Controllers
 
       return View(model);
     }
+
 
     // ============================================================
     // CREATE - GET
@@ -490,26 +393,24 @@ namespace SVG.WebApp.Controllers
           })
           .ToList();
 
-      var anos =
-        _afastamentoOperadorAppService
-          .PegarAfastamentos()
-          .SelectMany(x =>
-            Enumerable.Range(
-              x.DataInicio.Year,
-              x.DataFim.Year -
-              x.DataInicio.Year + 1))
-          .Distinct()
-          .OrderByDescending(x => x)
-          .ToList();
+      var anos = _afastamentoOperadorAppService
+      .PegarAnosComAfastamentos()
+      .ToList();
 
       /*
-       * Se ainda não existe afastamento cadastrado,
-       * precisamos permitir o ano atual.
+       * O ano atual deve estar sempre disponível porque é
+       * o ano padrão da tela, mesmo que ainda não exista
+       * afastamento cadastrado nele.
        */
-      if (!anos.Any())
+      if (!anos.Contains(DateTime.Now.Year))
       {
         anos.Add(DateTime.Now.Year);
       }
+
+      anos = anos
+        .Distinct()
+        .OrderByDescending(x => x)
+        .ToList();
 
       pModel.Anos =
         anos.Select(x =>

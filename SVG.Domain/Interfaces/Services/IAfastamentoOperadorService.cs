@@ -20,5 +20,7 @@ namespace SVG.Domain.Interfaces.Services
       DateTime pDataInicio,
       DateTime pDataFim,
       int? pAfastamentoOperadorID = null);
+
+    IEnumerable<int> PegarAnosComAfastamentos();
   }
 }

@@ -72,5 +72,25 @@ namespace SVG.Infra.Repositories
 
       return query.Any();
     }
+
+    public IEnumerable<int> PegarAnosComAfastamentos()
+    {
+      var periodos = _db.AfastamentoOperador
+        .Select(x => new
+        {
+          x.DataInicio,
+          x.DataFim
+        })
+        .ToList();
+
+      return periodos
+        .SelectMany(x =>
+          Enumerable.Range(
+            x.DataInicio.Year,
+            x.DataFim.Year - x.DataInicio.Year + 1))
+        .Distinct()
+        .OrderByDescending(x => x)
+        .ToList();
+    }
   }
 }

@@ -49,5 +49,11 @@ namespace SVG.App.Services
       return _afastamentoOperadorService
         .PegarPorOperadorEData(pOperadorID, pData);
     }
+
+    public IEnumerable<int> PegarAnosComAfastamentos()
+    {
+      return _afastamentoOperadorService
+        .PegarAnosComAfastamentos();
+    }
   }
 }

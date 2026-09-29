@@ -20,5 +20,7 @@ namespace SVG.App.Interface
     IEnumerable<AfastamentoOperador> PegarPorOperadorEData(
       int pOperadorID,
       DateTime pData);
+
+    IEnumerable<int> PegarAnosComAfastamentos();
   }
 }
