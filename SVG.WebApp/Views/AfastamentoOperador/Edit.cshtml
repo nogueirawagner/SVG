@@ -59,21 +59,55 @@
 
                 <div class="mb-3">
 
-                    <label asp-for="OperadorID"
-                           class="form-label">
-                    </label>
+                    <label asp-for="OperadorID" class="form-label"></label>
 
-                    <select asp-for="OperadorID"
-                            asp-items="operadores"
-                            class="form-select">
-                    </select>
+                    <input asp-for="OperadorID" type="hidden" id="operadorID" />
 
-                    <span asp-validation-for="OperadorID"
-                          class="text-danger">
-                    </span>
+                    <div class="position-relative">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+
+                            <input type="text"
+                                   id="pesquisaOperador"
+                                   class="form-control"
+                                   placeholder="Digite o nome ou numérica do operador..."
+                                   autocomplete="off" />
+
+                            <button type="button"
+                                    id="limparOperador"
+                                    class="btn btn-outline-secondary d-none"
+                                    title="Limpar operador">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <div id="listaOperadores"
+                             class="list-group position-absolute w-100 shadow d-none"
+                             style="z-index: 1050; max-height: 280px; overflow-y: auto; top: 100%; left: 0;">
+
+                            @foreach (var operador in operadores)
+                            {
+                                <button type="button"
+                                        class="list-group-item list-group-item-action operador-item"
+                                        data-id="@operador.Value"
+                                        data-nome="@operador.Text">
+                                    <i class="bi bi-person me-2 text-muted"></i>
+                                    @operador.Text
+                                </button>
+                            }
+
+                            <div id="nenhumOperador"
+                                 class="list-group-item text-muted d-none">
+                                Nenhum operador encontrado.
+                            </div>
+                        </div>
+                    </div>
+
+                    <span asp-validation-for="OperadorID" class="text-danger"></span>
 
                 </div>
-
 
                 <!-- TIPO -->
 
@@ -194,3 +228,142 @@
     </div>
 
 </div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const pesquisa = document.getElementById("pesquisaOperador");
+            const operadorID = document.getElementById("operadorID");
+            const lista = document.getElementById("listaOperadores");
+            const limpar = document.getElementById("limparOperador");
+            const nenhumOperador = document.getElementById("nenhumOperador");
+            const operadores = Array.from(document.querySelectorAll(".operador-item"));
+
+            function normalizar(texto) {
+                if (!texto)
+                    return "";
+
+                return texto
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .toLowerCase()
+                    .trim();
+            }
+
+            function abrirLista() {
+                lista.classList.remove("d-none");
+            }
+
+            function fecharLista() {
+                lista.classList.add("d-none");
+            }
+
+            function filtrarOperadores() {
+                const termo = normalizar(pesquisa.value);
+                let quantidadeEncontrada = 0;
+
+                operadores.forEach(function (item) {
+                    const nome = normalizar(item.dataset.nome);
+                    const encontrado = nome.includes(termo);
+
+                    item.classList.toggle("d-none", !encontrado);
+
+                    if (encontrado)
+                        quantidadeEncontrada++;
+                });
+
+                nenhumOperador.classList.toggle("d-none", quantidadeEncontrada > 0);
+                abrirLista();
+            }
+
+            function selecionarOperador(item) {
+                operadorID.value = item.dataset.id;
+                pesquisa.value = item.dataset.nome;
+                limpar.classList.remove("d-none");
+                fecharLista();
+
+                operadorID.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+
+            function limparSelecao() {
+                operadorID.value = "";
+                pesquisa.value = "";
+                limpar.classList.add("d-none");
+                nenhumOperador.classList.add("d-none");
+
+                operadores.forEach(function (item) {
+                    item.classList.remove("d-none");
+                });
+
+                pesquisa.focus();
+                abrirLista();
+            }
+
+            pesquisa.addEventListener("input", function () {
+                if (operadorID.value !== "") {
+                    operadorID.value = "";
+                    limpar.classList.add("d-none");
+                }
+
+                filtrarOperadores();
+            });
+
+            pesquisa.addEventListener("focus", function () {
+                filtrarOperadores();
+            });
+
+            operadores.forEach(function (item) {
+                item.addEventListener("click", function () {
+                    selecionarOperador(this);
+                });
+            });
+
+            limpar.addEventListener("click", function () {
+                limparSelecao();
+            });
+
+            pesquisa.addEventListener("keydown", function (event) {
+                if (event.key === "Escape") {
+                    fecharLista();
+                    pesquisa.blur();
+                }
+
+                if (event.key === "Enter") {
+                    const visiveis = operadores.filter(function (item) {
+                        return !item.classList.contains("d-none");
+                    });
+
+                    if (visiveis.length === 1) {
+                        event.preventDefault();
+                        selecionarOperador(visiveis[0]);
+                    }
+                }
+            });
+
+            document.addEventListener("click", function (event) {
+                const clicouPesquisa = pesquisa.contains(event.target);
+                const clicouLista = lista.contains(event.target);
+                const clicouLimpar = limpar.contains(event.target);
+
+                if (!clicouPesquisa && !clicouLista && !clicouLimpar)
+                    fecharLista();
+            });
+
+            // Recupera o nome do operador no Edit ou após POST inválido.
+            if (operadorID.value !== "" && operadorID.value !== "0") {
+                const operadorSelecionado = operadores.find(function (item) {
+                    return item.dataset.id === operadorID.value;
+                });
+
+                if (operadorSelecionado) {
+                    pesquisa.value = operadorSelecionado.dataset.nome;
+                    limpar.classList.remove("d-none");
+                }
+            }
+        });
+    </script>
+}

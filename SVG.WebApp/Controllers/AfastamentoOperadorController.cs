@@ -409,6 +409,9 @@ namespace SVG.WebApp.Controllers
     private AfastamentoOperadorViewModel MontarViewModel(
       AfastamentoOperador pAfastamento)
     {
+      var operador = _operadorAppService.GetById(pAfastamento.OperadorID);
+      var secao = _sessaoAppService.GetById(operador.SessaoID);
+
       return new AfastamentoOperadorViewModel
       {
         ID = pAfastamento.ID,
@@ -431,14 +434,9 @@ namespace SVG.WebApp.Controllers
         DataHoraCriacao =
           pAfastamento.DataHoraCriacao,
 
-        OperadorNome =
-          pAfastamento.Operador == null
-            ? string.Empty
-            : MontarNomeOperador(
-              pAfastamento.Operador),
+        OperadorNome = operador.Nome,
 
-        SessaoNome =
-          pAfastamento.Operador?.Sessao?.Nome
+        SessaoNome = secao.Nome
       };
     }
 

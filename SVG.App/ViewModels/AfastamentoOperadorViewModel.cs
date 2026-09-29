@@ -32,13 +32,13 @@ namespace SVG.App.ViewModels
 
     [Display(Name = "Observação")]
     [StringLength(500)]
-    public string Observacao { get; set; }
+    public string? Observacao { get; set; }
 
     public DateTime DataHoraCriacao { get; set; }
 
     // Apresentação
-    public string OperadorNome { get; set; }
+    public string? OperadorNome { get; set; }
 
-    public string SessaoNome { get; set; }
+    public string? SessaoNome { get; set; }
   }
 }
