@@ -37,6 +37,21 @@ namespace SVG.Domain.TiposEstruturados.TiposOperador
     [Description("Afastamento para missão ou curso no exterior")]
     MissaoCursoExterior = 11,
 
+    [Description("Curso")]
+    Curso = 12,
+
+    [Description("Jogos Policiais")]
+    JogosPoliciais = 13,
+
+    [Description("Recesso Fim de Ano")]
+    RecessoFimDeAno = 14,
+
+    [Description("Licença Paternidade")]
+    LicencaPaternidade = 15,
+
+    [Description("Licença Maternidade")]
+    LicencaMaternidade = 16,
+
     [Description("Outros")]
     Outros = 99
   }
