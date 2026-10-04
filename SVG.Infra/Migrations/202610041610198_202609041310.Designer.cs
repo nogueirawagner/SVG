@@ -7,13 +7,13 @@ namespace SVG.Infra.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.5.1")]
-    public sealed partial class _202609011900 : IMigrationMetadata
+    public sealed partial class _202609041310 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(_202609011900));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(_202609041310));
         
         string IMigrationMetadata.Id
         {
-            get { return "202610022203159_202609011900"; }
+            get { return "202610041610198_202609041310"; }
         }
         
         string IMigrationMetadata.Source
