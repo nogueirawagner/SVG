@@ -5,30 +5,36 @@ using SVG.App.Interface;
 using SVG.App.ViewModels;
 using SVG.Domain.Entities;
 using SVG.Domain.TiposEstruturados.TiposOperador;
+using SVG.WebApp.Configurations;
+using SVG.WebApp.Models;
 
 namespace SVG.WebApp.Controllers
 {
-  [Authorize(Roles = "Admin")]
+  
   public class AfastamentoOperadorController : Controller
   {
     private readonly IAfastamentoOperadorAppService _afastamentoOperadorAppService;
     private readonly IOperadorAppService _operadorAppService;
     private readonly ISessaoAppService _sessaoAppService;
+    private readonly IUserContext _userContext;
 
     public AfastamentoOperadorController(
       IAfastamentoOperadorAppService afastamentoOperadorAppService,
       IOperadorAppService operadorAppService,
-      ISessaoAppService sessaoAppService)
+      ISessaoAppService sessaoAppService,
+      IUserContext userContext)
     {
       _afastamentoOperadorAppService = afastamentoOperadorAppService;
       _operadorAppService = operadorAppService;
       _sessaoAppService = sessaoAppService;
+      _userContext = userContext;
     }
 
     // ============================================================
     // LISTAR
     // ============================================================
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public IActionResult Index(int? pAno)
     {
@@ -77,7 +83,7 @@ namespace SVG.WebApp.Controllers
     // ============================================================
     // CREATE - GET
     // ============================================================
-
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public IActionResult Create()
     {
@@ -92,10 +98,46 @@ namespace SVG.WebApp.Controllers
       return View(model);
     }
 
+    [Authorize(Roles = "Operador")]
+    [HttpGet]
+    public ActionResult AfastamentosSecao(int? mes, int? ano)
+    {
+      var hoje = DateTime.Today;
+
+      var mesSelecionado = mes ?? hoje.Month;
+      var anoSelecionado = ano ?? hoje.Year;
+
+      var operadorLogado = _operadorAppService.GetById(_userContext.OperadorId.Value);
+      var secao = _sessaoAppService.GetById(operadorLogado.SessaoID);
+
+      ViewBag.Secao = secao.Nome;
+
+      if (operadorLogado == null)
+        return NotFound();
+
+      var secaoId = operadorLogado.SessaoID;
+
+      var inicioMes = new DateTime(anoSelecionado, mesSelecionado, 1);
+      var fimMes = inicioMes.AddMonths(1).AddDays(-1);
+
+      var afastamentos = _afastamentoOperadorAppService
+          .ObterPorSecaoEPeriodo(secaoId, inicioMes, fimMes);
+
+      var model = new AfastamentosSecaoViewModel
+      {
+        Mes = mesSelecionado,
+        Ano = anoSelecionado,
+        SecaoID = secaoId,
+        Afastamentos = afastamentos
+      };
+
+      return View(model);
+    }
+
     // ============================================================
     // CREATE - POST
     // ============================================================
-
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Create(
@@ -144,7 +186,7 @@ namespace SVG.WebApp.Controllers
     // ============================================================
     // EDIT - GET
     // ============================================================
-
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public IActionResult Edit(int id)
     {
@@ -164,7 +206,7 @@ namespace SVG.WebApp.Controllers
     // ============================================================
     // EDIT - POST
     // ============================================================
-
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Edit(
@@ -230,7 +272,7 @@ namespace SVG.WebApp.Controllers
     // ============================================================
     // DELETE - GET
     // ============================================================
-
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public IActionResult Delete(int id)
     {
@@ -250,7 +292,7 @@ namespace SVG.WebApp.Controllers
     // ============================================================
     // DELETE - POST
     // ============================================================
-
+    [Authorize(Roles = "Admin")]
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public IActionResult DeleteConfirmed(int id)
@@ -438,5 +480,7 @@ namespace SVG.WebApp.Controllers
       return
         $"{pOperador.NumericaDOE:00} - {pOperador.Alcunha}";
     }
+
+
   }
 }

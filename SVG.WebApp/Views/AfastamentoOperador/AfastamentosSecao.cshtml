@@ -1,0 +1,220 @@
+﻿@model SVG.WebApp.Models.AfastamentosSecaoViewModel
+
+@{
+    Layout = "_LayoutOperador";
+    ViewData["Title"] = "Afastamentos da Seção";
+
+    var meses = new[]
+    {
+        new { Id = 1, Nome = "Janeiro" },
+        new { Id = 2, Nome = "Fevereiro" },
+        new { Id = 3, Nome = "Março" },
+        new { Id = 4, Nome = "Abril" },
+        new { Id = 5, Nome = "Maio" },
+        new { Id = 6, Nome = "Junho" },
+        new { Id = 7, Nome = "Julho" },
+        new { Id = 8, Nome = "Agosto" },
+        new { Id = 9, Nome = "Setembro" },
+        new { Id = 10, Nome = "Outubro" },
+        new { Id = 11, Nome = "Novembro" },
+        new { Id = 12, Nome = "Dezembro" }
+    };
+
+    var anoAtual = DateTime.Now.Year;
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">Afastamentos da @ViewBag.Secao</h3>
+
+            @if (!string.IsNullOrWhiteSpace(Model.SecaoNome))
+            {
+                <span class="text-muted">
+                    @Model.SecaoNome
+                </span>
+            }
+        </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <form method="get"
+                  asp-action="AfastamentosSecao"
+                  class="row g-3 align-items-end">
+
+                <div class="col-md-4">
+                    <label for="mes" class="form-label">
+                        Mês
+                    </label>
+
+                    <select id="mes"
+                            name="mes"
+                            class="form-select">
+
+                        @foreach (var mes in meses)
+                        {
+                            if (mes.Id == Model.Mes)
+                            {
+                                <option value="@mes.Id" selected>
+                                    @mes.Nome
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@mes.Id">
+                                    @mes.Nome
+                                </option>
+                            }
+                        }
+
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="ano" class="form-label">
+                        Ano
+                    </label>
+
+                    <select id="ano"
+                            name="ano"
+                            class="form-select">
+
+                        @for (var ano = anoAtual - 1; ano <= anoAtual + 2; ano++)
+                        {
+                            if (ano == Model.Ano)
+                            {
+                                <option value="@ano" selected>
+                                    @ano
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@ano">
+                                    @ano
+                                </option>
+                            }
+                        }
+
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <button type="submit"
+                            class="btn btn-primary w-100">
+                        Filtrar
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <!-- AFASTAMENTOS -->
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white">
+            <strong>
+                Afastamentos -
+                @meses.First(x => x.Id == Model.Mes).Nome
+                de @Model.Ano
+            </strong>
+        </div>
+
+        <div class="card-body p-0">
+
+            @if (Model.Afastamentos != null && Model.Afastamentos.Any())
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>Operador</th>
+                                <th>Tipo</th>
+                                <th>Início</th>
+                                <th>Fim</th>
+                                <th class="text-center">Situação</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var afastamento in Model.Afastamentos)
+                            {
+                                var hoje = DateTime.Today;
+
+                                string situacao;
+                                string badge;
+
+                                if (hoje < afastamento.DataInicio)
+                                {
+                                    situacao = "Programado";
+                                    badge = "bg-primary";
+                                }
+                                else if (hoje > afastamento.DataFim)
+                                {
+                                    situacao = "Encerrado";
+                                    badge = "bg-secondary";
+                                }
+                                else
+                                {
+                                    situacao = "Em andamento";
+                                    badge = "bg-success";
+                                }
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        @(afastamento.Operador?.Alcunha
+                                                                            ?? afastamento.Operador?.Nome
+                                                                            ?? "-")
+                                </strong>
+                            </td>
+
+                                    <td>
+                                        @afastamento.TipoAfastamento
+                                    </td>
+
+                                    <td>
+                                        @afastamento.DataInicio.ToString("dd/MM/yyyy")
+                                    </td>
+
+                                    <td>
+                                        @afastamento.DataFim.ToString("dd/MM/yyyy")
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="badge @badge">
+                                            @situacao
+                                        </span>
+                                    </td>
+
+                                </tr>
+                                                }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    Nenhum afastamento encontrado para
+                    @meses.First(x => x.Id == Model.Mes).Nome
+                    de @Model.Ano.
+                </div>
+            }
+
+        </div>
+    </div>
+
+</div>

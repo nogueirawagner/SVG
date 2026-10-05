@@ -15,7 +15,7 @@ namespace SVG.Infra.Repositories
     {
       _db = dbContext;
     }
-   
+
     public IEnumerable<AfastamentoOperador> PegarAfastamentos()
     {
       return _db.AfastamentoOperador
@@ -91,6 +91,22 @@ namespace SVG.Infra.Repositories
         .Distinct()
         .OrderByDescending(x => x)
         .ToList();
+    }
+
+    public IEnumerable<AfastamentoOperador> ObterPorSecaoEPeriodo(
+      int secaoId,
+      DateTime inicio,
+      DateTime fim)
+    {
+      return _db.AfastamentoOperador
+          .Include(x => x.Operador)
+          .Where(x =>
+              x.Operador.SessaoID == secaoId &&
+              x.DataInicio <= fim &&
+              x.DataFim >= inicio)
+          .OrderBy(x => x.DataInicio)
+          .ThenBy(x => x.Operador.Nome)
+          .ToList();
     }
   }
 }

@@ -22,5 +22,10 @@ namespace SVG.Domain.Interfaces.Repositories
       int? pAfastamentoOperadorID = null);
 
     IEnumerable<int> PegarAnosComAfastamentos();
+
+    IEnumerable<AfastamentoOperador> ObterPorSecaoEPeriodo(
+      int pSecaoId,
+      DateTime pInicio,
+      DateTime pFim);
   }
 }

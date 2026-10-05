@@ -22,5 +22,10 @@ namespace SVG.App.Interface
       DateTime pData);
 
     IEnumerable<int> PegarAnosComAfastamentos();
+
+    IEnumerable<AfastamentoOperador> ObterPorSecaoEPeriodo(
+      int pSecaoId,
+      DateTime pInicio,
+      DateTime pFim);
   }
 }

@@ -55,5 +55,14 @@ namespace SVG.Domain.Services
       return _afastamentoOperadorRepository
         .PegarAnosComAfastamentos();
     }
+
+    public IEnumerable<AfastamentoOperador> ObterPorSecaoEPeriodo(
+      int pSecaoId,
+      DateTime pInicio,
+      DateTime pFim)
+    {
+      return _afastamentoOperadorRepository
+        .ObterPorSecaoEPeriodo(pSecaoId, pInicio, pFim);
+    }
   }
 }
