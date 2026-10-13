@@ -1,4 +1,5 @@
 ﻿@model SVG.WebApp.Models.AfastamentosSecaoViewModel
+@using SVG.Utilities.ExtensionsMethods
 
 @{
     Layout = "_LayoutOperador";
@@ -179,7 +180,7 @@
                             </td>
 
                                     <td>
-                                        @afastamento.TipoAfastamento
+                                        @afastamento.TipoAfastamento.GetDescription()
                                     </td>
 
                                     <td>
