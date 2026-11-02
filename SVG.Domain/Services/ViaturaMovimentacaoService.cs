@@ -1,4 +1,4 @@
-﻿using SVG.Domain.Entities;
+using SVG.Domain.Entities;
 using SVG.Domain.Interfaces;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.Interfaces.Services;
@@ -33,12 +33,36 @@ namespace SVG.Domain.Services
         .PegarUltimaMovimentacao(pViaturaID);
     }
 
+    public ViaturaMovimentacao? PegarUltimaMovimentacaoViatura(int pViaturaID)
+    {
+      return _viaturaMovimentacaoRepository.PegarUltimaMovimentacao(pViaturaID);
+    }
+
+    private static void ValidarRegistro(DateTime dataHora, int? nivelCombustivel)
+    {
+      if (dataHora < new DateTime(1753, 1, 1) || dataHora > DateTime.Now)
+        throw new Exception("Informe uma data e hora válida, que não seja futura.");
+      if (!nivelCombustivel.HasValue || nivelCombustivel < 0 || nivelCombustivel > 100)
+        throw new Exception("Informe o nível de combustível entre 0% e 100%.");
+    }
+
     public void RetirarViatura(
       ViaturaMovimentacao pMovimentacao,
-      int pOperadorID)
+      int pOperadorID,
+      int pOperadorResponsavelID)
     {
       if (pMovimentacao == null)
         throw new ArgumentNullException(nameof(pMovimentacao));
+
+      if (pOperadorResponsavelID <= 0)
+        throw new Exception("Não foi possível identificar o operador logado responsável pelo registro.");
+
+      if (pOperadorID == 0)
+        pOperadorID = pOperadorResponsavelID;
+      if (pOperadorID < 0)
+        throw new Exception("Selecione um operador válido.");
+
+      ValidarRegistro(pMovimentacao.DataHoraRetirada, pMovimentacao.NivelCombustivelRetirada);
 
       var viatura = _viaturaRepository
         .GetById(pMovimentacao.ViaturaID);
@@ -58,6 +82,10 @@ namespace SVG.Domain.Services
         _viaturaMovimentacaoRepository
           .PegarUltimaMovimentacao(pMovimentacao.ViaturaID);
 
+      if (ultimaMovimentacao != null &&
+          pMovimentacao.DataHoraRetirada < (ultimaMovimentacao.DataHoraDevolucao ?? ultimaMovimentacao.DataHoraRetirada))
+        throw new Exception("A retirada não pode ser anterior à última movimentação da viatura.");
+
       /*
        * Caso a última movimentação esteja EmUso,
        * significa que a devolução anterior não foi registrada.
@@ -70,7 +98,9 @@ namespace SVG.Domain.Services
       {
 
 
-        ultimaMovimentacao.DataHoraDevolucao = DateTime.Now;
+        ultimaMovimentacao.OperadorResponsavelID = pOperadorResponsavelID;
+        ultimaMovimentacao.DataHoraDevolucao = pMovimentacao.DataHoraRetirada;
+        ultimaMovimentacao.Situacao = XSituacaoViatura.Disponivel;
         
 
         _viaturaMovimentacaoRepository.Update(ultimaMovimentacao);
@@ -80,7 +110,7 @@ namespace SVG.Domain.Services
        * Registra o novo fato de retirada.
        */
       pMovimentacao.OperadorID = pOperadorID;
-      pMovimentacao.DataHoraRetirada = DateTime.Now;
+      pMovimentacao.OperadorResponsavelID = pOperadorResponsavelID;
       pMovimentacao.Situacao = XSituacaoViatura.EmUso;
       pMovimentacao.KmInicial = viatura.KmAtual;
 
@@ -102,8 +132,21 @@ namespace SVG.Domain.Services
       int pOperadorID,
       int pKmFinal,
       bool pAbastecimento,
-      int? pKmAbastecimento)
+      int? pKmAbastecimento,
+      DateTime pDataHoraDevolucao,
+      int pNivelCombustivel,
+      int pOperadorResponsavelID)
     {
+      if (pOperadorResponsavelID <= 0)
+        throw new Exception("Não foi possível identificar o operador logado responsável pelo registro.");
+
+      if (pOperadorID == 0)
+        pOperadorID = pOperadorResponsavelID;
+      if (pOperadorID < 0)
+        throw new Exception("Selecione um operador válido.");
+
+      ValidarRegistro(pDataHoraDevolucao, pNivelCombustivel);
+
       var viatura = _viaturaRepository
         .GetById(pViaturaID);
 
@@ -122,10 +165,15 @@ namespace SVG.Domain.Services
         throw new Exception(
           "A viatura não possui uma retirada em aberto.");
 
+      if (pDataHoraDevolucao < ultimaMovimentacao.DataHoraRetirada)
+        throw new Exception("A devolução não pode ser anterior à retirada.");
+
       ultimaMovimentacao.KmFinal = pKmFinal;
-      ultimaMovimentacao.DataHoraDevolucao = DateTime.Now;
+      ultimaMovimentacao.DataHoraDevolucao = pDataHoraDevolucao;
+      ultimaMovimentacao.NivelCombustivelDevolucao = pNivelCombustivel;
       ultimaMovimentacao.Situacao = XSituacaoViatura.Disponivel;
       ultimaMovimentacao.OperadorID = pOperadorID;
+      ultimaMovimentacao.OperadorResponsavelID = pOperadorResponsavelID;
       ultimaMovimentacao.Abastecimento = pAbastecimento;
       ultimaMovimentacao.KmAbastecimento = pKmAbastecimento;
 

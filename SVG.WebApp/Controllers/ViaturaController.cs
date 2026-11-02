@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -54,8 +54,15 @@ namespace SVG.WebApp.Controllers
         ? _operadorAppService.GetById(operadorIDLogado)
         : null;
 
+      var ultimaMovimentacao = _viaturaMovimentacaoAppService
+        .PegarUltimaMovimentacaoViatura(pViaturaID);
+
       var model = new ViaturaRetiradaViewModel
       {
+        DataHora = DateTime.Now,
+        NivelCombustivel = ultimaMovimentacao?.NivelCombustivelDevolucao
+          ?? ultimaMovimentacao?.NivelCombustivelRetirada
+          ?? 50,
         ViaturaID = viatura.ID,
         Prefixo = viatura.Prefixo,
         Placa = viatura.Placa,
@@ -108,6 +115,18 @@ namespace SVG.WebApp.Controllers
     [ValidateAntiForgeryToken]
     public IActionResult Retirar(ViaturaRetiradaViewModel pModel)
     {
+      var operadorResponsavelID = PegarOperadorIDLogado();
+      if (operadorResponsavelID <= 0 || _operadorAppService.GetById(operadorResponsavelID) == null)
+        return Forbid();
+
+      if (pModel.OperadorID == 0 &&
+          (!ModelState.TryGetValue(nameof(pModel.OperadorID), out var operadorInformado) ||
+           string.IsNullOrWhiteSpace(operadorInformado.AttemptedValue) || operadorInformado.AttemptedValue == "0"))
+      {
+        pModel.OperadorID = operadorResponsavelID;
+        ModelState.Remove(nameof(pModel.OperadorID));
+      }
+
       if (pModel.OperadorID <= 0)
       {
         ModelState.AddModelError(
@@ -128,12 +147,15 @@ namespace SVG.WebApp.Controllers
         {
           ViaturaID = pModel.ViaturaID,
           Finalidade = pModel.Finalidade,
-          Observacao = pModel.Observacao
+          Observacao = pModel.Observacao,
+          DataHoraRetirada = pModel.DataHora!.Value,
+          NivelCombustivelRetirada = pModel.NivelCombustivel!.Value
         };
 
         _viaturaMovimentacaoAppService.RetirarViatura(
           movimentacao,
-          pModel.OperadorID);
+          pModel.OperadorID,
+          operadorResponsavelID);
 
         TempData["Sucesso"] = "Viatura retirada com sucesso.";
 
@@ -167,6 +189,8 @@ namespace SVG.WebApp.Controllers
 
       var model = new ViaturaDevolucaoViewModel
       {
+        DataHora = DateTime.Now,
+        NivelCombustivel = 50,
         ViaturaID = viatura.ID,
         Prefixo = viatura.Prefixo,
         Placa = viatura.Placa,
@@ -191,6 +215,18 @@ namespace SVG.WebApp.Controllers
     [ValidateAntiForgeryToken]
     public IActionResult Devolver(ViaturaDevolucaoViewModel pModel)
     {
+      var operadorResponsavelID = PegarOperadorIDLogado();
+      if (operadorResponsavelID <= 0 || _operadorAppService.GetById(operadorResponsavelID) == null)
+        return Forbid();
+
+      if (pModel.OperadorID == 0 &&
+          (!ModelState.TryGetValue(nameof(pModel.OperadorID), out var operadorInformado) ||
+           string.IsNullOrWhiteSpace(operadorInformado.AttemptedValue) || operadorInformado.AttemptedValue == "0"))
+      {
+        pModel.OperadorID = operadorResponsavelID;
+        ModelState.Remove(nameof(pModel.OperadorID));
+      }
+
       if (pModel.OperadorID <= 0)
       {
         ModelState.AddModelError(
@@ -231,7 +267,10 @@ namespace SVG.WebApp.Controllers
           pModel.OperadorID,
           pModel.KmFinal.Value,
           pModel.Abastecimento,
-          pModel.KmAbastecimento);
+          pModel.KmAbastecimento,
+          pModel.DataHora!.Value,
+          pModel.NivelCombustivel!.Value,
+          operadorResponsavelID);
 
         TempData["Sucesso"] = "Viatura devolvida com sucesso.";
 

@@ -1,4 +1,4 @@
-﻿using SVG.Domain.Entities;
+using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.TiposEstruturados.Enums;
 using SVG.Infra.Context.SQLServer;
@@ -19,10 +19,25 @@ namespace SVG.Infra.Repositories
 
     public IEnumerable<Viatura> PegarViaturas()
     {
-      return _db.Viatura
+      var viaturas = _db.Viatura
             .Include(x => x.Sessao)
             .Include(x => x.OperadorResponsavel)
             .ToList();
+
+      var niveis = _db.Viatura.Select(v => new
+      {
+        v.ID,
+        Nivel = v.Movimentacoes
+          .OrderByDescending(m => m.DataHoraRetirada)
+          .ThenByDescending(m => m.ID)
+          .Select(m => m.NivelCombustivelDevolucao ?? m.NivelCombustivelRetirada)
+          .FirstOrDefault()
+      }).ToDictionary(v => v.ID, v => v.Nivel);
+
+      foreach (var viatura in viaturas)
+        viatura.NivelCombustivelAtual = niveis[viatura.ID];
+
+      return viaturas;
     }
 
     public IEnumerable<Viatura> PegarDisponiveis()

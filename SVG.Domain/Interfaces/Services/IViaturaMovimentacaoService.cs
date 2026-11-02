@@ -1,4 +1,4 @@
-﻿using SVG.Domain.Entities;
+using SVG.Domain.Entities;
 
 namespace SVG.Domain.Interfaces.Services
 {
@@ -9,15 +9,21 @@ namespace SVG.Domain.Interfaces.Services
 
     ViaturaMovimentacao PegarUltimaMovimentacao(int pViaturaID);
 
+    ViaturaMovimentacao? PegarUltimaMovimentacaoViatura(int pViaturaID);
+
     void RetirarViatura(
       ViaturaMovimentacao pMovimentacao,
-      int pOperadorID);
+      int pOperadorID,
+      int pOperadorResponsavelID);
 
     void DevolverViatura(
       int pViaturaID,
       int pOperadorID,
       int pKmFinal,
       bool pAbastecimento,
-      int? pKmAbastecimento);
+      int? pKmAbastecimento,
+      DateTime pDataHoraDevolucao,
+      int pNivelCombustivel,
+      int pOperadorResponsavelID);
   }
 }

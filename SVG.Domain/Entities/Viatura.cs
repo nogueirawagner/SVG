@@ -1,4 +1,4 @@
-﻿using SVG.Domain.Entities;
+using SVG.Domain.Entities;
 using SVG.Domain.TiposEstruturados.Enums;
 using SVG.Domain.TiposEstruturados.TiposViatura;
 
@@ -29,6 +29,9 @@ namespace SVG.Domain.Entities
     public int? KmProximaRevisao  { get; set; }
     public string Chassi { get; set; }
     public XSituacaoViatura Situacao { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public int? NivelCombustivelAtual { get; set; }
 
     public virtual ICollection<ViaturaMovimentacao> Movimentacoes { get; set; }
   }

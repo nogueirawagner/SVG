@@ -1,4 +1,4 @@
-﻿@using SVG.Domain.Entities
+@using SVG.Domain.Entities
 @using SVG.Domain.TiposEstruturados.Enums
 
 @model IEnumerable<Viatura>
@@ -200,6 +200,7 @@
                             <th>Seção</th>
                             <th>Responsável</th>
                             <th>KM Atual</th>
+                            <th>Combustível</th>
                             <th>KM Ult. Abast.</th>
                             <th>Revisão</th>
                             <th>Situação</th>
@@ -301,6 +302,24 @@
                                     @viatura.KmAtual.ToString("N0")
                                 </td>
 
+                                <td style="min-width: 140px;">
+                                    @if (viatura.NivelCombustivelAtual.HasValue)
+                                    {
+                                        var nivel = Math.Clamp(viatura.NivelCombustivelAtual.Value, 0, 100);
+                                        var matiz = (nivel * 1.2).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                        <div class="small fw-semibold mb-1">@(nivel)%</div>
+                                        <div class="progress" role="progressbar" aria-label="Nível de combustível"
+                                             aria-valuenow="@nivel" aria-valuemin="0" aria-valuemax="100"
+                                             style="height: 12px;">
+                                            <div class="progress-bar" style="width: @(nivel)%; background: linear-gradient(90deg, hsl(@matiz, 75%, 35%), hsl(@matiz, 70%, 50%));"></div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Não informado</span>
+                                    }
+                                </td>
+
                                 <td>
                                     @if (viatura.KmUltimoAbastecimento != null
                                                                     && viatura.KmUltimoAbastecimento > 0)
@@ -400,7 +419,7 @@
 
                         <tr id="linhaSemResultados"
                             style="display:none;">
-                            <td colspan="11"
+                            <td colspan="12"
                                 class="text-center text-muted py-4">
                                 Nenhuma viatura encontrada para os filtros informados.
                             </td>

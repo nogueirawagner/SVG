@@ -1,4 +1,4 @@
-﻿@using SVG.Domain.Entities
+@using SVG.Domain.Entities
 
 @model IEnumerable<ViaturaMovimentacao>
 
@@ -35,6 +35,8 @@
                             <th>Finalidade</th>
                             <th>KM Inicial</th>
                             <th>KM Final</th>
+                            <th>Combustível na retirada</th>
+                            <th>Combustível na devolução</th>
                             <th>Abastecimento</th>
                             <th>KM Abastec.</th>
                             <th>Próx. Revisão</th>
@@ -112,6 +114,9 @@
                                         <span class="text-muted">-</span>
                                     }
                                 </td>
+
+                                <td>@(movimentacao.NivelCombustivelRetirada.HasValue ? $"{movimentacao.NivelCombustivelRetirada}%" : "Não informado")</td>
+                                <td>@(movimentacao.NivelCombustivelDevolucao.HasValue ? $"{movimentacao.NivelCombustivelDevolucao}%" : "Não informado")</td>
 
                                 <!-- ABASTECIMENTO -->
                                 <td>

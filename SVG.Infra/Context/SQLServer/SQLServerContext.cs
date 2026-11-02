@@ -1,4 +1,4 @@
-﻿using SVG.Domain.Entities;
+using SVG.Domain.Entities;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
@@ -71,6 +71,12 @@ namespace SVG.Infra.Context.SQLServer
       //  .HasOptional(v => v.OperadorResponsavel)
       //  .WithMany().HasForeignKey(v => v.OperadorResponsavelID)
       //  .WillCascadeOnDelete(false);
+
+      modelBuilder.Entity<ViaturaMovimentacao>()
+        .HasOptional(m => m.OperadorResponsavel)
+        .WithMany()
+        .HasForeignKey(m => m.OperadorResponsavelID)
+        .WillCascadeOnDelete(false);
 
       modelBuilder.Entity<CandidatoSVGOperacao>()
       .HasIndex(c => new { c.OperadorID, c.OperacaoID })

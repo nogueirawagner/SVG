@@ -1,8 +1,8 @@
-﻿using SVG.Domain.TiposEstruturados.Enums;
+using SVG.Domain.TiposEstruturados.Enums;
 
 namespace SVG.WebApp.Models
 {
-  public class ViaturaRetiradaViewModel
+  public class ViaturaRetiradaViewModel : ViaturaRegistroViewModel
   {
     public int ViaturaID { get; set; }
 

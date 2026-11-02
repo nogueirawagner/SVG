@@ -1,4 +1,4 @@
-﻿@model SVG.WebApp.Models.ViaturaDevolucaoViewModel
+@model SVG.WebApp.Models.ViaturaDevolucaoViewModel
 
 @{
     Layout = "_LayoutOperador";
@@ -107,6 +107,8 @@
                 <input asp-for="OperadorNome"
                        type="hidden"
                        id="OperadorNome" />
+
+                <partial name="_Registro" model="Model" />
 
                 <!-- OPERADOR -->
                 <div class="mb-3">
@@ -226,6 +228,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/viatura-registro.js" asp-append-version="true"></script>
 
     <script>
 
@@ -492,16 +495,8 @@
 
         form.addEventListener('submit', function (event) {
 
-            if (!operadorID.value ||
-                parseInt(operadorID.value) <= 0) {
-
-                event.preventDefault();
-
-                alert('Selecione um operador na pesquisa.');
-
-                pesquisa.focus();
-
-                return;
+            if (!operadorID.value) {
+                operadorID.value = '0';
             }
 
             if (abastecimento.checked &&

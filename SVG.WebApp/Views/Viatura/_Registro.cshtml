@@ -1,0 +1,23 @@
+@model SVG.WebApp.Models.ViaturaRegistroViewModel
+
+<div class="mb-3">
+    <label asp-for="DataHora" class="form-label">Data e hora</label>
+    <input asp-for="DataHora" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm:ss}"
+           class="form-control" step="1" required min="1753-01-01T00:00:00"
+           max="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")" />
+    <div class="form-text">Preenchida com o horário atual. Você pode alterar para um horário anterior.</div>
+    <span asp-validation-for="DataHora" class="text-danger"></span>
+</div>
+<div class="mb-4">
+    <div class="d-flex justify-content-between">
+        <label asp-for="NivelCombustivel" class="form-label">Nível de combustível</label>
+        <output id="percentualCombustivel" for="NivelCombustivel" class="fw-bold">@(Model.NivelCombustivel)%</output>
+    </div>
+    <input asp-for="NivelCombustivel" type="range" class="form-range" min="0" max="100" step="1"
+           aria-describedby="ajudaCombustivel" />
+    <div class="d-flex justify-content-between text-muted small" aria-hidden="true">
+        <span>0% · Vazio</span><span>25%</span><span>50%</span><span>75%</span><span>100% · Cheio</span>
+    </div>
+    <div id="ajudaCombustivel" class="form-text">Arraste a barra para indicar o nível observado no painel da viatura.</div>
+    <span asp-validation-for="NivelCombustivel" class="text-danger"></span>
+</div>

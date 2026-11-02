@@ -1,4 +1,4 @@
-﻿using SVG.App.Interface;
+using SVG.App.Interface;
 using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Services;
 
@@ -28,12 +28,18 @@ namespace SVG.App.Services
         .PegarUltimaMovimentacao(pViaturaID);
     }
 
+    public ViaturaMovimentacao? PegarUltimaMovimentacaoViatura(int pViaturaID)
+    {
+      return _viaturaMovimentacaoService.PegarUltimaMovimentacaoViatura(pViaturaID);
+    }
+
     public void RetirarViatura(
       ViaturaMovimentacao pMovimentacao,
-      int pOperadorID)
+      int pOperadorID,
+      int pOperadorResponsavelID)
     {
       _viaturaMovimentacaoService
-        .RetirarViatura(pMovimentacao, pOperadorID);
+        .RetirarViatura(pMovimentacao, pOperadorID, pOperadorResponsavelID);
     }
 
     public void DevolverViatura(
@@ -41,10 +47,13 @@ namespace SVG.App.Services
       int pOperadorID,
       int pKmFinal,
       bool pAbastecimento,
-      int? pKmAbastecimento)
+      int? pKmAbastecimento,
+      DateTime pDataHoraDevolucao,
+      int pNivelCombustivel,
+      int pOperadorResponsavelID)
     {
       _viaturaMovimentacaoService
-        .DevolverViatura(pViaturaID, pOperadorID, pKmFinal, pAbastecimento, pKmAbastecimento);
+        .DevolverViatura(pViaturaID, pOperadorID, pKmFinal, pAbastecimento, pKmAbastecimento, pDataHoraDevolucao, pNivelCombustivel, pOperadorResponsavelID);
     }
   }
 }
