@@ -1,0 +1,98 @@
+@model SVG.WebApp.Models.ViaturaEdicaoViewModel
+@{
+    Layout = "_LayoutOperador";
+    ViewData["Title"] = "Editar Viatura";
+}
+<div class="container mt-4" style="max-width: 850px;">
+    <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">Editar Viatura</h5></div>
+        <div class="card-body">
+            <form asp-action="Editar" method="post">
+                @Html.AntiForgeryToken()
+                <input asp-for="ViaturaID" type="hidden" />
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="KmProximaRevisao" class="form-label"></label>
+                        <input asp-for="KmProximaRevisao" class="form-control" type="number" min="0" />
+                        <div class="form-text">Quilometragem prevista para a próxima revisão. Deixe em branco se não definida.</div>
+                        <span asp-validation-for="KmProximaRevisao" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Prefixo" class="form-label"></label>
+                        <input asp-for="Prefixo" class="form-control" />
+                        <span asp-validation-for="Prefixo" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Placa" class="form-label"></label>
+                        <input asp-for="Placa" class="form-control" />
+                        <span asp-validation-for="Placa" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PlacaOficial" class="form-label"></label>
+                        <input asp-for="PlacaOficial" class="form-control" />
+                        <span asp-validation-for="PlacaOficial" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Marca" class="form-label"></label>
+                        <input asp-for="Marca" class="form-control" />
+                        <span asp-validation-for="Marca" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Modelo" class="form-label"></label>
+                        <input asp-for="Modelo" class="form-control" />
+                        <span asp-validation-for="Modelo" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Ano" class="form-label"></label>
+                        <input asp-for="Ano" class="form-control" type="number" min="0" />
+                        <span asp-validation-for="Ano" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Chassi" class="form-label"></label>
+                        <input asp-for="Chassi" class="form-control" />
+                        <span asp-validation-for="Chassi" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SessaoID" class="form-label"></label>
+                        <select asp-for="SessaoID" asp-items="ViewBag.Secoes" class="form-select">
+                            <option value="">Selecione...</option>
+                        </select>
+                        <span asp-validation-for="SessaoID" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="OperadorResponsavelID" class="form-label"></label>
+                        <select asp-for="OperadorResponsavelID" asp-items="ViewBag.Responsaveis" class="form-select">
+                            <option value="">Não definido</option>
+                        </select>
+                        <span asp-validation-for="OperadorResponsavelID" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="TipoCaracterizacao" class="form-label"></label>
+                        <select asp-for="TipoCaracterizacao" asp-items="Html.GetEnumSelectList<SVG.Domain.TiposEstruturados.Enums.XTipoCaracterizacaoViatura>()" class="form-select">
+                            <option value="">Selecione...</option>
+                        </select>
+                        <span asp-validation-for="TipoCaracterizacao" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="KmAtual" class="form-label"></label>
+                        <input asp-for="KmAtual" class="form-control" type="number" min="0" />
+                        <span asp-validation-for="KmAtual" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="KmUltimoAbastecimento" class="form-label"></label>
+                        <input asp-for="KmUltimoAbastecimento" class="form-control" type="number" min="0" />
+                        <span asp-validation-for="KmUltimoAbastecimento" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="Listar" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Salvar alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

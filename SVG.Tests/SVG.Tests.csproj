@@ -6,7 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../SVG.Domain/SVG.Domain.csproj" />
-    <Compile Include="../SVG.App/ViewModels/ViaturaRegistroViewModel.cs" Link="ViaturaRegistroViewModel.cs" />
+    <ProjectReference Include="../SVG.App/SVG.App.csproj" />
+    <ProjectReference Include="../SVG.WebApp/SVG.WebApp.csproj" />
   </ItemGroup>
 </Project>

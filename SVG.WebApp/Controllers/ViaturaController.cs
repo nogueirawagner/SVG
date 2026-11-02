@@ -38,6 +38,93 @@ namespace SVG.WebApp.Controllers
       return View(viaturas);
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public IActionResult Editar(int pViaturaID)
+    {
+      var viatura = _viaturaAppService.GetById(pViaturaID);
+      if (viatura == null)
+        return NotFound();
+
+      var model = new ViaturaEdicaoViewModel
+      {
+        ViaturaID = viatura.ID,
+        Prefixo = viatura.Prefixo,
+        Placa = viatura.Placa,
+        PlacaOficial = viatura.PlacaOficial,
+        Marca = viatura.Marca,
+        Modelo = viatura.Modelo,
+        Ano = viatura.Ano,
+        Chassi = viatura.Chassi,
+        SessaoID = viatura.SessaoID,
+        OperadorResponsavelID = viatura.OperadorResponsavelID,
+        TipoCaracterizacao = viatura.TipoCaracterizacao,
+        KmAtual = viatura.KmAtual,
+        KmUltimoAbastecimento = viatura.KmUltimoAbastecimento,
+        KmProximaRevisao = viatura.KmProximaRevisao,
+      };
+      PopularCombosEdicao();
+      return View(model);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Editar(ViaturaEdicaoViewModel pModel)
+    {
+      var viatura = _viaturaAppService.GetById(pModel.ViaturaID);
+      if (viatura == null)
+        return NotFound();
+
+      if (_sessaoAppService.GetById(pModel.SessaoID) == null)
+        ModelState.AddModelError(nameof(pModel.SessaoID), "Selecione uma seção válida.");
+      if (pModel.OperadorResponsavelID.HasValue &&
+          _operadorAppService.GetById(pModel.OperadorResponsavelID.Value) == null)
+        ModelState.AddModelError(nameof(pModel.OperadorResponsavelID), "Selecione um responsável válido.");
+      if (pModel.KmUltimoAbastecimento > pModel.KmAtual)
+        ModelState.AddModelError(nameof(pModel.KmUltimoAbastecimento), "O KM do abastecimento não pode ser maior que o KM atual.");
+
+      if (!ModelState.IsValid)
+      {
+        PopularCombosEdicao();
+        return View(pModel);
+      }
+
+      try
+      {
+        viatura.Prefixo = pModel.Prefixo?.Trim();
+        viatura.Placa = pModel.Placa?.Trim();
+        viatura.PlacaOficial = pModel.PlacaOficial?.Trim();
+        viatura.Marca = pModel.Marca.Trim();
+        viatura.Modelo = pModel.Modelo.Trim();
+        viatura.Ano = pModel.Ano;
+        viatura.Chassi = pModel.Chassi?.Trim();
+        viatura.SessaoID = pModel.SessaoID;
+        viatura.OperadorResponsavelID = pModel.OperadorResponsavelID;
+        viatura.TipoCaracterizacao = pModel.TipoCaracterizacao;
+        viatura.KmAtual = pModel.KmAtual;
+        viatura.KmUltimoAbastecimento = pModel.KmUltimoAbastecimento;
+        viatura.KmProximaRevisao = pModel.KmProximaRevisao;
+
+        _viaturaAppService.Update(viatura);
+        TempData["Sucesso"] = "Viatura atualizada com sucesso.";
+        return RedirectToAction(nameof(Listar));
+      }
+      catch (Exception ex)
+      {
+        ModelState.AddModelError(string.Empty, ex.Message);
+        PopularCombosEdicao();
+        return View(pModel);
+      }
+    }
+
+    private void PopularCombosEdicao()
+    {
+      ViewBag.Secoes = _sessaoAppService.GetAll().OrderBy(x => x.Nome)
+        .Select(x => new SelectListItem { Value = x.ID.ToString(), Text = x.Nome }).ToList();
+      ViewBag.Responsaveis = MontarOperadores().ToList();
+    }
+
     // GET: Viatura/Retirar/5
     [HttpGet]
     public IActionResult Retirar(int pViaturaID)

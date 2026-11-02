@@ -1,0 +1,22 @@
+.revisao-gradual {
+    background-color: var(--revisao-fundo);
+    color: var(--revisao-texto);
+    border-color: var(--revisao-fundo);
+    transition: background-color .2s ease, color .2s ease;
+}
+tr.revisao-gradual {
+    --bs-table-bg: var(--revisao-fundo);
+    --bs-table-color: var(--revisao-texto);
+    --bs-table-hover-bg: var(--revisao-fundo);
+    --bs-table-hover-color: var(--revisao-texto);
+}
+tr.revisao-gradual > td {
+    color: var(--revisao-texto);
+}
+/* Mantém a leitura das ações e informações secundárias em linhas vermelhas. */
+tr.revisao-gradual .text-muted { color: inherit !important; }
+tr.revisao-gradual .btn-outline-primary,
+tr.revisao-gradual .btn-outline-secondary { background-color: #fff; }
+@media (prefers-reduced-motion: reduce) {
+    .revisao-gradual { transition: none; }
+}

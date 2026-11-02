@@ -13,6 +13,8 @@
         : (int?)null;
 }
 
+<link rel="stylesheet" href="~/css/viatura-revisao.css" asp-append-version="true" />
+
 <div class="container mt-4" style="max-width: 700px;">
 
     <div class="card shadow-sm">
@@ -54,7 +56,7 @@
 
             @if (kmRestanteRevisao.HasValue && kmRestanteRevisao.Value <= 0)
             {
-                <div class="alert alert-danger shadow-sm">
+                <div class="alert shadow-sm" data-km-revisao="@kmRestanteRevisao">
                     <strong>⚠ Revisão vencida</strong><br />
                     Esta viatura ultrapassou a quilometragem da próxima revisão em
                     <strong>@Math.Abs(kmRestanteRevisao.Value).ToString("N0") km</strong>.
@@ -65,7 +67,7 @@
             else if (kmRestanteRevisao.HasValue &&
             kmRestanteRevisao.Value <= limiteAlertaRevisao)
             {
-                <div class="alert alert-warning shadow-sm">
+                <div class="alert shadow-sm" data-km-revisao="@kmRestanteRevisao">
                     <strong>⚠ Atenção à revisão</strong><br />
                     Faltam apenas
                     <strong>@kmRestanteRevisao.Value.ToString("N0") km</strong>
@@ -198,6 +200,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/viatura-revisao.js" asp-append-version="true"></script>
     <script src="~/js/viatura-registro.js" asp-append-version="true"></script>
 
     <script>

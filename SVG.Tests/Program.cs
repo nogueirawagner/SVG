@@ -80,6 +80,24 @@ foreach (var model in new[] {
 }) {
     Check(!Validator.TryValidateObject(model, new ValidationContext(model), new List<ValidationResult>(), true), "Formulário inválido aceito.");
 }
+var editarActions = typeof(SVG.WebApp.Controllers.ViaturaController).GetMethods()
+    .Where(m => m.Name == "Editar").ToList();
+Check(editarActions.Count == 2, "Devem existir as actions GET e POST de edição.");
+foreach (var action in editarActions)
+    Check(action.GetCustomAttribute<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>()?.Roles == "Admin",
+        "Edição precisa exigir exclusivamente a role Admin.");
+var editarPost = editarActions.Single(m => m.GetCustomAttribute<Microsoft.AspNetCore.Mvc.HttpPostAttribute>() != null);
+Check(editarPost.GetCustomAttribute<Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute>() != null,
+    "Edição precisa validar o token antifalsificação.");
+var edicaoInvalida = new ViaturaEdicaoViewModel {
+    Marca = "Marca", Modelo = "Modelo", SessaoID = 1,
+    TipoCaracterizacao = XTipoCaracterizacaoViatura.Caracterizada, KmProximaRevisao = -1
+};
+Check(!Validator.TryValidateObject(edicaoInvalida, new ValidationContext(edicaoInvalida), new List<ValidationResult>(), true),
+    "KM de revisão negativo foi aceito.");
+edicaoInvalida.KmProximaRevisao = null;
+Check(Validator.TryValidateObject(edicaoInvalida, new ValidationContext(edicaoInvalida), new List<ValidationResult>(), true),
+    "Revisão não definida deve ser aceita.");
 Console.WriteLine($"{checks} verificações passaram.");
 
 public class RepositoryProxy : DispatchProxy

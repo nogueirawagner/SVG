@@ -13,6 +13,8 @@
         : (int?)null;
 }
 
+<link rel="stylesheet" href="~/css/viatura-revisao.css" asp-append-version="true" />
+
 <div class="container mt-4" style="max-width: 650px;">
 
     <div class="card shadow-sm">
@@ -51,7 +53,7 @@
             @if (kmRestanteRevisao.HasValue && kmRestanteRevisao.Value <= 0)
             {
                 <div id="alertaRevisao"
-                     class="alert alert-danger shadow-sm">
+                     class="alert shadow-sm" data-km-revisao="@kmRestanteRevisao">
                     <strong>⚠ Revisão vencida</strong><br />
                     Esta viatura já ultrapassou a quilometragem cadastrada para revisão.
                 </div>
@@ -60,7 +62,7 @@
             kmRestanteRevisao.Value <= limiteAlertaRevisao)
             {
                 <div id="alertaRevisao"
-                     class="alert alert-warning shadow-sm">
+                     class="alert shadow-sm" data-km-revisao="@kmRestanteRevisao">
                     <strong>⚠ Atenção à revisão</strong><br />
                     Faltam
                     <strong>@kmRestanteRevisao.Value.ToString("N0") km</strong>
@@ -70,7 +72,7 @@
             else
             {
                 <div id="alertaRevisao"
-                     class="alert alert-warning shadow-sm"
+                     class="alert shadow-sm" data-km-revisao="@kmRestanteRevisao"
                      style="display:none;">
                 </div>
             }
@@ -228,6 +230,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/viatura-revisao.js" asp-append-version="true"></script>
     <script src="~/js/viatura-registro.js" asp-append-version="true"></script>
 
     <script>
@@ -413,84 +416,40 @@
         atualizarAbastecimento();
 
 
-               function atualizarAlertaRevisao() {
-
-            if (!kmFinal || !kmProximaRevisao || !alertaRevisao)
-                return;
-
-            const kmFinalValor = parseInt(kmFinal.value);
-            const kmRevisaoValor = parseInt(kmProximaRevisao.value);
-
-            /*
-             * Enquanto o valor estiver vazio ou incompleto,
-             * não altera o alerta que já está sendo exibido.
-             */
-            if (isNaN(kmFinalValor) || isNaN(kmRevisaoValor))
-                return;
-
-            const restante = kmRevisaoValor - kmFinalValor;
-
-            /*
-             * REVISÃO VENCIDA
-             * É o nível mais crítico.
-             */
-            if (restante <= 0) {
-
-                alertaRevisao.classList.remove('alert-warning');
-                alertaRevisao.classList.add('alert-danger');
-
-                alertaRevisao.innerHTML =
-                    '<strong>⚠ Revisão vencida</strong><br />' +
-                    'Com o KM informado na devolução, esta viatura ultrapassou ' +
-                    'a revisão em <strong>' +
-                    Math.abs(restante).toLocaleString('pt-BR') +
-                    ' km</strong>.';
-
-                alertaRevisao.style.display = 'block';
-
+        function atualizarAlertaRevisao() {
+            if (!kmFinal || !kmProximaRevisao || !alertaRevisao) return;
+            const kmInformado = kmFinal.value.trim() === ''
+                ? Number(document.getElementById('KmAtual').value)
+                : Number(kmFinal.value);
+            const revisao = kmProximaRevisao.value.trim();
+            if (revisao === '' || !Number.isFinite(kmInformado)) {
+                alertaRevisao.style.display = 'none';
                 return;
             }
-
-            /*
-             * REVISÃO PRÓXIMA
-             */
-            if (restante <= limiteAlertaRevisao) {
-
-                /*
-                 * Se já ficou vermelho, não volta para laranja.
-                 */
-                if (alertaRevisao.classList.contains('alert-danger'))
-                    return;
-
-                alertaRevisao.classList.remove('alert-danger');
-                alertaRevisao.classList.add('alert-warning');
-
-                alertaRevisao.innerHTML =
-                    '<strong>⚠ Atenção à revisão</strong><br />' +
-                    'Com o KM informado na devolução, faltarão apenas <strong>' +
-                    restante.toLocaleString('pt-BR') +
+            const restante = Number(revisao) - kmInformado;
+            window.viaturaRevisao.aplicarCor(alertaRevisao, restante);
+            if (restante > limiteAlertaRevisao) {
+                alertaRevisao.style.display = 'none';
+                return;
+            }
+            if (restante < 0) {
+                alertaRevisao.innerHTML = '<strong>⚠ Revisão vencida</strong><br />' +
+                    'A quilometragem prevista foi ultrapassada em <strong>' +
+                    Math.abs(restante).toLocaleString('pt-BR') + ' km</strong>.';
+            } else if (restante === 0) {
+                alertaRevisao.innerHTML = '<strong>⚠ Revisão necessária</strong><br />' +
+                    'A viatura atingiu a quilometragem prevista para revisão.';
+            } else {
+                alertaRevisao.innerHTML = '<strong>⚠ Atenção à revisão</strong><br />' +
+                    'Faltam <strong>' + restante.toLocaleString('pt-BR') +
                     ' km</strong> para a próxima revisão.';
-
-                alertaRevisao.style.display = 'block';
-
-                return;
             }
-
-            /*
-             * IMPORTANTE:
-             * Se ainda não entrou na faixa de revisão,
-             * não fazemos nada.
-             *
-             * Um alerta que já apareceu não deve desaparecer
-             * durante a edição do KM.
-             */
+            alertaRevisao.style.display = 'block';
         }
 
         if (kmFinal) {
-            kmFinal.addEventListener(
-                'input',
-                atualizarAlertaRevisao
-            );
+            kmFinal.addEventListener('input', atualizarAlertaRevisao);
+            atualizarAlertaRevisao();
         }
 
         form.addEventListener('submit', function (event) {

@@ -21,6 +21,8 @@
         (x.KmProximaRevisao.Value - x.KmAtual) <= 0);
 }
 
+<link rel="stylesheet" href="~/css/viatura-revisao.css" asp-append-version="true" />
+
 <div class="container-fluid mt-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -242,7 +244,7 @@
                                 statusRevisao = "proxima";
                             }
 
-                            <tr class="linha-viatura @(statusRevisao == "vencida" ? "table-danger" : statusRevisao == "proxima" ? "table-warning" : "")"
+                            <tr class="linha-viatura" data-km-revisao="@kmRestanteRevisao"
                                 data-texto="@textoPesquisa.ToLower()"
                                 data-secao="@viatura.SessaoID"
                                 data-tipo="@((int)viatura.TipoCaracterizacao)"
@@ -335,13 +337,13 @@
                                     }
                                     else if (statusRevisao == "vencida")
                                     {
-                                        <span class="badge bg-danger">
+                                        <span class="badge" data-km-revisao="@kmRestanteRevisao">
                                             Vencida há @Math.Abs(kmRestanteRevisao!.Value).ToString("N0") km
                                         </span>
                                     }
                                     else if (statusRevisao == "proxima")
                                     {
-                                        <span class="badge bg-warning text-dark">
+                                        <span class="badge" data-km-revisao="@kmRestanteRevisao">
                                             Em @kmRestanteRevisao!.Value.ToString("N0") km
                                         </span>
                                     }
@@ -406,6 +408,12 @@
                                         </a>
                                     }
 
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-action="Editar" asp-route-pViaturaID="@viatura.ID"
+                                           class="btn btn-sm btn-outline-primary">Editar</a>
+                                    }
+
                                     <a asp-action="ExibirHistorico"
                                        asp-route-pViaturaID="@viatura.ID"
                                        class="btn btn-sm btn-outline-secondary">
@@ -437,6 +445,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/viatura-revisao.js" asp-append-version="true"></script>
 
     <script>
 
