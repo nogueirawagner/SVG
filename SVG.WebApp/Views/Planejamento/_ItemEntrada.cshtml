@@ -1,0 +1,11 @@
+@model SVG.Domain.TiposEstruturados.Planejamento.XItemEntrada
+@{var prefixo=$"Itens[{ViewData["Indice"]}]"; var tipos=new Dictionary<string,string>{{"Horario","Horário"},{"Rota","Rota"},{"Localizacao","Localização de apoio"},{"Mandado","Mandado"},{"Providencia","Providência"}};}
+<div class="border rounded p-3 mb-2 registro"><div class="row g-2">
+<div class="col-md-3"><label class="form-label w-100">Tipo<select class="form-select" name="@(prefixo).Tipo" data-campo="Tipo">@foreach(var t in tipos){<option value="@t.Key" selected="@(t.Key==Model.Tipo)">@t.Value</option>}</select></label></div>
+<div class="col-md-9"><label class="form-label w-100">Descrição<input name="@(prefixo).Descricao" value="@Model.Descricao" class="form-control" maxlength="1000" data-campo="Descricao" required/></label></div>
+<div class="col-md-4"><label class="form-label w-100">Data / hora<input type="datetime-local" name="@(prefixo).DataHora" value="@Model.DataHora?.ToString("yyyy-MM-ddTHH:mm")" class="form-control" data-campo="DataHora"/></label></div>
+<div class="col-md-4"><label class="form-label w-100">Responsável<input name="@(prefixo).Responsavel" value="@Model.Responsavel" class="form-control" maxlength="200" data-campo="Responsavel"/></label></div>
+<div class="col-md-4"><label class="form-label w-100">Link HTTPS<input type="url" name="@(prefixo).Url" value="@Model.Url" class="form-control" maxlength="2000" data-campo="Url"/></label></div>
+<div class="col-md-3"><label class="form-label w-100">Distância (km)<input type="number" min="0" max="100000" step="0.01" name="@(prefixo).DistanciaKm" value="@Model.DistanciaKm?.ToString(System.Globalization.CultureInfo.InvariantCulture)" class="form-control" data-campo="DistanciaKm"/></label></div>
+<div class="col-md-3"><label class="form-label w-100">Duração (min)<input type="number" min="0" max="100000" name="@(prefixo).DuracaoMinutos" value="@Model.DuracaoMinutos" class="form-control" data-campo="DuracaoMinutos"/></label></div>
+</div><button type="button" class="btn btn-sm btn-outline-danger" data-remover>Remover</button></div>

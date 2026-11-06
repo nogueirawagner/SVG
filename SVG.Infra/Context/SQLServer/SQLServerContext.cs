@@ -42,6 +42,14 @@ namespace SVG.Infra.Context.SQLServer
     public DbSet<ViaturaMovimentacao> ViaturaMovimentacao { get; set; }
     public DbSet<AfastamentoOperador> AfastamentoOperador { get; set; }
     public DbSet<ImpedimentoOperador> ImpedimentoOperador { get; set; }
+    public DbSet<Planejamento> Planejamento { get; set; }
+    public DbSet<Alvo> Alvo { get; set; }
+    public DbSet<PlanejamentoAlvo> PlanejamentoAlvo { get; set; }
+    public DbSet<AnexoAlvo> AnexoAlvo { get; set; }
+    public DbSet<InformacaoAlvo> InformacaoAlvo { get; set; }
+    public DbSet<PlanejamentoItem> PlanejamentoItem { get; set; }
+    public DbSet<PlanejamentoIntegrante> PlanejamentoIntegrante { get; set; }
+    public DbSet<AnexoPlanejamento> AnexoPlanejamento { get; set; } = null!;
 
     #endregion
 
@@ -61,6 +69,8 @@ namespace SVG.Infra.Context.SQLServer
 
       modelBuilder.Properties<string>()
           .Configure(p => p.HasMaxLength(100));
+
+      SVG.Infra.EntityConfig.PlanejamentoConfig.Configurar(modelBuilder);
 
       modelBuilder.Entity<Usuario>()
         .HasOptional(u => u.Operador)      // Usuario pode NÃO ter Operador

@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 //// Add services to the container.
 //builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options => options.Filters.Add<ApplicationCultureFilter>());
 
 var container = new Container();
 container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
@@ -17,6 +17,13 @@ builder.Services.AddSimpleInjector(container, options => options.AddAspNetCore()
 var config = AutoMapperConfig.RegisterMappings();
 container.RegisterInstance(config.CreateMapper());
 
+// Fora de wwwroot: os anexos só são servidos por ações autenticadas.
+var raizAnexos = builder.Configuration["ArmazenamentoAnexos:Raiz"] ?? builder.Environment.ContentRootPath;
+container.RegisterInstance<SVG.Domain.Interfaces.Services.IArmazenamentoAnexos>(
+    new SVG.Infra.Storage.ArmazenamentoAnexosLocal(raizAnexos));
+container.RegisterInstance<SVG.Domain.Interfaces.Services.IGoogleMapsService>(
+    new SVG.Infra.Services.GoogleMapsService(new HttpClient(new HttpClientHandler
+    { AllowAutoRedirect = false, UseCookies = false }) { Timeout = TimeSpan.FromSeconds(12) }));
 BootStrapper.RegisterServices(container);
 
 builder.Services

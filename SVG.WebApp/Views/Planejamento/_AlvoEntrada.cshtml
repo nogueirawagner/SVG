@@ -1,0 +1,26 @@
+@model SVG.Domain.TiposEstruturados.Planejamento.XAlvoEntrada
+@{var indice=(string)ViewData["Indice"]!; var prefixo=$"Alvos[{indice}]";}
+<fieldset class="border rounded p-3 mb-3 registro" data-existente="@(Model.AlvoID.HasValue?"true":"false")">
+<legend class="h5 nome-alvo">@(Model.AlvoID.HasValue?Model.Nome:"Novo alvo")</legend>
+<input type="hidden" name="@(prefixo).AlvoID" value="@Model.AlvoID" data-campo="AlvoID"/>
+<div class="row g-3">
+<div class="col-md-3"><label class="form-label">Código no planejamento<input name="@(prefixo).Codigo" value="@Model.Codigo" maxlength="30" class="form-control" data-campo="Codigo"/></label></div>
+@if(!Model.AlvoID.HasValue){
+<div class="campos-novo row g-3 m-0 p-0">
+<div class="col-md-6"><label class="form-label w-100">Nome ou identificação provisória<input name="@(prefixo).Nome" value="@Model.Nome" maxlength="200" class="form-control" data-campo="Nome" required/></label></div>
+<div class="col-md-6"><label class="form-label w-100">Alcunha<input name="@(prefixo).Alcunha" value="@Model.Alcunha" maxlength="200" class="form-control" data-campo="Alcunha"/></label></div>
+<div class="col-md-4"><label class="form-label w-100">CPF<input name="@(prefixo).CPF" value="@Model.CPF" maxlength="14" class="form-control" data-campo="CPF"/></label></div>
+<div class="col-md-4"><label class="form-label w-100">RG / órgão / UF<input name="@(prefixo).RG" value="@Model.RG" maxlength="100" class="form-control" data-campo="RG"/></label></div>
+<div class="col-md-4"><label class="form-label w-100">Nascimento<input type="date" name="@(prefixo).DataNascimento" value="@Model.DataNascimento?.ToString("yyyy-MM-dd")" class="form-control" data-campo="DataNascimento"/></label></div>
+<div class="col-md-6"><label class="form-label w-100">Nome da mãe<input name="@(prefixo).NomeMae" value="@Model.NomeMae" maxlength="200" class="form-control" data-campo="NomeMae"/></label></div>
+<div class="col-md-6"><label class="form-label w-100">Nome do pai<input name="@(prefixo).NomePai" value="@Model.NomePai" maxlength="200" class="form-control" data-campo="NomePai"/></label></div>
+<div class="col-12"><label class="form-label w-100">Foto principal (JPEG ou PNG, até 5 MB)<input type="file" name="Foto_@indice" class="form-control" accept="image/png,image/jpeg" data-foto/></label></div>
+<div class="col-md-8"><label class="form-label w-100">Informações gerais da pessoa<textarea name="@(prefixo).Informacoes" class="form-control" maxlength="8000" data-campo="Informacoes">@Model.Informacoes</textarea></label></div>
+<div class="col-md-4"><label class="form-label w-100">Fonte<input name="@(prefixo).Fonte" value="@Model.Fonte" maxlength="500" class="form-control" data-campo="Fonte"/></label></div>
+</div>
+}
+<div class="col-12"><label class="form-label w-100">Anexos do alvo (fotos e vídeos, até 50 MB cada)<input type="file" name="AnexosAlvo_@indice" class="form-control" accept="image/png,image/jpeg,video/mp4,video/webm" multiple data-anexos-alvo/></label></div>
+<div class="col-12"><label class="form-label w-100">Observações desta pessoa neste planejamento<textarea name="@(prefixo).Observacoes" class="form-control" maxlength="8000" data-campo="Observacoes">@Model.Observacoes</textarea></label></div>
+</div>
+@if(!Model.AlvoID.HasValue){<button type="button" class="btn btn-sm btn-outline-danger mt-2" data-remover>Remover</button>}else{<small class="text-muted">Cadastro existente preservado. Vínculos já salvos não são removidos nesta versão.</small>}
+</fieldset>

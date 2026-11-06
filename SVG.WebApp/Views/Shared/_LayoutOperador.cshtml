@@ -45,6 +45,10 @@
 
                     <!-- LADO ESQUERDO -->
                     <ul class="navbar-nav me-auto">
+                        @if (User.IsInRole("Operador") && !User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Planejamento" asp-action="Index">Planejamento</a></li>
+                        }
 
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle"

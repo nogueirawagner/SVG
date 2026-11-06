@@ -1,0 +1,17 @@
+@model SVG.Domain.Entities.Alvo
+@{ ViewData["Title"]=Model.Nome; }
+<div class="container py-4">
+<a asp-action="Index">Voltar à consulta</a>
+<h1 class="mt-3">@Model.Nome</h1>
+<div class="row g-4"><div class="col-md-3"><img src="@Url.Action("Foto",new{id=Model.ID})" class="img-fluid rounded alvo-foto" alt="Foto de @Model.Nome"/><p class="foto-ausente text-muted" hidden>Sem foto cadastrada</p></div><div class="col-md-9">
+<dl class="row"><dt class="col-sm-3">Alcunha</dt><dd class="col-sm-9">@Model.Alcunha</dd><dt class="col-sm-3">CPF / RG</dt><dd class="col-sm-9">@(Model.CPF??"Não informado") / @Model.RG</dd><dt class="col-sm-3">Nascimento</dt><dd class="col-sm-9">@Model.DataNascimento?.ToString("dd/MM/yyyy")</dd><dt class="col-sm-3">Filiação</dt><dd class="col-sm-9">@Model.NomeMae / @Model.NomePai</dd></dl>
+@foreach(var info in Model.Informacoes){<div class="card card-body mb-2"><p class="preservar-linhas">@info.Texto</p><small>Fonte: @info.Fonte</small></div>}
+</div></div>
+<h2 class="h4 mt-4">Anexos do alvo</h2>
+@if(Model.Anexos.Count==0){<p class="text-muted">Nenhum anexo cadastrado.</p>}
+@foreach(var anexo in Model.Anexos){<p><a asp-action="AnexoAlvo" asp-route-id="@anexo.ID">@anexo.NomeArquivo</a> <small>@anexo.TipoMime</small></p>}
+<h2 class="h4 mt-4">Planejamentos associados</h2><p>O endereço corresponde à ocasião do planejamento, não necessariamente à residência atual.</p>
+<div class="table-responsive"><table class="table"><thead><tr><th>Planejamento</th><th>Data</th><th>Seção</th><th>Endereço</th><th>Informações da ocasião</th></tr></thead><tbody>
+@foreach(var v in Model.Planejamentos.OrderByDescending(p=>p.Planejamento.DataPrevista)){<tr><td><a asp-action="Detalhes" asp-route-id="@v.PlanejamentoID">@v.Planejamento.Titulo</a></td><td>@v.Planejamento.DataPrevista?.ToString("dd/MM/yyyy HH:mm")</td><td>@v.Planejamento.Secao.Nome</td><td>@v.Planejamento.Endereco</td><td class="preservar-linhas">@v.Observacoes</td></tr>}
+</tbody></table></div></div>
+@section Scripts{<script src="~/js/planejamento.js" asp-append-version="true"></script>}

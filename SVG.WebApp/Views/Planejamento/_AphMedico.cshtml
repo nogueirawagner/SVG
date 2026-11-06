@@ -1,0 +1,9 @@
+@model SVG.App.ViewModels.PlanejamentoViewModel
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+<section class="card card-body mb-3"><h2 class="h4">8. APH – Médico</h2><div class="row g-3">
+<div class="col-md-6"><label asp-for="SocorristaAPH1" class="form-label">Socorrista APH 1</label><input asp-for="SocorristaAPH1" type="text" class="form-control" maxlength="200" /></div>
+<div class="col-md-6"><label asp-for="SocorristaAPH2" class="form-label">Socorrista APH 2</label><input asp-for="SocorristaAPH2" type="text" class="form-control" maxlength="200" /></div>
+<div class="col-md-6"><label asp-for="PrefixoVtrAPH" class="form-label">Prefixo da viatura APH</label><input asp-for="PrefixoVtrAPH" type="text" class="form-control" maxlength="100" /></div>
+<div class="col-md-6"><label asp-for="MotoristaVtrAPH" class="form-label">Motorista da viatura APH</label><input asp-for="MotoristaVtrAPH" type="text" class="form-control" maxlength="200" /></div>
+<div class="col-12 text-muted"><p>Todos os operadores com IFAK; socorristas com AFAK. Em caso de deslocamento médico, utilizar a viatura e os profissionais indicados acima, com uma segunda viatura de apoio assim que possível.</p><p>Consultar a regulação pelo 192 sobre disponibilidade de hospitais. Motoristas devem informar aos operadores onde está a chave da viatura, preferencialmente no bolso superior esquerdo da gandola.</p></div><div class="col-md-12"><label asp-for="ApoioMedico" class="form-label">Observações de APH</label><textarea asp-for="ApoioMedico" class="form-control" rows="3" maxlength="8000"></textarea></div>
+</div></section>

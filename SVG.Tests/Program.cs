@@ -6,7 +6,18 @@ using SVG.Domain.Services;
 using SVG.Domain.TiposEstruturados.Enums;
 using SVG.WebApp.Models;
 
+if(args.Contains("--modelo-planejamento"))
+{
+    PlanejamentoSchemaChecks.BuildModel().Save("Documentacao/Planejamento-Modelo.edmx");
+    return;
+}
+if(args.Contains("--preparar-esquema-planejamento"))
+{
+    PlanejamentoMigrationDraft.Generate();
+    return;
+}
 var checks = 0;
+if(args.Contains("--planejamento-preview")) { await PlanejamentoWebChecks.Run(true); return; }
 void Check(bool ok, string description)
 {
     if (!ok) throw new Exception(description);
@@ -99,6 +110,11 @@ edicaoInvalida.KmProximaRevisao = null;
 Check(Validator.TryValidateObject(edicaoInvalida, new ValidationContext(edicaoInvalida), new List<ValidationResult>(), true),
     "Revisão não definida deve ser aceita.");
 Console.WriteLine($"{checks} verificações passaram.");
+PlanejamentoChecks.Run();
+await GoogleMapsChecks.Run();
+PlanejamentoStorageChecks.Run();
+PlanejamentoSchemaChecks.Run();
+await PlanejamentoWebChecks.Run();
 
 public class RepositoryProxy : DispatchProxy
 {

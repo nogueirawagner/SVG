@@ -1,0 +1,9 @@
+@model SVG.Domain.TiposEstruturados.Planejamento.XIntegranteEntrada
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{var prefixo=$"Integrantes[{ViewData["Indice"]}]";}
+<div class="border rounded p-3 mb-2 registro"><div class="row g-2">
+<div class="col-md-3"><label class="form-label w-100">Operador<select class="form-select" name="@(prefixo).OperadorID" data-campo="OperadorID" required><option value="">Selecione</option>@foreach(var o in (IEnumerable<SelectListItem>)ViewBag.Operadores){<option value="@o.Value" selected="@(o.Value==Model.OperadorID.ToString())">@o.Text</option>}</select></label></div>
+<div class="col-md-3"><label class="form-label w-100">Entrada<input class="form-control" name="@(prefixo).Entrada" value="@Model.Entrada" data-campo="Entrada" maxlength="100"/></label></div>
+<div class="col-md-3"><label class="form-label w-100">Função<input class="form-control" name="@(prefixo).Funcao" value="@Model.Funcao" data-campo="Funcao" maxlength="300" required/></label></div>
+<div class="col-md-3"><label class="form-label w-100">Prefixo / viatura<select class="form-select" name="@(prefixo).ViaturaID" data-campo="ViaturaID"><option value="">Não definida</option>@foreach(var v in (IEnumerable<SelectListItem>)ViewBag.Viaturas){<option value="@v.Value" selected="@(v.Value==Model.ViaturaID?.ToString())">@v.Text</option>}</select></label></div>
+</div><button type="button" class="btn btn-sm btn-outline-danger" data-remover>Remover</button></div>

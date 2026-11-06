@@ -1,0 +1,9 @@
+@model SVG.App.ViewModels.PlanejamentoViewModel
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+<section class="card card-body mb-3"><h2 class="h4">2. Identificação do Alvo</h2><p>Pesquise antes de cadastrar uma pessoa. Reutilizar um alvo não altera seus dados de identificação.</p>
+<label for="busca-alvo" class="form-label">Buscar alvo existente</label><div class="input-group mb-2"><input id="busca-alvo" class="form-control" maxlength="200" placeholder="Nome, alcunha ou CPF"/><button type="button" id="buscar-alvo" data-url="@Url.Action("BuscarAlvos")" class="btn btn-outline-primary">Pesquisar</button></div>
+<div id="resultado-alvos" class="list-group mb-3" aria-live="polite"></div>
+<div id="alvos" data-colecao="Alvos">@for(int i=0;i<Model.Alvos.Count;i++){
+@await Html.PartialAsync("_AlvoEntrada",Model.Alvos[i],new ViewDataDictionary(ViewData){["Indice"]=i.ToString()})
+}</div><button type="button" data-adicionar="alvos" data-template="modelo-alvo" class="btn btn-outline-primary align-self-start">Cadastrar novo alvo</button>
+</section>

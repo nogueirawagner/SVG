@@ -1,0 +1,15 @@
+@model SVG.Domain.Entities.Planejamento
+<div class="card card-body mb-3"><h2 class="h4">Quadro de Horários</h2>
+<p>Local do briefing: @Model.LocalBriefing</p>
+<dl class="row"><dt class="col-sm-6">Briefing na DOE / SOR</dt><dd class="col-sm-6">@Model.HorarioBriefingDOE?.ToString(@"hh\:mm")</dd><dt class="col-sm-6">Saída da DOE</dt><dd class="col-sm-6">@Model.HorarioSaidaDOE?.ToString(@"hh\:mm")</dd><dt class="col-sm-6">Briefing na DP</dt><dd class="col-sm-6">@Model.HorarioBriefingDP?.ToString(@"hh\:mm")</dd></dl></div>
+<div class="card card-body mb-3"><h2 class="h4">APH – Médico</h2><p>Socorristas: @Model.SocorristaAPH1 / @Model.SocorristaAPH2</p><p>Viatura: @Model.PrefixoVtrAPH · Motorista: @Model.MotoristaVtrAPH</p></div>
+<div class="card card-body mb-3"><h2 class="h4">Medidas Complementares</h2><p>Relatório e escritura do MBA: @Model.ResponsavelRelatorio</p><p>Conferência do endereço e foto do MBA: @Model.ResponsavelFotoMBA</p></div>
+<div class="card card-body mb-3"><h2 class="h4">Resumo das Rotas</h2>
+@foreach(var rota in new[]{(Nome:$"DOE até {Model.UnidadeApoio}",Link:Model.Link_Rota_DOE_Unidade_Apoio,Km:Model.DistanciaRotaDOEUnidadeApoioKm,Minutos:Model.DuracaoRotaDOEUnidadeApoioMinutos),(Nome:"DP até desembarque",Link:Model.Link_Rota_DP_Desemb,Km:Model.DistanciaRotaDPDesembKm,Minutos:Model.DuracaoRotaDPDesembMinutos)}){
+<p>@rota.Nome · @rota.Km km · @rota.Minutos min @if(rota.Link!=null){<a href="@rota.Link" target="_blank" rel="noopener noreferrer">Abrir rota</a>}</p>
+}</div>
+<div class="card card-body mb-3"><h2 class="h4">Resumo das Localizações</h2>
+@foreach(var local in new[]{(Nome:"Desembarque",Link:Model.Link_Localizacao_Desemb),(Nome:"Alvo",Link:Model.Link_Endereco_Alvo),(Nome:"Hospital 1",Link:Model.Link_Localizacao_Hospital_1),(Nome:"Hospital 2",Link:Model.Link_Localizacao_Hospital_2)}){
+<p>@local.Nome: @if(local.Link!=null){<a href="@local.Link" target="_blank" rel="noopener noreferrer">Abrir localização</a>}else{<span>Não informada</span>}</p>
+}
+<p>ZPH (coordenada): @Model.CoordenadaZPH</p></div>

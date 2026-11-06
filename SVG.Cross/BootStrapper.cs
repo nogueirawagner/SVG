@@ -26,6 +26,10 @@ namespace SVG.IoC
         Lifestyle.Scoped);
 
       // Operador
+      container.Register<IPlanejamentoRepository, PlanejamentoRepository>(Lifestyle.Scoped);
+      container.Register<IPlanejamentoService, PlanejamentoService>(Lifestyle.Scoped);
+      container.Register<IPlanejamentoAppService, PlanejamentoAppService>(Lifestyle.Scoped);
+
       container.Register<IOperadorRepository, OperadorRepository>(Lifestyle.Scoped);
       container.Register<IOperadorAppService, OperadorAppService>(Lifestyle.Scoped);
       container.Register<IOperadorService, OperadorService>(Lifestyle.Scoped);
