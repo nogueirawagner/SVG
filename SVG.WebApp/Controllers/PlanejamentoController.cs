@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -6,6 +6,7 @@ using SVG.App.Interface;
 using SVG.App.Interfaces;
 using SVG.App.ViewModels;
 using SVG.Domain.TiposEstruturados.Planejamento;
+using SVG.Domain.TiposEstruturados.Enums;
 using SVG.WebApp.Configurations;
 
 namespace SVG.WebApp.Controllers;
@@ -13,7 +14,7 @@ namespace SVG.WebApp.Controllers;
 [Authorize]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class PlanejamentoController(IPlanejamentoAppService service, IOperadorAppService operadores,
-    IViaturaAppService viaturas, IUserContext usuario, ILogger<PlanejamentoController> logger, SVG.Domain.Interfaces.Services.IArmazenamentoAnexos armazenamento,
+    IViaturaAppService viaturas, ISessaoAppService sessoes, IUserContext usuario, ILogger<PlanejamentoController> logger, SVG.Domain.Interfaces.Services.IArmazenamentoAnexos armazenamento,
     SVG.Domain.Interfaces.Services.IGoogleMapsService googleMaps) : Controller
 {
     [HttpGet]
@@ -68,6 +69,15 @@ public class PlanejamentoController(IPlanejamentoAppService service, IOperadorAp
         return stream==null?NotFound():File(stream,anexo.TipoMime,anexo.NomeArquivo,enableRangeProcessing:true);
     }
     [HttpGet]
+    public IActionResult Midia(int id)
+    {
+        var anexo=service.ObterAnexo(id); if(anexo==null)return NotFound();
+        if(anexo.TipoMime is not ("image/png" or "image/jpeg" or "video/mp4" or "video/webm"))return NotFound();
+        Response.Headers["X-Content-Type-Options"]="nosniff";
+        var stream=armazenamento.Abrir(anexo.Caminho);
+        return stream==null?NotFound():File(stream,anexo.TipoMime,enableRangeProcessing:true);
+    }
+    [HttpGet]
     public IActionResult AnexoAlvo(int id)
     {
         var anexo=service.ObterAnexoAlvo(id); if(anexo==null)return NotFound();
@@ -88,6 +98,7 @@ public class PlanejamentoController(IPlanejamentoAppService service, IOperadorAp
         if(!usuario.OperadorId.HasValue)return SemOperador();
         if(!usuario.IsAdmin && p.CriadorOperadorID!=usuario.OperadorId)return Forbid();
         if(p.Situacao!="Rascunho") return RedirectToAction(nameof(Detalhes),new{id});
+        ViewBag.AnexosPlanejamento=p.Anexos;
         Combos(); return View(service.PrepararEdicao(id));
     }
     [HttpPost, ValidateAntiForgeryToken, Authorize(Roles="Admin,Operador")]
@@ -102,11 +113,14 @@ public class PlanejamentoController(IPlanejamentoAppService service, IOperadorAp
         {
             foreach(var file in Request.Form.Files.Where(f=>f.Length>0))
             {
-                if(file.Name=="AnexosPlanejamento")
+                if(file.Name.StartsWith("AnexosPlanejamento_",StringComparison.Ordinal))
                 {
+                    if(!int.TryParse(file.Name["AnexosPlanejamento_".Length..],out var codigo)
+                        || !Enum.IsDefined(typeof(XSubgrupoImagemPlanejamento),codigo))
+                        throw new ValidationException("Subgrupo de imagem inválido.");
                     if(file.Length>50*1024*1024)throw new ValidationException("Cada anexo pode ter até 50 MB.");
                     using var arquivo=new MemoryStream();await file.CopyToAsync(arquivo);
-                    anexos.Add(new(file.FileName,arquivo.ToArray()));continue;
+                    anexos.Add(new(file.FileName,arquivo.ToArray(),(XSubgrupoImagemPlanejamento)codigo));continue;
                 }
                 var principal=file.Name.StartsWith("Foto_");
                 var prefixo=principal?"Foto_":"AnexosAlvo_";
@@ -154,6 +168,7 @@ public class PlanejamentoController(IPlanejamentoAppService service, IOperadorAp
             var existente=service.ObterAlvo(alvo.AlvoID!.Value);
             alvo.Nome=existente?.Nome??"Alvo não encontrado";
         }
+        if(model.ID>0)ViewBag.AnexosPlanejamento=service.Obter(model.ID)?.Anexos;
         Combos(); return View("Editar",model);
     }
     private IActionResult SemOperador()
@@ -163,7 +178,12 @@ public class PlanejamentoController(IPlanejamentoAppService service, IOperadorAp
     }
     private void Combos()
     {
-        ViewBag.Operadores=operadores.GetAll().OrderBy(o=>o.Nome).Select(o=>new SelectListItem(o.Nome,o.ID.ToString())).ToList();
-        ViewBag.Viaturas=viaturas.GetAll().OrderBy(v=>v.Prefixo).Select(v=>new SelectListItem(v.Prefixo,v.ID.ToString())).ToList();
+        var listaOperadores=operadores.GetAll().OrderBy(o=>o.Nome).ToList();
+        ViewBag.Operadores=listaOperadores.Select(o=>new SelectListItem(o.Nome,o.ID.ToString())).ToList();
+        ViewBag.OperadoresPorSecao=listaOperadores.Select(o=>new { o.ID, o.SessaoID, o.Nome, o.Matricula }).ToList();
+        ViewBag.Sessoes=sessoes.GetAll().OrderBy(s=>s.Nome).Select(s=>new SelectListItem(s.Nome,s.ID.ToString())).ToList();
+        var listaViaturas=viaturas.GetAll().ToList();
+        ViewBag.ViaturasSecoes=listaViaturas.ToDictionary(v=>v.ID.ToString(),v=>v.SessaoID);
+        ViewBag.Viaturas=listaViaturas.Select(v=>new SelectListItem(string.IsNullOrWhiteSpace(v.Prefixo)?v.Placa:v.Prefixo,v.ID.ToString())).OrderBy(v=>v.Text).ToList();
     }
 }

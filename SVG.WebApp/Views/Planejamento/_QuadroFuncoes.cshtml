@@ -1,5 +1,18 @@
-@model SVG.App.ViewModels.PlanejamentoViewModel
+﻿@model SVG.App.ViewModels.PlanejamentoViewModel
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
-<section class="card card-body mb-3"><h2 class="h4">5. Quadro de Funções</h2><div id="integrantes" data-colecao="Integrantes">@for(int i=0;i<Model.Integrantes.Count;i++){
+<section class="card card-body mb-3"><h2 class="h4">5. Quadro de Funções</h2><div class="row g-2 mb-3 align-items-end">
+<div class="col-md-6"><label for="integrantes-secao" class="form-label">Selecionar seção</label>
+<select id="integrantes-secao" class="form-select"><option value="">Escolha a seção...</option>
+@foreach(var secao in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Sessoes){<option value="@secao.Value">@secao.Text</option>}
+</select></div>
+<div class="col-md-6"><button type="button" id="adicionar-operadores-secao" class="btn btn-outline-primary">Adicionar operadores da seção</button></div>
+<div id="integrantes-secao-status" class="form-text" role="status" aria-live="polite"></div>
+</div>
+<div class="mb-3">
+<h3 class="h6" id="operadores-secao-titulo">Operadores da seção selecionada:</h3>
+<ul id="lista-operadores-secao" class="list-group" aria-labelledby="operadores-secao-titulo" aria-live="polite"><li class="list-group-item text-muted">Selecione uma seção para visualizar os operadores.</li></ul>
+</div>
+<script type="application/json" id="operadores-por-secao">@Html.Raw(System.Text.Json.JsonSerializer.Serialize((object)ViewBag.OperadoresPorSecao))</script>
+<div id="integrantes" data-colecao="Integrantes">@for(int i=0;i<Model.Integrantes.Count;i++){
 @await Html.PartialAsync("_IntegranteEntrada",Model.Integrantes[i],new ViewDataDictionary(ViewData){["Indice"]=i.ToString()})
-}</div><button type="button" data-adicionar="integrantes" data-template="modelo-integrante" class="btn btn-outline-primary align-self-start">Adicionar integrante</button></section>
+}</div></section>

@@ -1,4 +1,4 @@
-@model SVG.App.ViewModels.PlanejamentoViewModel
+﻿@model SVG.App.ViewModels.PlanejamentoViewModel
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
 @using SVG.Domain.TiposEstruturados.Planejamento
 @{ ViewData["Title"]=Model.ID==0?"Novo planejamento":"Editar planejamento"; }
@@ -8,6 +8,7 @@
 <form asp-action="Salvar" method="post" enctype="multipart/form-data" id="planejamento-form">
 <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
 <input asp-for="ID" type="hidden"/><input asp-for="Versao" type="hidden"/>
+<div id="planejamento-grupos">
 @await Html.PartialAsync("_InformacoesPreliminares",Model)
 @await Html.PartialAsync("_IdentificacaoAlvo",Model)
 @await Html.PartialAsync("_EnderecoAlvo",Model)
@@ -19,6 +20,8 @@
 @await Html.PartialAsync("_MedidasComplementares",Model)
 @await Html.PartialAsync("_ResumoRotas",Model)
 @await Html.PartialAsync("_ResumoLocalizacoes",Model)
+</div>
+<script type="application/json" id="planejamento-campos-invalidos">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewData.ModelState.Where(x=>x.Value!.Errors.Count>0).Select(x=>x.Key)))</script>
 <div class="alert alert-info">Ao finalizar, este planejamento ficará disponível somente para leitura. Confira os dados antes de finalizar.</div>
 <button type="submit" class="btn btn-primary">Salvar rascunho</button> <button type="submit" name="finalizar" value="true" class="btn btn-success">Salvar e finalizar</button>
 </form>

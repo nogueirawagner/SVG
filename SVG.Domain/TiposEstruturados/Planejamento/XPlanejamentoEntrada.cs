@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SVG.Domain.TiposEstruturados.Enums;
 
 namespace SVG.Domain.TiposEstruturados.Planejamento;
 
@@ -85,7 +86,7 @@ public class XIntegranteEntrada
 }
 
 public record XAnexoAlvoEntrada(int IndiceAlvo, string NomeArquivo, byte[] Conteudo, bool FotoPrincipal = false);
-public record XArquivoPlanejamentoEntrada(string NomeArquivo, byte[] Conteudo);
+public record XArquivoPlanejamentoEntrada(string NomeArquivo, byte[] Conteudo, XSubgrupoImagemPlanejamento? Subgrupo = null);
 public record XAutorPlanejamento(int OperadorID, bool Administrador);
 public record XAlvoResumo(int ID, string Nome, string? Alcunha, string? CPF, int QuantidadePlanejamentos);
 public record XPlanejamentoResumo(int ID, string Titulo, DateTime? DataPrevista, string Situacao,

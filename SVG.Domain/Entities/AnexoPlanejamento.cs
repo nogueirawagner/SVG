@@ -1,8 +1,12 @@
+using SVG.Domain.TiposEstruturados.Enums;
+
 namespace SVG.Domain.Entities;
 public class AnexoPlanejamento
 {
     public int ID { get; set; }
     public int PlanejamentoID { get; set; }
+    public XSubgrupoImagemPlanejamento? Subgrupo { get; set; }
+    public int Ordem { get; set; }
     public string NomeArquivo { get; set; } = "";
     public string TipoMime { get; set; } = "";
     public string Caminho { get; set; } = "";

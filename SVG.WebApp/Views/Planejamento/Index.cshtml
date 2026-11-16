@@ -1,21 +1,38 @@
-@model IReadOnlyList<SVG.Domain.TiposEstruturados.Planejamento.XPlanejamentoResumo>
+﻿@model IReadOnlyList<SVG.Domain.TiposEstruturados.Planejamento.XPlanejamentoResumo>
 @{ ViewData["Title"]="Planejamento operacional"; var resultados=(IReadOnlyList<SVG.Domain.TiposEstruturados.Planejamento.XAlvoResumo>)ViewBag.Resultados; }
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4"><div><h1>Planejamento operacional</h1><p class="text-muted">Cadastre um planejamento ou consulte o histórico de um alvo.</p></div>
     @if(User.IsInRole("Admin") || User.IsInRole("Operador")){<a asp-action="Criar" class="btn btn-primary">Novo planejamento</a>}</div>
     @if(TempData["Erro"] is string erro){<div class="alert alert-warning">@erro</div>}
     @if(ViewBag.Aviso is string aviso){<div class="alert alert-info">@aviso</div>}
-    <form method="get" class="card card-body mb-4">
-        <label for="termo" class="form-label">Consultar alvo por nome, alcunha ou CPF</label>
-        <div class="input-group"><input id="termo" name="termo" value="@ViewBag.Termo" maxlength="200" minlength="2" class="form-control" placeholder="Digite pelo menos 2 caracteres"/><button class="btn btn-primary">Consultar</button></div>
-    </form>
+    <div class="accordion mb-4" id="planejamento-filtros">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="planejamento-filtros-titulo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#planejamento-filtros-conteudo" aria-expanded="false" aria-controls="planejamento-filtros-conteudo">Filtros e pesquisa</button>
+            </h2>
+            <div id="planejamento-filtros-conteudo" class="accordion-collapse collapse" aria-labelledby="planejamento-filtros-titulo">
+                <div class="accordion-body">
+                    <form method="get">
+                        <label for="termo" class="form-label">Consultar alvo por nome, alcunha ou CPF</label>
+                        <input id="termo" name="termo" value="@ViewBag.Termo" maxlength="200" minlength="2" class="form-control mb-3" placeholder="Digite pelo menos 2 caracteres"/>
+                        <div class="form-check mb-3">
+                            <input id="minhaSecao" name="minhaSecao" value="true" type="checkbox" class="form-check-input" checked="@((bool)ViewBag.MinhaSecao)"/>
+                            <label for="minhaSecao" class="form-check-label">Exibir somente planejamentos recentes da minha seção</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Consultar</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Limpar filtros</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     @if(!string.IsNullOrWhiteSpace((string?)ViewBag.Termo)){
         <h2 class="h4">Alvos encontrados</h2>
         <p class="text-muted">Até 50 resultados. Refine a busca se necessário. Confira CPF e filiação para distinguir homônimos.</p>
         @if(resultados.Count==0){<p>Nenhum alvo encontrado.</p>}
         <div class="list-group mb-4">@foreach(var alvo in resultados){<a class="list-group-item list-group-item-action" asp-action="Alvo" asp-route-id="@alvo.ID"><strong>@alvo.Nome</strong> — @alvo.Alcunha <span class="ms-2">CPF: @(alvo.CPF??"Não informado")</span><span class="badge bg-secondary float-end">@alvo.QuantidadePlanejamentos planejamento(s)</span></a>}</div>
     }
-    <div class="d-flex justify-content-between align-items-center"><h2 class="h4">Planejamentos recentes</h2><form method="get"><input type="hidden" name="termo" value="@ViewBag.Termo"/><label><input type="checkbox" name="minhaSecao" value="true" checked="@((bool)ViewBag.MinhaSecao)"/> Minha seção</label> <button class="btn btn-outline-secondary btn-sm">Filtrar</button></form></div>
+    <h2 class="h4">Planejamentos recentes</h2>
     <p class="text-muted">Últimos 100 registros. A seção não restringe a consulta.</p>
     <div class="table-responsive"><table class="table table-striped"><thead><tr><th>Planejamento</th><th>Data</th><th>Seção</th><th>Situação</th><th>Alvos</th></tr></thead><tbody>
     @foreach(var p in Model){<tr><td><a asp-action="Detalhes" asp-route-id="@p.ID">@p.Titulo</a></td><td>@p.DataPrevista?.ToString("dd/MM/yyyy HH:mm")</td><td>@p.Secao</td><td>@p.Situacao</td><td>@p.QuantidadeAlvos</td></tr>}

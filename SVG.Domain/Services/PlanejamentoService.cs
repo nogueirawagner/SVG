@@ -26,7 +26,11 @@ public class PlanejamentoService(IPlanejamentoRepository repository) : IPlanejam
         if(anexos.Count>20 || anexos.Sum(a=>(long)a.Conteudo.Length)+fotos.Sum(f=>(long)f.Conteudo.Length)>100*1024*1024)
             throw new ValidationException("Limite de 20 anexos e 100 MB por gravação.");
         foreach(var a in anexos)
+        {
+            if(!a.Subgrupo.HasValue || !Enum.IsDefined(a.Subgrupo.Value))
+                throw new ValidationException("Selecione um subgrupo válido para cada imagem do planejamento.");
             if(a.Conteudo.Length>50*1024*1024 || TipoArquivo(a.Conteudo)==null) throw new ValidationException("Anexos devem ser PNG, JPEG, MP4 ou WebM, com até 50 MB cada.");
+        }
         return repository.Salvar(e, autor, fotos, finalizar, anexos);
     }
     public static void Validar(XPlanejamentoEntrada e, XAutorPlanejamento autor, IReadOnlyList<XAnexoAlvoEntrada> fotos, bool finalizar)

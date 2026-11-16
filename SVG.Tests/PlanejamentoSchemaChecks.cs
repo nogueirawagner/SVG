@@ -44,7 +44,7 @@ public static class PlanejamentoSchemaChecks
         if(!snapshot.Descendants(ns+"EntityType").Single(e=>(string?)e.Attribute("Name")=="Planejamento")
             .Elements(ns+"Property").Any(p=>(string?)p.Attribute("Name")=="Link_Endereco_Alvo"))
             throw new Exception("Snapshot da migration não contém Link_Endereco_Alvo.");
-        foreach(var nome in new[]{"Planejamento","PlanejamentoIntegrante"})
+        foreach(var nome in new[]{"Planejamento","PlanejamentoIntegrante","AnexoPlanejamento"})
         {
             var atual=types[nome].Elements(ns+"Property").Select(p=>(string?)p.Attribute("Name")).ToHashSet();
             var persistido=snapshot.Descendants(ns+"EntityType").Single(e=>(string?)e.Attribute("Name")==nome)

@@ -1,5 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Data.SqlClient;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using SVG.Domain.Entities;
@@ -19,8 +20,8 @@ public class PlanejamentoRepository(SQLServerContext db, IArmazenamentoAnexos ar
         .Include(p=>p.Alvos.Select(a=>a.Alvo)).Include(p=>p.Itens)
         .Include(p=>p.Integrantes.Select(i=>i.Operador)).Include(p=>p.Integrantes.Select(i=>i.Viatura)).SingleOrDefault(p=>p.ID==id);
         if(p!=null) p.Anexos=db.AnexoPlanejamento.AsNoTracking().Where(a=>a.PlanejamentoID==id)
-            .Select(a=>new {a.ID,a.NomeArquivo,a.TipoMime,a.DataHoraCriacao}).ToList()
-            .Select(a=>new AnexoPlanejamento{ID=a.ID,PlanejamentoID=id,NomeArquivo=a.NomeArquivo,TipoMime=a.TipoMime,DataHoraCriacao=a.DataHoraCriacao}).ToList();
+            .Select(a=>new {a.ID,a.NomeArquivo,a.TipoMime,a.DataHoraCriacao,a.Subgrupo,a.Ordem}).ToList()
+            .Select(a=>new AnexoPlanejamento{ID=a.ID,PlanejamentoID=id,NomeArquivo=a.NomeArquivo,TipoMime=a.TipoMime,DataHoraCriacao=a.DataHoraCriacao,Subgrupo=a.Subgrupo,Ordem=a.Ordem}).ToList();
         return p;
     }
     public AnexoAlvo? ObterAnexoAlvo(int id) => db.AnexoAlvo.AsNoTracking().SingleOrDefault(a=>a.ID==id);
@@ -30,8 +31,23 @@ public class PlanejamentoRepository(SQLServerContext db, IArmazenamentoAnexos ar
     public AnexoAlvo? ObterFoto(int id) => db.AnexoAlvo.AsNoTracking().FirstOrDefault(a=>a.AlvoID==id && a.FotoPrincipal);
     public IReadOnlyList<XAlvoResumo> BuscarAlvos(string termo)
     {
+        termo=(termo??string.Empty).Trim();
+        if(termo.Length<2) return Array.Empty<XAlvoResumo>();
+        termo=termo[..Math.Min(200,termo.Length)];
         var cpf=PlanejamentoService.NormalizarCpf(termo);
-        return db.Alvo.AsNoTracking().Where(a=>a.Nome.Contains(termo) || (a.Alcunha!=null && a.Alcunha.Contains(termo)) || (a.CPF!=null && a.CPF==cpf))
+        // CI_AI ignora caixa e acentos independentemente da collation do banco.
+        // CHARINDEX trata o termo como texto literal, inclusive %, _ e [.
+        // Filtra e limita no servidor antes de carregar os resumos e suas contagens.
+        var ids=db.Database.SqlQuery<int>(@"SELECT TOP (50) a.ID
+            FROM dbo.Alvo AS a
+            WHERE CHARINDEX(@termo, a.Nome COLLATE Latin1_General_100_CI_AI)>0
+               OR CHARINDEX(@termo, a.Alcunha COLLATE Latin1_General_100_CI_AI)>0
+               OR (@cpf<>N'' AND a.CPF=@cpf)
+            ORDER BY a.Nome, a.ID",
+            new SqlParameter("@termo",SqlDbType.NVarChar,200){Value=termo},
+            new SqlParameter("@cpf",SqlDbType.NVarChar,200){Value=cpf}).ToList();
+        if(ids.Count==0) return Array.Empty<XAlvoResumo>();
+        return db.Alvo.AsNoTracking().Where(a=>ids.Contains(a.ID))
             .OrderBy(a=>a.Nome).ThenBy(a=>a.ID).Take(50)
             .Select(a=>new{a.ID,a.Nome,a.Alcunha,a.CPF,Quantidade=a.Planejamentos.Count})
             .ToList().Select(a=>new XAlvoResumo(a.ID,a.Nome,a.Alcunha,a.CPF,a.Quantidade)).ToList();
@@ -138,7 +154,9 @@ public class PlanejamentoRepository(SQLServerContext db, IArmazenamentoAnexos ar
                 if(!ids.Add(alvo.ID)) throw new ValidationException("Alvo repetido no planejamento.");
                 var vinculo=p.Alvos.SingleOrDefault(v=>v.AlvoID==alvo.ID);
                 if(vinculo==null) { vinculo=new PlanejamentoAlvo{PlanejamentoID=p.ID,AlvoID=alvo.ID}; p.Alvos.Add(vinculo); }
-                vinculo.Codigo=Limpar(entrada.Codigo); vinculo.Observacoes=Limpar(entrada.Observacoes);
+                // O código saiu do formulário: sua ausência não deve apagar valores anteriores.
+                if(entrada.Codigo!=null) vinculo.Codigo=Limpar(entrada.Codigo);
+                vinculo.Observacoes=Limpar(entrada.Observacoes);
             }
             db.PlanejamentoItem.RemoveRange(p.Itens.ToList());
             db.PlanejamentoIntegrante.RemoveRange(p.Integrantes.ToList());
@@ -150,10 +168,16 @@ public class PlanejamentoRepository(SQLServerContext db, IArmazenamentoAnexos ar
                 if(!db.Operador.Any(o=>o.ID==i.OperadorID) || i.ViaturaID.HasValue && !db.Viatura.Any(v=>v.ID==i.ViaturaID.Value)) throw new ValidationException("Operador ou viatura não encontrado.");
                 db.PlanejamentoIntegrante.Add(new PlanejamentoIntegrante{PlanejamentoID=p.ID,OperadorID=i.OperadorID,ViaturaID=i.ViaturaID,Funcao=i.Funcao.Trim(),Entrada=Limpar(i.Entrada)});
             }
+            var ordens=db.AnexoPlanejamento.Where(a=>a.PlanejamentoID==p.ID && a.Subgrupo.HasValue)
+                .GroupBy(a=>a.Subgrupo).Select(g=>new {Subgrupo=g.Key,Ordem=g.Max(a=>a.Ordem)})
+                .ToList().ToDictionary(g=>g.Subgrupo!.Value,g=>g.Ordem);
             foreach(var a in anexos??Array.Empty<XArquivoPlanejamentoEntrada>())
             {
                 var nome=Path.GetFileName(a.NomeArquivo);
-                db.AnexoPlanejamento.Add(new AnexoPlanejamento{PlanejamentoID=p.ID,NomeArquivo=nome[..Math.Min(255,nome.Length)],TipoMime=PlanejamentoService.TipoArquivo(a.Conteudo)!,Caminho=Gravar("Planejamento",p.ID,a.Conteudo,PlanejamentoService.TipoArquivo(a.Conteudo)!),DataHoraCriacao=DateTime.Now});
+                var grupo=a.Subgrupo!.Value;
+                var ordem=checked(ordens.GetValueOrDefault(grupo)+1);
+                ordens[grupo]=ordem;
+                db.AnexoPlanejamento.Add(new AnexoPlanejamento{PlanejamentoID=p.ID,Subgrupo=grupo,Ordem=ordem,NomeArquivo=nome[..Math.Min(255,nome.Length)],TipoMime=PlanejamentoService.TipoArquivo(a.Conteudo)!,Caminho=Gravar("Planejamento",p.ID,a.Conteudo,PlanejamentoService.TipoArquivo(a.Conteudo)!),DataHoraCriacao=DateTime.Now});
             }
             db.SaveChanges(); transaction.Commit(); return p.ID;
         }

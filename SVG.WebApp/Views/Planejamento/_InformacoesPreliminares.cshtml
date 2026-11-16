@@ -1,6 +1,6 @@
-@model SVG.App.ViewModels.PlanejamentoViewModel
+﻿@model SVG.App.ViewModels.PlanejamentoViewModel
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
-<fieldset class="card card-body mb-3"><legend class="h4">1. Informações Preliminares</legend><div class="row g-3">
+<section class="card card-body mb-3"><h2 class="h4">1. Informações Preliminares</h2><div class="row g-3">
 <div class="col-md-6"><label asp-for="OrdemServico" class="form-label">Nº Ordem de Serviço</label><input asp-for="OrdemServico" class="form-control" maxlength="100"/></div>
 <div class="col-md-6"><label asp-for="UnidadeApoio" class="form-label">Unidade Apoio</label><input asp-for="UnidadeApoio" class="form-control" maxlength="200"/></div>
 <div class="col-md-6"><label asp-for="DataPrevista" class="form-label">Data e hora Apoio</label><input asp-for="DataPrevista" type="datetime-local" class="form-control"/></div>
@@ -10,4 +10,4 @@
 </div>
 <div class="col-md-6"><label asp-for="NumeroMBA" class="form-label">Nº MBA</label><input asp-for="NumeroMBA" class="form-control" maxlength="100"/></div>
 <div class="col-md-6"><label asp-for="LocalBriefing" class="form-label">Local do briefing</label><input asp-for="LocalBriefing" type="text" class="form-control" maxlength="300" /></div>
-</div></fieldset>
+</div></section>

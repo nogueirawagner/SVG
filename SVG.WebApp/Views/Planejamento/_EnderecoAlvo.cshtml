@@ -1,6 +1,6 @@
-@model SVG.App.ViewModels.PlanejamentoViewModel
+﻿@model SVG.App.ViewModels.PlanejamentoViewModel
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
-<fieldset class="card card-body mb-3"><legend class="h4">3. Endereço do Alvo</legend><div class="row g-3">
+<section class="card card-body mb-3"><h2 class="h4">3. Endereço do Alvo</h2><div class="row g-3">
 <div class="col-12"><label asp-for="Endereco" class="form-label">Endereço completo</label><input asp-for="Endereco" class="form-control" maxlength="1000"/></div>
 <div class="col-12"><label asp-for="Referencia" class="form-label">Referência</label><input asp-for="Referencia" class="form-control" maxlength="1000"/></div>
 <div class="col-12"><label asp-for="Link_Endereco_Alvo" class="form-label">Link do endereço do alvo (Google Maps)</label>
@@ -8,4 +8,4 @@
 <input asp-for="Latitude" type="hidden"/><input asp-for="Longitude" type="hidden"/>
 <p id="maps-status" class="form-text" role="status" aria-live="polite">@(Model.Latitude.HasValue && Model.Longitude.HasValue?$"Latitude: {Model.Latitude} · Longitude: {Model.Longitude}":"Selecione o ponto no Google Maps e cole o link de compartilhar. As coordenadas serão preenchidas automaticamente.")</p>
 </div>
-</div></fieldset>
+</div></section>

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
@@ -19,6 +19,7 @@ using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.Interfaces.Services;
 using SVG.Domain.Services;
 using SVG.Domain.TiposEstruturados.Planejamento;
+using SVG.Domain.TiposEstruturados.Enums;
 using SVG.WebApp.Configurations;
 using SVG.WebApp.Controllers;
 
@@ -31,8 +32,17 @@ public static class PlanejamentoWebChecks
             HorarioBriefingDOE=TimeSpan.FromHours(4.5),HorarioSaidaDOE=TimeSpan.FromHours(5),
             SecaoID=2,Secao=new Sessao{ID=2,Nome="Seção de teste"},CriadorOperadorID=7,Versao=new byte[]{1,2,3},DataHoraCriacao=DateTime.UtcNow,
             Alvos=new List<PlanejamentoAlvo>{new(){AlvoID=9,Alvo=new Alvo{ID=9,Nome="Pessoa fictícia"}}}};
+        plan.Anexos=new List<AnexoPlanejamento>{
+            new(){ID=40,Subgrupo=XSubgrupoImagemPlanejamento.ImagensAlvo,Ordem=1,NomeArquivo="alvo.png",TipoMime="image/png"},
+            new(){ID=12,Subgrupo=XSubgrupoImagemPlanejamento.DOEAlvo,Ordem=2,NomeArquivo="segunda.png",TipoMime="image/png"},
+            new(){ID=30,Subgrupo=XSubgrupoImagemPlanejamento.DropOff,Ordem=1,NomeArquivo="desembarque.png",TipoMime="image/png"},
+            new(){ID=11,Subgrupo=XSubgrupoImagemPlanejamento.DOEAlvo,Ordem=1,NomeArquivo="primeira.png",TipoMime="image/png"},
+            new(){ID=20,Subgrupo=XSubgrupoImagemPlanejamento.PRPO,Ordem=1,NomeArquivo="prpo.mp4",TipoMime="video/mp4"},
+            new(){ID=5,NomeArquivo="anterior.png",TipoMime="image/png"}
+        };
+        IReadOnlyList<XArquivoPlanejamentoEntrada>? anexosSalvos=null;
         XPlanejamentoEntrada? entradaSalva=null;
-        int Salvar(object?[]? args){entradaSalva=(XPlanejamentoEntrada)args![0]!;return 1;}
+        int Salvar(object?[]? args){entradaSalva=(XPlanejamentoEntrada)args![0]!;anexosSalvos=(IReadOnlyList<XArquivoPlanejamentoEntrada>)args[4]!;return 1;}
         var op=new Operador{ID=7,Nome="Operador de teste",SessaoID=2};
         var repo=DispatchProxy.Create<IPlanejamentoRepository,RepositoryProxy>();
         ((RepositoryProxy)(object)repo).Handler=(method,args)=>method switch {
@@ -47,8 +57,10 @@ public static class PlanejamentoWebChecks
         };
         var ops=DispatchProxy.Create<IOperadorAppService,RepositoryProxy>();
         ((RepositoryProxy)(object)ops).Handler=(m,a)=>m=="GetById"?op:new List<Operador>{op};
+        var sections=DispatchProxy.Create<ISessaoAppService,RepositoryProxy>();
+        ((RepositoryProxy)(object)sections).Handler=(m,a)=>new List<Sessao>{new(){ID=2,Nome="Seção de teste"}};
         var cars=DispatchProxy.Create<IViaturaAppService,RepositoryProxy>();
-        ((RepositoryProxy)(object)cars).Handler=(m,a)=>new List<Viatura>{new(){ID=3,Prefixo="VTR de teste"}};
+        ((RepositoryProxy)(object)cars).Handler=(m,a)=>new List<Viatura>{new(){ID=3,Prefixo="VTR de teste",Placa="DEF4G56"},new(){ID=4,Prefixo=" ",Placa="ABC1D23"}};
         var builder=WebApplication.CreateBuilder(new WebApplicationOptions{ApplicationName=typeof(PlanejamentoController).Assembly.FullName,
             ContentRootPath=Path.GetFullPath("SVG.WebApp"),EnvironmentName="Development"});
         builder.WebHost.UseUrls(preview?"http://127.0.0.1:5189":"http://127.0.0.1:0");
@@ -61,7 +73,7 @@ public static class PlanejamentoWebChecks
         builder.Services.AddSingleton<IGoogleMapsService>(new SVG.Infra.Services.GoogleMapsService(new HttpClient(new HttpClientHandler{AllowAutoRedirect=false})));
         builder.Services.AddSingleton(repo);builder.Services.AddSingleton<IPlanejamentoService,PlanejamentoService>();
         builder.Services.AddSingleton<IPlanejamentoAppService,PlanejamentoAppService>();
-        builder.Services.AddSingleton(ops);builder.Services.AddSingleton(cars);
+        builder.Services.AddSingleton(sections);builder.Services.AddSingleton(ops);builder.Services.AddSingleton(cars);
         builder.Services.AddHttpContextAccessor();builder.Services.AddScoped<IUserContext,UserContext>();
         builder.Services.AddAuthentication("Test").AddScheme<AuthenticationSchemeOptions,PlanejamentoTestAuth>("Test",_=>{});
         builder.Services.AddAuthorization();
@@ -82,12 +94,13 @@ public static class PlanejamentoWebChecks
         void Check(bool ok,string text){if(!ok)throw new Exception(text);checks++;}
         var culture=await client.PostAsync("/__culture",new FormUrlEncodedContent(new Dictionary<string,string>{{"valor","1234.56"},{"data","2026-11-05"}}));
         Check(await culture.Content.ReadAsStringAsync()=="1234.56|1.234,56|05/11/2026|pt-BR|pt-BR","Cultura global não separou conversão de formulário e apresentação.");
-        foreach(var path in new[]{"/Planejamento/Anexo/1","/Planejamento/AnexoAlvo/1"})
+        foreach(var path in new[]{"/Planejamento/Anexo/1","/Planejamento/AnexoAlvo/1","/Planejamento/Midia/1"})
         {
             using var request=new HttpRequestMessage(HttpMethod.Get,path);
             request.Headers.Range=new System.Net.Http.Headers.RangeHeaderValue(0,7);
             using var response=await client.SendAsync(request);
             Check(response.StatusCode==HttpStatusCode.PartialContent && (await response.Content.ReadAsByteArrayAsync()).Length==8,"Intervalo de vídeo não servido.");
+            if(path.Contains("/Midia/"))Check(response.Content.Headers.ContentDisposition==null,"Mídia inline foi forçada como download.");
             Check(response.Headers.GetValues("X-Content-Type-Options").Single()=="nosniff","Download sem proteção de MIME.");
             using var anonymous=new HttpRequestMessage(HttpMethod.Get,path);
             anonymous.Headers.Add("X-Test-Anonymous","true");
@@ -100,15 +113,34 @@ public static class PlanejamentoWebChecks
             Check(response.StatusCode==HttpStatusCode.OK,$"Razor falhou em {path}: {body[..Math.Min(body.Length,400)]}");
             Check(body.Contains("Planejamento") || body.Contains("planejamento"),"Conteúdo não renderizado.");
         }
+        var gallery=WebUtility.HtmlDecode(await client.GetStringAsync("/Planejamento/Detalhes/1"));
+        int last=-1;
+        foreach(var id in new[]{11,12,20,30,40,5})
+        {
+            var position=gallery.IndexOf($"data-anexo=\"{id}\"",StringComparison.Ordinal);
+            Check(position>last,"Ordem de subgrupos/imagens incorreta.");last=position;
+        }
+        foreach(var title in new[]{"DOE - Alvo","PRPO","DROP-OFF","Imagens do Alvo","Anexos anteriores (sem subgrupo)"})
+            Check(gallery.Contains(title),"Título de subgrupo ausente.");
+        Check(gallery.Contains("<img") && gallery.Contains("<video"),"Anexos não foram apresentados como mídia.");
         var withoutToken=await client.PostAsync("/Planejamento/Salvar",new FormUrlEncodedContent(new Dictionary<string,string>{{"Titulo","Sem token"}}));
         Check(withoutToken.StatusCode==HttpStatusCode.BadRequest,"POST sem antiforgery foi aceito.");
         var editing=await client.GetStringAsync("/Planejamento/Editar/1");
         Check(editing.Contains("value=\"04:30\""),"Horário existente não foi formatado no campo de edição.");
         var html=await client.GetStringAsync("/Planejamento/Criar");
+        Check(html.Contains("id=\"planejamento-grupos\"") && html.Contains("id=\"integrantes-secao\"") && html.Contains("id=\"operadores-por-secao\""),"Agrupamentos e seleção de operadores por seção ausentes.");
+        foreach(var pagina in new[]{html,editing})
+            Check(Regex.Matches(WebUtility.HtmlDecode(pagina), @"<section[^>]*>\s*<h2[^>]*>\d+\. ").Count==11,
+                "Os onze agrupamentos precisam da estrutura section/h2 usada pela sanfona, inclusive Endereço do Alvo.");
         var token=Regex.Match(html,"name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value;
         Check(token.Length>0,"Token ausente no formulário.");
+        Check(html.Contains(">ABC1D23</option>") && html.Contains(">VTR de teste</option>"),"Viatura sem prefixo não exibiu a placa.");
+        foreach(var campo in new[]{"Codigo","Fonte","Informacoes"})Check(!html.Contains($"data-campo=\"{campo}\""),"Campo removido ainda presente no cadastro de alvo.");
+        Check(html.Contains("data-campo=\"Observacoes\""),"Observações foram removidas do cadastro de alvo.");
+        foreach(var grupo in new[]{1,2,3,4})Check(html.Contains($"name=\"AnexosPlanejamento_{grupo}\""),"Upload do grupo ausente.");
+        Check(editing.Contains("data-anexo=\"11\"") && editing.Contains("data-anexo=\"5\""),"Edição não mostra os anexos existentes.");
         var decoded=WebUtility.HtmlDecode(html);
-        foreach(var title in new[]{"1. Informações Preliminares","2. Identificação do Alvo","3. Endereço do Alvo","4. Imagens","5. Quadro de Funções","6. Quadro de Horários","7. Comunicações durante Trajeto","8. APH – Médico","9. Medidas Complementares","10. Resumo das Rotas","11. Resumo das Localizações"})
+        foreach(var title in new[]{"1. Informações Preliminares","2. Identificação do Alvo","3. Endereço do Alvo","4. Imagens","5. Quadro de Funções","6. Quadro de Horários","7. Comunicações Durante o Trajeto","8. APH – Médico","9. Medidas Complementares","10. Resumo das Rotas","11. Resumo das Localizações"})
             Check(decoded.Contains(title),"Tópico do modelo ausente: "+title);
         Check(html.Contains("name=\"Link_Endereco_Alvo\"") && !html.Contains("name=\"LinkGoogleMaps\""),"Nome de campo incorreto.");
         Check(!html.Contains("name=\"Titulo\"") && !html.Contains("name=\"Objetivo\""),"Campos removidos ainda presentes no formulário.");
@@ -134,6 +166,23 @@ public static class PlanejamentoWebChecks
         plan.Link_Endereco_Alvo="https://www.google.com/maps?q=-10,-20";
         var cleared=await client.PostAsync("/Planejamento/Salvar",new FormUrlEncodedContent(form));
         Check(cleared.StatusCode==HttpStatusCode.Redirect && entradaSalva?.Latitude==null && entradaSalva?.Longitude==null,"Remover link manteve coordenadas antigas.");
+        using(var multipart=new MultipartFormDataContent())
+        {
+            foreach(var pair in form)multipart.Add(new StringContent(pair.Value),pair.Key);
+            foreach(var grupo in new[]{4,2,1,3})multipart.Add(new ByteArrayContent(new byte[]{137,80,78,71,13,10,26,10}),$"AnexosPlanejamento_{grupo}",$"grupo-{grupo}.png");
+            var uploaded=await client.PostAsync("/Planejamento/Salvar",multipart);
+            Check(uploaded.StatusCode==HttpStatusCode.Redirect && anexosSalvos?.Count==4,"Upload por subgrupo falhou.");
+            Check(anexosSalvos!.Select(a=>(int)a.Subgrupo!.Value).SequenceEqual(new[]{4,2,1,3}),"Upload perdeu classificação.");
+        }
+        anexosSalvos=null;
+        using(var multipart=new MultipartFormDataContent())
+        {
+            foreach(var pair in form)multipart.Add(new StringContent(pair.Value),pair.Key);
+            multipart.Add(new ByteArrayContent(new byte[]{137,80,78,71,13,10,26,10}),"AnexosPlanejamento_99","invalido.png");
+            var rejected=await client.PostAsync("/Planejamento/Salvar",multipart);
+            Check(rejected.StatusCode==HttpStatusCode.OK && anexosSalvos==null,"Subgrupo inválido chegou à persistência.");
+            Check((await rejected.Content.ReadAsStringAsync()).Contains("data-anexo=\"11\""),"Erro de validação ocultou os anexos já salvos.");
+        }
         Console.WriteLine($"Planejamento: {checks} verificações HTTP/Razor passaram (repositório simulado, sem banco).");
         await app.StopAsync();
     }

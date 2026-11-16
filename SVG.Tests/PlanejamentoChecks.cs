@@ -62,6 +62,9 @@ public static class PlanejamentoChecks
         e=Valid();e.DistanciaRotaDPDesembKm=-1;Reject(()=>Save(e));
         plan.LocalBriefing="Teste";plan.HorarioBriefingDOE=TimeSpan.FromHours(4);plan.Link_Endereco_Alvo="https://www.google.com/maps?q=-10,-20";
         plan.Link_Rota_DP_Desemb="https://www.google.com/maps/dir/A/B";plan.SocorristaAPH1="Pessoa";
+        var png=new byte[]{137,80,78,71,13,10,26,10};
+        Reject(()=>service.Salvar(Valid(),autor,Array.Empty<XAnexoAlvoEntrada>(),false,new[]{new XArquivoPlanejamentoEntrada("sem-grupo.png",png)}));
+        Reject(()=>service.Salvar(Valid(),autor,Array.Empty<XAnexoAlvoEntrada>(),false,new[]{new XArquivoPlanejamentoEntrada("invalido.png",png,(SVG.Domain.TiposEstruturados.Enums.XSubgrupoImagemPlanejamento)99)}));
         var app=new PlanejamentoAppService(service);
         var edit=app.PrepararEdicao(4)!;
         Check(edit.Alvos.Single().AlvoID==10 && edit.Endereco=="Endereço histórico","Edição perdeu vínculo ou endereço.");

@@ -75,3 +75,31 @@ Migration incremental `20261106210851101_202611061808` preparada com coluna null
 ## Alinhamento com o modelo Word — 06/11/2026
 
 A nomenclatura vigente é `Link_Endereco_Alvo`. A tela foi organizada nos 11 tópicos do modelo, com links distintos de rotas e localizações e campos complementares persistidos. A migration incremental `20261106211814307_202611061818` preserva o valor do link anterior ao renomear a coluna. Veja [mapeamento dos tópicos e campos](PlanejamentoOperacao-ModeloPadrao.md). Nenhuma migration foi executada nesta tarefa.
+
+
+## Subgrupos de imagens — 08/11/2026
+
+Implementado na branch `feature/planejamento`. A criação e edição têm uploads independentes para DOE - Alvo, PRPO, DROP-OFF e Imagens do Alvo. A visualização apresenta os quatro títulos nessa ordem, com as imagens diretamente na página e vídeos com controles. Os arquivos existentes também são apresentados na edição.
+
+`AnexoPlanejamento.Subgrupo` usa `XSubgrupoImagemPlanejamento` (valores 1 a 4). `Ordem` guarda a sequência dentro do grupo; novos uploads são acrescentados após os anteriores, na ordem recebida no formulário. A galeria ordena por subgrupo, ordem e ID como desempate. Não há arrastar/reordenar nesta entrega. As imagens do subgrupo Imagens do Alvo são anexos do planejamento; o cadastro individual da pessoa continua com seus anexos próprios.
+
+Anexos anteriores permanecem com subgrupo nulo e ordem zero, exibidos ao final em Anexos anteriores (sem subgrupo), por ID. Não se infere a classificação dos arquivos antigos. Caminhos físicos, nomes por hash e arquivos permanecem intactos. A action Midia exige autenticação e serve apenas PNG, JPEG, MP4 e WebM, sem forçar download; o download original continua disponível.
+
+Migration `20261108143735975_202611081137` preparada offline: adiciona apenas Subgrupo e Ordem, com verificações de existência, default de ordem zero e restrições de valores válidos. Nenhuma migration foi executada e as anteriores não foram alteradas.
+
+Validação: compilação, modelo/snapshot EF6, regras de classificação, formulários multipart dos quatro grupos, rejeição de grupo inválido, ordenação dos arquivos, preservação dos anexos antigos, exibição inline e autenticação. Os testes HTTP usam repositório simulado; não alteram o banco.
+
+### Usabilidade de Criar/Editar — 09/11/2026
+
+- Quadro de Funções permite adicionar todos os operadores de uma seção, mantendo a inclusão individual. Operadores já presentes são ignorados, preservando função, entrada e viatura preenchidas.
+- Os onze agrupamentos iniciam recolhidos. Abrir um recolhe o anterior, sem remover controles do formulário ou perder arquivos selecionados.
+- A validação do navegador abre o grupo do primeiro campo inválido antes de solicitar a correção. Erros de servidor associados a campos também revelam o grupo correspondente.
+- Sem alteração de esquema ou execução de migrations. Compilação e 75 verificações HTTP/Razor aprovadas com repositório simulado; sintaxe JavaScript validada com Node. Validação visual de usabilidade fica para teste na aplicação.
+
+### Busca de alvos sem acentos — 09/11/2026
+
+A consulta na página de planejamento e a busca de alvos em Criar/Editar compartilham `BuscarAlvos`. A comparação de nome e alcunha agora usa `CHARINDEX` com `Latin1_General_100_CI_AI`, aceitando trechos em qualquer posição e ignorando caixa e acentos. Exemplos para conferir na aplicação: `jose`, `JOSÉ` e `alves` encontram `José Alves`; `ze` encontra a alcunha `Zé`. CPF continua com comparação exata após remoção da pontuação.
+
+O SQL recebe parâmetros, interpreta caracteres como `%` e `_` literalmente e limita a consulta a 50 alvos antes de carregar os resumos. Nenhuma migration ou alteração na collation do banco. Verificações automatizadas usam repositório simulado; a comparação efetiva da collation deve ser conferida no SQL Server da aplicação.
+
+Correção da sanfona: Endereço do Alvo e Informações Preliminares usavam fieldset/legend e não eram capturados pelo seletor section/h2. Ambos foram padronizados; uma verificação HTTP/Razor cobre a estrutura dos onze agrupamentos em Criar e Editar.
