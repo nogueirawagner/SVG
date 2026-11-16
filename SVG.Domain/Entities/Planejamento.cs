@@ -1,7 +1,17 @@
-namespace SVG.Domain.Entities;
+﻿namespace SVG.Domain.Entities;
 
 public class Planejamento
 {
+    public string ObterTituloExibicao() => FormatarTitulo(DataPrevista, UnidadeApoio, Secao?.Nome);
+
+    public static string FormatarTitulo(DateTime? data, string? unidadeApoio, string? secao)
+    {
+        var dataTexto=data?.ToString("dd-MM-yyyy", System.Globalization.CultureInfo.InvariantCulture) ?? "Data não informada";
+        var unidade=string.IsNullOrWhiteSpace(unidadeApoio)?"Unidade não informada":unidadeApoio.Trim();
+        var nomeSecao=string.IsNullOrWhiteSpace(secao)?"Seção não informada":secao.Trim();
+        return $"Planejamento {dataTexto} {unidade} - {nomeSecao}";
+    }
+
     public int ID { get; set; }
     public int SecaoID { get; set; }
     public int CriadorOperadorID { get; set; }

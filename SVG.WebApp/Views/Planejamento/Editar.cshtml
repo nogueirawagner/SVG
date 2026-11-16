@@ -29,4 +29,5 @@
 <template id="modelo-integrante">@await Html.PartialAsync("_IntegranteEntrada",new XIntegranteEntrada(),new ViewDataDictionary(ViewData){["Indice"]="__i__"})</template>
 <template id="modelo-item">@await Html.PartialAsync("_ItemEntrada",new XItemEntrada(),new ViewDataDictionary(ViewData){["Indice"]="__i__"})</template>
 </div>
+@await Html.PartialAsync("_VisualizadorMidia")
 @section Scripts{<script src="~/js/planejamento.js" asp-append-version="true"></script>}

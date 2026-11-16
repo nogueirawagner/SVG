@@ -1,4 +1,4 @@
-@model IEnumerable<SVG.Domain.Entities.AnexoPlanejamento>
+﻿@model IEnumerable<SVG.Domain.Entities.AnexoPlanejamento>
 @using SVG.Domain.TiposEstruturados.Enums
 @using SVG.Utilities.ExtensionsMethods
 @{ var grupos=Enum.GetValues<XSubgrupoImagemPlanejamento>(); }
@@ -18,3 +18,5 @@
         </section>
     }
 </section>
+
+@await Html.PartialAsync("_VisualizadorMidia")

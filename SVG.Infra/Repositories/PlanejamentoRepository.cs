@@ -54,8 +54,8 @@ public class PlanejamentoRepository(SQLServerContext db, IArmazenamentoAnexos ar
     }
     public IReadOnlyList<XPlanejamentoResumo> Listar(int? secaoId) => db.Planejamento.AsNoTracking()
         .Where(p=>!secaoId.HasValue || p.SecaoID==secaoId.Value).OrderByDescending(p=>p.ID).Take(100)
-        .Select(p=>new{p.ID,p.Titulo,p.DataPrevista,p.Situacao,Secao=p.Secao.Nome,p.Endereco,Quantidade=p.Alvos.Count})
-        .ToList().Select(p=>new XPlanejamentoResumo(p.ID,p.Titulo,p.DataPrevista,p.Situacao,p.Secao,p.Endereco,p.Quantidade)).ToList();
+        .Select(p=>new{p.ID,p.UnidadeApoio,p.DataPrevista,p.Situacao,Secao=p.Secao.Nome,p.Endereco,Quantidade=p.Alvos.Count})
+        .ToList().Select(p=>new XPlanejamentoResumo(p.ID,Planejamento.FormatarTitulo(p.DataPrevista,p.UnidadeApoio,p.Secao),p.DataPrevista,p.Situacao,p.Secao,p.Endereco,p.Quantidade)).ToList();
 
     public int Salvar(XPlanejamentoEntrada e, XAutorPlanejamento autor, IReadOnlyList<XAnexoAlvoEntrada> fotos, bool finalizar, IReadOnlyList<XArquivoPlanejamentoEntrada>? anexos=null)
     {

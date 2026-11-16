@@ -1,4 +1,4 @@
-@model IEnumerable<SVG.Domain.Entities.AnexoPlanejamento>
+﻿@model IEnumerable<SVG.Domain.Entities.AnexoPlanejamento>
 @{ var arquivos=Model.OrderBy(a=>a.Ordem).ThenBy(a=>a.ID).ToList(); }
 @if(arquivos.Count==0)
 {
@@ -12,18 +12,21 @@ else
         <figure class="col-12 col-md-6 mb-0" data-anexo="@arquivo.ID">
             @if(arquivo.TipoMime is "image/png" or "image/jpeg")
             {
-                <a asp-action="Midia" asp-controller="Planejamento" asp-route-id="@arquivo.ID" target="_blank" rel="noopener noreferrer">
-                    <img src="@Url.Action("Midia","Planejamento",new{id=arquivo.ID})" alt="@arquivo.NomeArquivo" class="img-fluid rounded border w-100" style="max-height:360px;object-fit:contain" loading="lazy"/>
+                <a asp-action="Midia" asp-controller="Planejamento" asp-route-id="@arquivo.ID" data-visualizar-midia="imagem" data-download="@Url.Action("Anexo","Planejamento",new{id=arquivo.ID})" aria-label="Ampliar imagem">
+                    <img src="@Url.Action("Midia","Planejamento",new{id=arquivo.ID})" alt="Imagem do planejamento" class="img-fluid rounded border w-100" style="max-height:360px;object-fit:contain" loading="lazy"/>
                 </a>
             }
             else if(arquivo.TipoMime is "video/mp4" or "video/webm")
             {
-                <video class="rounded border w-100" style="max-height:360px" controls preload="metadata" aria-label="@arquivo.NomeArquivo">
+                <a asp-action="Midia" asp-controller="Planejamento" asp-route-id="@arquivo.ID" data-visualizar-midia="video" data-download="@Url.Action("Anexo","Planejamento",new{id=arquivo.ID})" aria-label="Abrir vídeo em tela cheia" class="d-block position-relative">
+                <video class="rounded border w-100" style="max-height:360px;pointer-events:none" muted preload="metadata" aria-label="Prévia do vídeo">
                     <source src="@Url.Action("Midia","Planejamento",new{id=arquivo.ID})" type="@arquivo.TipoMime"/>
                     Seu navegador não suporta este vídeo. Utilize o link para baixar.
                 </video>
+                <span class="position-absolute top-50 start-50 translate-middle badge bg-dark fs-5" aria-hidden="true">▶</span>
+                </a>
             }
-            <figcaption class="mt-1 text-break">@arquivo.NomeArquivo · <a asp-action="Anexo" asp-controller="Planejamento" asp-route-id="@arquivo.ID">Baixar</a></figcaption>
+            <figcaption class="mt-1 text-break"><a asp-action="Anexo" asp-controller="Planejamento" asp-route-id="@arquivo.ID">Baixar</a></figcaption>
         </figure>
     }
     </div>
