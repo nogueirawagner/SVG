@@ -1,4 +1,4 @@
-/* Componente reutilizável: não conhece entidades, rotas ou filtros de Planejamento. */
+﻿/* Componente reutilizável: não conhece entidades, rotas ou filtros de Planejamento. */
 (function (root) {
     'use strict';
     let carregamento;
@@ -23,22 +23,25 @@
         const h = Math.sin(rad(b.lat - a.lat) / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(rad(b.lng - a.lng) / 2) ** 2;
         return 6378137 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, h))));
     }
-    async function criar(elemento, { apiKey, mapId, aoClicar }) {
+    async function criar(elemento, { apiKey, mapId, aoClicar, aoAtualizarCalor }) {
         await carregar(apiKey);
         const { Map, Circle, InfoWindow } = await google.maps.importLibrary('maps');
         const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary('marker');
         const mapa = new Map(elemento, { center: { lat: -15.78, lng: -47.93 }, zoom: 5, mapId: mapId || 'DEMO_MAP_ID', streetViewControl: false, mapTypeControl: false });
         const janela = new InfoWindow();
         const circulo = new Circle({ strokeColor: '#1565c0', strokeWeight: 2, fillColor: '#1565c0', fillOpacity: 0.12, clickable: false });
-        let marcadores = [];
+        let marcadores = [], pontosAtuais = [], calorAtivo = false;
+        const camadaCalor = root.SvgMapaCalor?.criar(google, mapa, aoAtualizarCalor);
         const clique = mapa.addListener('click', e => { if (e.latLng) aoClicar?.(e.latLng.toJSON()); });
         return {
             definirPontos(pontos, ajustar = false) {
+                pontosAtuais = pontos;
+                camadaCalor?.atualizar(pontosAtuais, calorAtivo);
                 janela.close();
                 marcadores.forEach(m => m.map = null);
                 marcadores = pontos.map(ponto => {
                     const pin = new PinElement({ background: '#d32f2f', borderColor: '#8e0000', glyphColor: '#ffffff' });
-                    const marker = new AdvancedMarkerElement({ map: mapa, position: ponto.posicao, title: ponto.titulo, content: pin.element });
+                    const marker = new AdvancedMarkerElement({ map: calorAtivo ? null : mapa, position: ponto.posicao, title: ponto.titulo, content: pin.element });
                     marker.addListener('click', () => { janela.setContent(ponto.conteudo()); janela.open({ map: mapa, anchor: marker }); });
                     return marker;
                 });
@@ -49,11 +52,17 @@
                     else { mapa.fitBounds(bounds, 50); google.maps.event.addListenerOnce(mapa, 'idle', () => { if (mapa.getZoom() > 17) mapa.setZoom(17); }); }
                 }
             },
+            definirMapaCalor(ativo) {
+                calorAtivo = Boolean(ativo) && Boolean(camadaCalor);
+                janela.close();
+                marcadores.forEach(m => m.map = calorAtivo ? null : mapa);
+                camadaCalor?.atualizar(pontosAtuais, calorAtivo);
+            },
             definirRaio(centro, metros) {
                 if (!centro || !metros) { circulo.setMap(null); return; }
                 circulo.setOptions({ map: mapa, center: centro, radius: metros });
             },
-            destruir() { clique.remove(); marcadores.forEach(m => m.map = null); janela.close(); circulo.setMap(null); }
+            destruir() { camadaCalor?.setMap(null); clique.remove(); marcadores.forEach(m => m.map = null); janela.close(); circulo.setMap(null); }
         };
     }
     root.SvgMapas = { criar, distanciaMetros };

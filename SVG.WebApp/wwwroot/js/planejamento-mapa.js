@@ -12,7 +12,8 @@
     const dados = JSON.parse(document.getElementById('planejamento-mapa-dados').textContent);
     const ano = document.getElementById('mapa-ano'), mes = document.getElementById('mapa-mes'), secao = document.getElementById('mapa-secao'), raio = document.getElementById('mapa-raio');
     const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-    let centro = null, mapa;
+    let centro = null, mapa, calorAtivo = false;
+    const botaoCalor = document.getElementById('mapa-calor');
     function opcoes(select, itens) {
         const valor = select.value;
         select.replaceChildren(new Option(select === secao ? 'Todas' : 'Todos', ''));
@@ -42,13 +43,21 @@
         // Um marcador por coordenada; o popup lista todos os planejamentos no mesmo endereço.
         const grupos = new Map();
         visiveis.forEach(p => { const chave = `${p.Latitude},${p.Longitude}`; if (!grupos.has(chave)) grupos.set(chave, []); grupos.get(chave).push(p); });
-        mapa?.definirPontos([...grupos.values()].map(itens => ({ posicao: { lat: itens[0].Latitude, lng: itens[0].Longitude }, titulo: itens.map(p => p.Titulo).join(' | '), conteudo: () => {
+        mapa?.definirPontos([...grupos.values()].map(itens => ({ posicao: { lat: itens[0].Latitude, lng: itens[0].Longitude }, peso: itens.length, titulo: itens.map(p => p.Titulo).join(' | '), conteudo: () => {
             const div = document.createElement('div');
             itens.forEach(p => { const linha = document.createElement('p'); linha.append(link(p)); const endereco = document.createElement('div'); endereco.textContent = p.Endereco || 'Endereço não informado'; linha.append(endereco); div.append(linha); });
             return div;
         } })), ajustar && !metros);
         mapa?.definirRaio(centro, metros);
     }
+    botaoCalor.addEventListener('click', () => {
+        calorAtivo = !calorAtivo;
+        botaoCalor.setAttribute('aria-pressed', String(calorAtivo));
+        botaoCalor.classList.toggle('btn-danger', calorAtivo);
+        botaoCalor.classList.toggle('btn-outline-danger', !calorAtivo);
+        document.getElementById('mapa-calor-legenda').hidden = !calorAtivo;
+        mapa?.definirMapaCalor(calorAtivo);
+    });
     [ano, secao].forEach(select => select.addEventListener('change', () => { meses(); atualizar(true); }));
     mes.addEventListener('change', () => atualizar(true));
     raio.addEventListener('change', () => atualizar());
@@ -57,7 +66,10 @@
     function erro(mensagem) { const aviso = document.getElementById('mapa-erro'); aviso.textContent = mensagem; aviso.hidden = false; }
     root.addEventListener('svg:mapa-erro', () => erro('Google Maps indisponível. Solicite a revisão da configuração ao administrador.'));
     meses(); atualizar();
-    SvgMapas.criar(document.getElementById('planejamento-mapa'), { apiKey: pagina.dataset.apiKey, mapId: pagina.dataset.mapId, aoClicar: ponto => { centro = ponto; atualizar(); } })
-        .then(instancia => { mapa = instancia; atualizar(true); })
+    SvgMapas.criar(document.getElementById('planejamento-mapa'), { apiKey: pagina.dataset.apiKey, mapId: pagina.dataset.mapId, aoAtualizarCalor: ({ metros, maximo, areas }) => {
+        const lado = metros >= 1000 ? `${(metros / 1000).toLocaleString('pt-BR')} km` : `${metros} m`;
+        document.getElementById('mapa-calor-escala').textContent = areas ? `Áreas de aproximadamente ${lado} por lado, ajustadas ao zoom (mínimo de 200 m). Maior concentração atual: ${maximo} planejamento(s).` : 'Nenhuma área com planejamentos para os filtros atuais.';
+    }, aoClicar: ponto => { centro = ponto; atualizar(); } })
+        .then(instancia => { mapa = instancia; botaoCalor.disabled = false; atualizar(true); })
         .catch(e => erro(e.message));
 })(typeof window !== 'undefined' ? window : globalThis);

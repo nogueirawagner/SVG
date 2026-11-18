@@ -44,3 +44,13 @@ Documentação oficial:
 `wwwroot/js/planejamento-mapa.js` adapta os dados do planejamento ao componente e controla filtros, contagem e lista. Conteúdo de registros é inserido com `textContent`, sem HTML vindo do banco. O JSON inicial usa o escape padrão de System.Text.Json.
 
 Verificação local sem credenciais: `node SVG.Tests/planejamento-mapa-checks.cjs`. A suíte HTTP/Razor verifica a rota com repositório simulado. O mapa real precisa ser validado após configurar a chave e o projeto Google Cloud.
+
+## Mapa de calor
+
+O botão **Mapa de Calor** alterna os marcadores por uma camada de densidade com contagem por área. Segue os filtros já aplicados, sem novas consultas à aplicação. Cada planejamento conta uma vez; os marcadores agrupados por coordenada fornecem seu peso para não perder planejamentos coincidentes.
+
+A camada reutilizável `js/mapas/mapa-calor.js` usa `OverlayView`, sem a antiga HeatmapLayer (descontinuada pelo Google). Grade geográfica de áreas aproximadamente quadradas, com lado mínimo de 200 m. Ao afastar o mapa, o lado aumenta em potências de dois para manter os números legíveis. A escala atual aparece na legenda; cores amarelo/vermelho representam concentração relativa ao maior número no conjunto filtrado. Ao desligar, os marcadores reaparecem e os filtros permanecem.
+
+API: carregar o módulo antes de `google-maps.js`; usar `definirMapaCalor(true/false)` na instância. Pontos aceitam `peso` opcional (padrão 1). Callback `aoAtualizarCalor` informa tamanho da área, maior contagem e quantidade de áreas. O clique para escolher o centro do raio continua atravessando a camada de calor.
+
+Testes: `node SVG.Tests/mapa-calor-checks.cjs` e `node SVG.Tests/planejamento-mapa-checks.cjs`. Verificação visual com a chave Google configurada permanece necessária.
