@@ -52,6 +52,13 @@ public class PlanejamentoRepository(SQLServerContext db, IArmazenamentoAnexos ar
             .Select(a=>new{a.ID,a.Nome,a.Alcunha,a.CPF,Quantidade=a.Planejamentos.Count})
             .ToList().Select(a=>new XAlvoResumo(a.ID,a.Nome,a.Alcunha,a.CPF,a.Quantidade)).ToList();
     }
+    public IReadOnlyList<XPlanejamentoMapa> ListarMapa() => db.Planejamento.AsNoTracking()
+        .Where(p=>p.Latitude.HasValue && p.Longitude.HasValue && p.Latitude>=-90 && p.Latitude<=90 && p.Longitude>=-180 && p.Longitude<=180)
+        .OrderByDescending(p=>p.ID).Take(100)
+        .Select(p=>new {p.ID,p.DataPrevista,p.UnidadeApoio,p.SecaoID,Secao=p.Secao.Nome,p.Endereco,p.Latitude,p.Longitude})
+        .ToList().Select(p=>new XPlanejamentoMapa(p.ID,Planejamento.FormatarTitulo(p.DataPrevista,p.UnidadeApoio,p.Secao),
+            p.DataPrevista?.Year,p.DataPrevista?.Month,p.SecaoID,p.Secao,p.Endereco,p.Latitude!.Value,p.Longitude!.Value)).ToList();
+
     public IReadOnlyList<XPlanejamentoResumo> Listar(int? secaoId) => db.Planejamento.AsNoTracking()
         .Where(p=>!secaoId.HasValue || p.SecaoID==secaoId.Value).OrderByDescending(p=>p.ID).Take(100)
         .Select(p=>new{p.ID,p.UnidadeApoio,p.DataPrevista,p.Situacao,Secao=p.Secao.Nome,p.Endereco,Quantidade=p.Alvos.Count})

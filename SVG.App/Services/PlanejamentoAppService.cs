@@ -1,4 +1,4 @@
-using SVG.App.Interfaces;
+﻿using SVG.App.Interfaces;
 using SVG.App.ViewModels;
 using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Services;
@@ -12,6 +12,7 @@ public class PlanejamentoAppService(IPlanejamentoService service) : IPlanejament
     public AnexoAlvo? ObterAnexoAlvo(int id) => service.ObterAnexoAlvo(id);
     public AnexoPlanejamento? ObterAnexo(int id)=>service.ObterAnexo(id);
     public IReadOnlyList<XAlvoResumo> BuscarAlvos(string termo)=>service.BuscarAlvos(termo);
+    public IReadOnlyList<XPlanejamentoMapa> ListarMapa()=>service.ListarMapa();
     public IReadOnlyList<XPlanejamentoResumo> Listar(int? secaoId)=>service.Listar(secaoId);
     public int Salvar(PlanejamentoViewModel m, XAutorPlanejamento autor, IReadOnlyList<XAnexoAlvoEntrada> fotos, bool finalizar, IReadOnlyList<XArquivoPlanejamentoEntrada>? anexos=null)=>service.Salvar(m,autor,fotos,finalizar,anexos);
     public PlanejamentoViewModel? PrepararEdicao(int id)

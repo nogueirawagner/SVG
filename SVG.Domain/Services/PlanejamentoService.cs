@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
 using SVG.Domain.Interfaces.Services;
@@ -13,6 +13,7 @@ public class PlanejamentoService(IPlanejamentoRepository repository) : IPlanejam
     public AnexoAlvo? ObterFoto(int id) => repository.ObterFoto(id);
     public AnexoAlvo? ObterAnexoAlvo(int id) => repository.ObterAnexoAlvo(id);
     public AnexoPlanejamento? ObterAnexo(int id) => repository.ObterAnexo(id);
+    public IReadOnlyList<XPlanejamentoMapa> ListarMapa()=>repository.ListarMapa();
     public IReadOnlyList<XPlanejamentoResumo> Listar(int? secaoId) => repository.Listar(secaoId);
     public IReadOnlyList<XAlvoResumo> BuscarAlvos(string termo)
     {

@@ -47,6 +47,7 @@ public static class PlanejamentoWebChecks
         var repo=DispatchProxy.Create<IPlanejamentoRepository,RepositoryProxy>();
         ((RepositoryProxy)(object)repo).Handler=(method,args)=>method switch {
             "Obter"=>plan,
+            "ListarMapa"=>new List<XPlanejamentoMapa>{new(1,"Planejamento 16-11-2026 P30 - SOE II",2026,11,2,"SOE II","Endereço fictício",-15.78m,-47.93m)},
             "Listar"=>new List<XPlanejamentoResumo>{new(1,plan.Titulo,plan.DataPrevista,"Rascunho","Seção de teste",plan.Endereco,1)},
             "BuscarAlvos"=>new List<XAlvoResumo>{new(9,"Pessoa fictícia",null,null,1)},
             "ObterAlvo"=>new Alvo{ID=9,Nome="Pessoa fictícia",Planejamentos=new List<PlanejamentoAlvo>{new(){Planejamento=plan,PlanejamentoID=1}}},
@@ -107,12 +108,15 @@ public static class PlanejamentoWebChecks
             using var denied=await client.SendAsync(anonymous);
             Check(denied.StatusCode==HttpStatusCode.Unauthorized,"Download anônimo permitido.");
         }
-        foreach(var path in new[]{"/Planejamento","/Planejamento/Criar","/Planejamento/Editar/1","/Planejamento/Detalhes/1","/Planejamento/Alvo/9"})
+        foreach(var path in new[]{"/Planejamento","/Planejamento/Mapa","/Planejamento/Criar","/Planejamento/Editar/1","/Planejamento/Detalhes/1","/Planejamento/Alvo/9"})
         {
             var response=await client.GetAsync(path);var body=await response.Content.ReadAsStringAsync();
             Check(response.StatusCode==HttpStatusCode.OK,$"Razor falhou em {path}: {body[..Math.Min(body.Length,400)]}");
             Check(body.Contains("Planejamento") || body.Contains("planejamento"),"Conteúdo não renderizado.");
         }
+        var mapaHtml=await client.GetStringAsync("/Planejamento/Mapa");
+        Check(mapaHtml.Contains("planejamento-mapa-dados") && mapaHtml.Contains("mapa-raio") && mapaHtml.Contains("P30 - SOE II"),"Mapa não renderizou filtros e dados iniciais.");
+        Check(!mapaHtml.Contains("maps.googleapis.com/maps/api/js"),"A página deve carregar o SDK somente pelo componente configurável.");
         var gallery=WebUtility.HtmlDecode(await client.GetStringAsync("/Planejamento/Detalhes/1"));
         int last=-1;
         foreach(var id in new[]{11,12,20,30,40,5})

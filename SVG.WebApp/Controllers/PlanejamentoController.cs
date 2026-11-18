@@ -31,6 +31,9 @@ public class PlanejamentoController(IPlanejamentoAppService service, IOperadorAp
         return View(service.Listar(minhaSecao?secao:null));
     }
     [HttpGet]
+    public IActionResult Mapa() => View(service.ListarMapa());
+
+    [HttpGet]
     public IActionResult BuscarAlvos(string? termo) => Json(service.BuscarAlvos(termo??""));
     [HttpPost, ValidateAntiForgeryToken, Authorize(Roles="Admin,Operador")]
     public async Task<IActionResult> CoordenadasMaps(string link, CancellationToken cancellationToken)
