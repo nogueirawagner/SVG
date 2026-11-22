@@ -13,5 +13,6 @@ public interface IPlanejamentoAppService
     IReadOnlyList<XAlvoResumo> BuscarAlvos(string termo);
     IReadOnlyList<XPlanejamentoMapa> ListarMapa();
     IReadOnlyList<XPlanejamentoResumo> Listar(int? secaoId);
+    void Excluir(int id, string versao, XAutorPlanejamento autor);
     int Salvar(PlanejamentoViewModel model, XAutorPlanejamento autor, IReadOnlyList<XAnexoAlvoEntrada> fotos, bool finalizar, IReadOnlyList<XArquivoPlanejamentoEntrada>? anexos=null);
 }

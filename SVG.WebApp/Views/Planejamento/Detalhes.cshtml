@@ -3,8 +3,9 @@
 @{ ViewData["Title"]=Model.ObterTituloExibicao(); var mapa=Model.Latitude.HasValue && Model.Longitude.HasValue ? "https://www.google.com/maps/search/?api=1&query="+Model.Latitude.Value.ToString(CultureInfo.InvariantCulture)+","+Model.Longitude.Value.ToString(CultureInfo.InvariantCulture):null; }
 <div class="container py-4">
 <a asp-action="Index">Voltar</a>
+@if(TempData["ErroPdf"] is string erroPdf){<div class="alert alert-danger mt-3" role="alert">@erroPdf</div>}
 @if(TempData["Sucesso"] is string sucesso){<div class="alert alert-success mt-3">@sucesso</div>}
-<div class="d-flex justify-content-between align-items-center my-3"><h1>@ViewData["Title"]</h1>@if((bool)ViewBag.PodeEditar){<a class="btn btn-primary" asp-action="Editar" asp-route-id="@Model.ID">Editar rascunho</a>}</div>
+<div class="d-flex flex-wrap gap-2 justify-content-between align-items-center my-3"><h1>@ViewData["Title"]</h1><a class="btn btn-outline-danger ms-2 flex-shrink-0" asp-action="GerarPdf" asp-route-id="@Model.ID"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Gerar PDF</a>@if((bool)ViewBag.PodeEditar){<a class="btn btn-primary" asp-action="Editar" asp-route-id="@Model.ID">Editar rascunho</a>}</div>
 <p><strong>Situação:</strong> <span class="badge bg-secondary">@Model.Situacao</span></p>
 <p><strong>Seção:</strong> @Model.Secao.Nome</p>
 <p><strong>Data prevista:</strong> @Model.DataPrevista?.ToString("dd/MM/yyyy HH:mm")</p>
@@ -32,7 +33,7 @@
 </div></div></div></div></div>
 }</div>
 @await Html.PartialAsync("_GaleriaPlanejamento",Model.Anexos)
-<h2 class="h4">Equipe e viaturas</h2><div class="table-responsive"><table class="table"><thead><tr><th>Operador</th><th>Entrada</th><th>Função</th><th>Viatura</th></tr></thead><tbody>@foreach(var i in Model.Integrantes){<tr><td>@i.Operador.Nome</td><td>@i.Entrada</td><td>@i.Funcao</td><td>@(string.IsNullOrWhiteSpace(i.Viatura?.Prefixo)?i.Viatura?.Placa:i.Viatura.Prefixo)</td></tr>}</tbody></table></div>
+<h2 class="h4">Equipe e viaturas</h2><div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Operador</th><th>Entrada</th><th>Função</th><th>Viatura</th></tr></thead><tbody>@foreach(var i in Model.Integrantes){<tr><td>@i.Operador.Nome</td><td>@i.Entrada</td><td>@i.Funcao</td><td>@(string.IsNullOrWhiteSpace(i.Viatura?.Prefixo)?i.Viatura?.Placa:i.Viatura.Prefixo)</td></tr>}</tbody></table></div>
 @foreach(var grupo in Model.Itens.GroupBy(i=>i.Tipo)){
 <h2 class="h4">@(grupo.Key switch {"Horario"=>"Horários","Rota"=>"Rotas","Localizacao"=>"Localizações de apoio","Mandado"=>"Mandados","Providencia"=>"Providências",_=>grupo.Key})</h2>
 <div class="table-responsive"><table class="table"><thead><tr><th>Descrição</th><th>Data / hora</th><th>Responsável</th><th>Referência</th></tr></thead><tbody>@foreach(var i in grupo){<tr><td>@i.Descricao</td><td>@i.DataHora?.ToString("dd/MM/yyyy HH:mm")</td><td>@i.Responsavel</td><td>@if(i.Url!=null){<a href="@i.Url" target="_blank" rel="noopener noreferrer">Abrir link</a>} @if(i.DistanciaKm.HasValue){<span>@i.DistanciaKm km</span>} @if(i.DuracaoMinutos.HasValue){<span> · @i.DuracaoMinutos min</span>}</td></tr>}</tbody></table></div>}
@@ -42,4 +43,5 @@
 @await Html.PartialAsync("_DetalhesPadrao",Model)
 <div class="small text-muted"><p><strong>Cadastro:</strong> @Model.DataHoraCriacao.ToString("dd/MM/yyyy HH:mm")</p><p><strong>Última alteração:</strong> @Model.DataHoraAtualizacao.ToString("dd/MM/yyyy HH:mm")</p></div>
 </div>
+<div class="container pb-4"><a class="btn btn-outline-danger" asp-action="GerarPdf" asp-route-id="@Model.ID"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Gerar PDF</a></div>
 @section Scripts{<script src="~/js/planejamento.js" asp-append-version="true"></script>}

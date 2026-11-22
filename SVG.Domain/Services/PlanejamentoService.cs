@@ -20,6 +20,12 @@ public class PlanejamentoService(IPlanejamentoRepository repository) : IPlanejam
         termo = (termo ?? "").Trim();
         return termo.Length < 2 ? Array.Empty<XAlvoResumo>() : repository.BuscarAlvos(termo[..Math.Min(200, termo.Length)]);
     }
+    public void Excluir(int id,string versao,XAutorPlanejamento autor)
+    {
+        if(autor.OperadorID<=0) throw new UnauthorizedAccessException("Usuário sem operador vinculado.");
+        if(id<=0 || string.IsNullOrWhiteSpace(versao)) throw new ValidationException("Planejamento ou versão inválida. Atualize a listagem.");
+        repository.Excluir(id,versao,autor);
+    }
     public int Salvar(XPlanejamentoEntrada e, XAutorPlanejamento autor, IReadOnlyList<XAnexoAlvoEntrada> fotos, bool finalizar, IReadOnlyList<XArquivoPlanejamentoEntrada>? anexos=null)
     {
         Validar(e, autor, fotos, finalizar);

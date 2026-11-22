@@ -42,18 +42,21 @@ public static class PlanejamentoWebChecks
         };
         IReadOnlyList<XArquivoPlanejamentoEntrada>? anexosSalvos=null;
         XPlanejamentoEntrada? entradaSalva=null;
+        int exclusoes=0;
+        object? Excluir(object?[]? args){exclusoes++;return null;}
         int Salvar(object?[]? args){entradaSalva=(XPlanejamentoEntrada)args![0]!;anexosSalvos=(IReadOnlyList<XArquivoPlanejamentoEntrada>)args[4]!;return 1;}
         var op=new Operador{ID=7,Nome="Operador de teste",SessaoID=2};
         var repo=DispatchProxy.Create<IPlanejamentoRepository,RepositoryProxy>();
         ((RepositoryProxy)(object)repo).Handler=(method,args)=>method switch {
-            "Obter"=>plan,
+            "Obter"=>(int)args![0]! == 1 ? plan : null,
             "ListarMapa"=>new List<XPlanejamentoMapa>{new(1,"Planejamento 16-11-2026 P30 - SOE II",2026,11,2,"SOE II","Endereço fictício",-15.78m,-47.93m)},
-            "Listar"=>new List<XPlanejamentoResumo>{new(1,plan.Titulo,plan.DataPrevista,"Rascunho","Seção de teste",plan.Endereco,1)},
+            "Listar"=>new List<XPlanejamentoResumo>{new(1,plan.Titulo,plan.DataPrevista,plan.Situacao,"Seção de teste",plan.Endereco,1,7,Convert.ToBase64String(plan.Versao))},
             "BuscarAlvos"=>new List<XAlvoResumo>{new(9,"Pessoa fictícia",null,null,1)},
             "ObterAlvo"=>new Alvo{ID=9,Nome="Pessoa fictícia",Planejamentos=new List<PlanejamentoAlvo>{new(){Planejamento=plan,PlanejamentoID=1}}},
             "ObterAnexo"=>new AnexoPlanejamento{ID=1,PlanejamentoID=1,NomeArquivo="video.mp4",TipoMime="video/mp4",Caminho="arquivo-de-teste"},
             "ObterAnexoAlvo"=>new AnexoAlvo{ID=1,AlvoID=9,NomeArquivo="video.mp4",TipoMime="video/mp4",Caminho="arquivo-de-teste"},
             "Salvar"=>Salvar(args),
+            "Excluir"=>Excluir(args),
             _=>null
         };
         var ops=DispatchProxy.Create<IOperadorAppService,RepositoryProxy>();
@@ -74,6 +77,8 @@ public static class PlanejamentoWebChecks
         builder.Services.AddSingleton<IGoogleMapsService>(new SVG.Infra.Services.GoogleMapsService(new HttpClient(new HttpClientHandler{AllowAutoRedirect=false})));
         builder.Services.AddSingleton(repo);builder.Services.AddSingleton<IPlanejamentoService,PlanejamentoService>();
         builder.Services.AddSingleton<IPlanejamentoAppService,PlanejamentoAppService>();
+        builder.Services.AddSingleton<IGeradorPlanejamentoPdf, SVG.Infra.Documentos.GeradorPlanejamentoPdf>();
+        builder.Services.AddSingleton<IPlanejamentoDocumentoAppService,PlanejamentoDocumentoAppService>();
         builder.Services.AddSingleton(sections);builder.Services.AddSingleton(ops);builder.Services.AddSingleton(cars);
         builder.Services.AddHttpContextAccessor();builder.Services.AddScoped<IUserContext,UserContext>();
         builder.Services.AddAuthentication("Test").AddScheme<AuthenticationSchemeOptions,PlanejamentoTestAuth>("Test",_=>{});
@@ -117,6 +122,16 @@ public static class PlanejamentoWebChecks
         var mapaHtml=await client.GetStringAsync("/Planejamento/Mapa");
         Check(mapaHtml.Contains("planejamento-mapa-dados") && mapaHtml.Contains("mapa-raio") && mapaHtml.Contains("P30 - SOE II"),"Mapa não renderizou filtros e dados iniciais.");
         Check(!mapaHtml.Contains("maps.googleapis.com/maps/api/js"),"A página deve carregar o SDK somente pelo componente configurável.");
+        using(var requestPdf=new HttpRequestMessage(HttpMethod.Get,"/Planejamento/GerarPdf/1"))
+        {
+            requestPdf.Headers.Add("X-Test-Anonymous","true");
+            Check((await client.SendAsync(requestPdf)).StatusCode==HttpStatusCode.Unauthorized,"PDF permitiu acesso anônimo.");
+        }
+        Check((await client.GetAsync("/Planejamento/GerarPdf/999")).StatusCode==HttpStatusCode.NotFound,"PDF de planejamento inexistente deveria retornar 404.");
+        var pdf=await client.GetAsync("/Planejamento/GerarPdf/1");
+        Check(pdf.IsSuccessStatusCode && pdf.Content.Headers.ContentType?.MediaType=="application/pdf","Download do PDF falhou.");
+        Check(pdf.Content.Headers.ContentDisposition?.DispositionType=="attachment","PDF não enviado como download.");
+        Check(System.Text.Encoding.ASCII.GetString((await pdf.Content.ReadAsByteArrayAsync()).Take(5).ToArray())=="%PDF-","Conteúdo do download não é PDF.");
         var gallery=WebUtility.HtmlDecode(await client.GetStringAsync("/Planejamento/Detalhes/1"));
         int last=-1;
         foreach(var id in new[]{11,12,20,30,40,5})
@@ -187,6 +202,27 @@ public static class PlanejamentoWebChecks
             Check(rejected.StatusCode==HttpStatusCode.OK && anexosSalvos==null,"Subgrupo inválido chegou à persistência.");
             Check((await rejected.Content.ReadAsStringAsync()).Contains("data-anexo=\"11\""),"Erro de validação ocultou os anexos já salvos.");
         }
+        var lista=await client.GetStringAsync("/Planejamento");
+        Check(lista.Contains("Ações") || WebUtility.HtmlDecode(lista).Contains("Ações"),"Coluna Ações ausente.");
+        Check(lista.Contains("/Planejamento/Editar/1") && lista.Contains("data-excluir-planejamento"),"Rascunho sem ações de edição/exclusão.");
+        plan.Situacao="Finalizado";
+        var listaFinalizada=await client.GetStringAsync("/Planejamento");
+        Check(!listaFinalizada.Contains("/Planejamento/Editar/1") && listaFinalizada.Contains("Editar indispon"),"Edição de finalizado não foi desabilitada.");
+        plan.Situacao="Rascunho";
+        Check((await client.PostAsync("/Planejamento/Excluir",new FormUrlEncodedContent(new Dictionary<string,string>{{"id","1"}}))).StatusCode==HttpStatusCode.BadRequest && exclusoes==0,"Exclusão sem antiforgery foi aceita.");
+        Check((await client.GetAsync("/Planejamento/Excluir/1")).StatusCode==HttpStatusCode.MethodNotAllowed && exclusoes==0,"GET permitiu exclusão.");
+        using(var anonimo=new HttpRequestMessage(HttpMethod.Post,"/Planejamento/Excluir"))
+        {
+            anonimo.Headers.Add("X-Test-Anonymous","true");
+            Check((await client.SendAsync(anonimo)).StatusCode==HttpStatusCode.Unauthorized && exclusoes==0,"Exclusão anônima foi aceita.");
+        }
+        var tokenExcluir=WebUtility.HtmlDecode(Regex.Match(lista,"name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value);
+        var excluirForm=new Dictionary<string,string>{{"id","1"},{"versao",""},{"__RequestVerificationToken",tokenExcluir}};
+        await client.PostAsync("/Planejamento/Excluir",new FormUrlEncodedContent(excluirForm));
+        Check(exclusoes==0,"Exclusão sem versão chegou à persistência.");
+        excluirForm["versao"]=Convert.ToBase64String(plan.Versao);
+        var excluido=await client.PostAsync("/Planejamento/Excluir",new FormUrlEncodedContent(excluirForm));
+        Check(excluido.StatusCode==HttpStatusCode.Redirect && exclusoes==1,"Exclusão autorizada não chegou ao repositório simulado.");
         Console.WriteLine($"Planejamento: {checks} verificações HTTP/Razor passaram (repositório simulado, sem banco).");
         await app.StopAsync();
     }

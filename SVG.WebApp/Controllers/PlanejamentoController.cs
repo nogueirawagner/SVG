@@ -15,7 +15,7 @@ namespace SVG.WebApp.Controllers;
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class PlanejamentoController(IPlanejamentoAppService service, IOperadorAppService operadores,
     IViaturaAppService viaturas, ISessaoAppService sessoes, IUserContext usuario, ILogger<PlanejamentoController> logger, SVG.Domain.Interfaces.Services.IArmazenamentoAnexos armazenamento,
-    SVG.Domain.Interfaces.Services.IGoogleMapsService googleMaps) : Controller
+    SVG.Domain.Interfaces.Services.IGoogleMapsService googleMaps, IPlanejamentoDocumentoAppService documentos) : Controller
 {
     [HttpGet]
     public IActionResult Index(string? termo, bool minhaSecao=false)
@@ -63,6 +63,46 @@ public class PlanejamentoController(IPlanejamentoAppService service, IOperadorAp
         ViewBag.PodeEditar=p.Situacao=="Rascunho" && usuario.OperadorId.HasValue && (usuario.IsAdmin || p.CriadorOperadorID==usuario.OperadorId);
         return View(p);
     }
+    [HttpPost, ValidateAntiForgeryToken, Authorize(Roles="Admin,Operador")]
+    public IActionResult Excluir(int id,string versao)
+    {
+        if(!usuario.OperadorId.HasValue)return Forbid();
+        try
+        {
+            service.Excluir(id,versao,new XAutorPlanejamento(usuario.OperadorId.Value,usuario.IsAdmin));
+            TempData["Sucesso"]="Planejamento excluído. Os cadastros dos alvos foram preservados.";
+        }
+        catch(KeyNotFoundException){return NotFound();}
+        catch(UnauthorizedAccessException){return Forbid();}
+        catch(ValidationException ex){TempData["Erro"]=ex.Message;}
+        catch(Exception ex)
+        {
+            logger.LogError(ex,"Falha ao excluir planejamento {PlanejamentoID}",id);
+            TempData["Erro"]="Não foi possível excluir o planejamento. Atualize a listagem e tente novamente.";
+        }
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public IActionResult GerarPdf(int id)
+    {
+        try
+        {
+            var urlBase=$"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            var documento=documentos.GerarPdf(id,urlBase);
+            if(documento==null) return NotFound();
+            Response.Headers["X-Content-Type-Options"]="nosniff";
+            return File(documento.Conteudo,"application/pdf",documento.NomeArquivo);
+        }
+        catch(ValidationException ex) { TempData["ErroPdf"]=ex.Message; }
+        catch(Exception ex)
+        {
+            logger.LogError(ex,"Falha ao gerar PDF do planejamento {PlanejamentoID}",id);
+            TempData["ErroPdf"]="Não foi possível gerar o PDF. Tente novamente ou contate o administrador.";
+        }
+        return RedirectToAction(nameof(Detalhes),new{id});
+    }
+
     [HttpGet]
     public IActionResult Anexo(int id)
     {

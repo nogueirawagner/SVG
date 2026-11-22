@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using SVG.Domain.Entities;
 using SVG.Domain.Interfaces.Repositories;
@@ -16,6 +16,7 @@ if(args.Contains("--preparar-esquema-planejamento"))
     PlanejamentoMigrationDraft.Generate();
     return;
 }
+if(args.Contains("--pdf-planejamento")){PlanejamentoPdfChecks.Run("tmp/pdfs/Planejamento-exemplo.pdf");return;}
 var checks = 0;
 if(args.Contains("--planejamento-preview")) { await PlanejamentoWebChecks.Run(true); return; }
 void Check(bool ok, string description)
@@ -114,6 +115,7 @@ PlanejamentoChecks.Run();
 await GoogleMapsChecks.Run();
 PlanejamentoStorageChecks.Run();
 PlanejamentoSchemaChecks.Run();
+PlanejamentoPdfChecks.Run();
 await PlanejamentoWebChecks.Run();
 
 public class RepositoryProxy : DispatchProxy

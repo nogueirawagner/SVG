@@ -14,6 +14,7 @@ public class PlanejamentoAppService(IPlanejamentoService service) : IPlanejament
     public IReadOnlyList<XAlvoResumo> BuscarAlvos(string termo)=>service.BuscarAlvos(termo);
     public IReadOnlyList<XPlanejamentoMapa> ListarMapa()=>service.ListarMapa();
     public IReadOnlyList<XPlanejamentoResumo> Listar(int? secaoId)=>service.Listar(secaoId);
+    public void Excluir(int id,string versao,XAutorPlanejamento autor)=>service.Excluir(id,versao,autor);
     public int Salvar(PlanejamentoViewModel m, XAutorPlanejamento autor, IReadOnlyList<XAnexoAlvoEntrada> fotos, bool finalizar, IReadOnlyList<XArquivoPlanejamentoEntrada>? anexos=null)=>service.Salvar(m,autor,fotos,finalizar,anexos);
     public PlanejamentoViewModel? PrepararEdicao(int id)
     {

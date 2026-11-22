@@ -20,8 +20,8 @@ public class PlanejamentoRepository(SQLServerContext db, IArmazenamentoAnexos ar
         .Include(p=>p.Alvos.Select(a=>a.Alvo)).Include(p=>p.Itens)
         .Include(p=>p.Integrantes.Select(i=>i.Operador)).Include(p=>p.Integrantes.Select(i=>i.Viatura)).SingleOrDefault(p=>p.ID==id);
         if(p!=null) p.Anexos=db.AnexoPlanejamento.AsNoTracking().Where(a=>a.PlanejamentoID==id)
-            .Select(a=>new {a.ID,a.NomeArquivo,a.TipoMime,a.DataHoraCriacao,a.Subgrupo,a.Ordem}).ToList()
-            .Select(a=>new AnexoPlanejamento{ID=a.ID,PlanejamentoID=id,NomeArquivo=a.NomeArquivo,TipoMime=a.TipoMime,DataHoraCriacao=a.DataHoraCriacao,Subgrupo=a.Subgrupo,Ordem=a.Ordem}).ToList();
+            .Select(a=>new {a.ID,a.NomeArquivo,a.TipoMime,a.DataHoraCriacao,a.Subgrupo,a.Ordem,a.Caminho}).ToList()
+            .Select(a=>new AnexoPlanejamento{ID=a.ID,PlanejamentoID=id,NomeArquivo=a.NomeArquivo,TipoMime=a.TipoMime,DataHoraCriacao=a.DataHoraCriacao,Subgrupo=a.Subgrupo,Ordem=a.Ordem,Caminho=a.Caminho}).ToList();
         return p;
     }
     public AnexoAlvo? ObterAnexoAlvo(int id) => db.AnexoAlvo.AsNoTracking().SingleOrDefault(a=>a.ID==id);
@@ -61,8 +61,33 @@ public class PlanejamentoRepository(SQLServerContext db, IArmazenamentoAnexos ar
 
     public IReadOnlyList<XPlanejamentoResumo> Listar(int? secaoId) => db.Planejamento.AsNoTracking()
         .Where(p=>!secaoId.HasValue || p.SecaoID==secaoId.Value).OrderByDescending(p=>p.ID).Take(100)
-        .Select(p=>new{p.ID,p.UnidadeApoio,p.DataPrevista,p.Situacao,Secao=p.Secao.Nome,p.Endereco,Quantidade=p.Alvos.Count})
-        .ToList().Select(p=>new XPlanejamentoResumo(p.ID,Planejamento.FormatarTitulo(p.DataPrevista,p.UnidadeApoio,p.Secao),p.DataPrevista,p.Situacao,p.Secao,p.Endereco,p.Quantidade)).ToList();
+        .Select(p=>new{p.ID,p.UnidadeApoio,p.DataPrevista,p.Situacao,Secao=p.Secao.Nome,p.Endereco,Quantidade=p.Alvos.Count,p.CriadorOperadorID,p.Versao})
+        .ToList().Select(p=>new XPlanejamentoResumo(p.ID,Planejamento.FormatarTitulo(p.DataPrevista,p.UnidadeApoio,p.Secao),p.DataPrevista,p.Situacao,p.Secao,p.Endereco,p.Quantidade,p.CriadorOperadorID,Convert.ToBase64String(p.Versao))).ToList();
+
+    public void Excluir(int id,string versao,XAutorPlanejamento autor)
+    {
+        using var transaction=db.Database.BeginTransaction(IsolationLevel.Serializable);
+        var p=db.Planejamento.SingleOrDefault(x=>x.ID==id) ?? throw new KeyNotFoundException("Planejamento não encontrado.");
+        if(autor.OperadorID<=0 || (!autor.Administrador && p.CriadorOperadorID!=autor.OperadorID))
+            throw new UnauthorizedAccessException("Somente o autor ou administrador pode excluir.");
+        byte[] esperada;
+        try { esperada=Convert.FromBase64String(versao); }
+        catch(FormatException){throw new ValidationException("Versão inválida. Atualize a listagem.");}
+        if(!p.Versao.SequenceEqual(esperada))throw new ValidationException("O planejamento foi alterado. Atualize a listagem antes de excluir.");
+        var anexos=db.AnexoPlanejamento.Where(a=>a.PlanejamentoID==id).ToList();
+        var caminhos=anexos.Select(a=>a.Caminho).Distinct().ToList();
+        // Remove somente dependências do planejamento, nunca os cadastros compartilhados.
+        db.PlanejamentoAlvo.RemoveRange(db.PlanejamentoAlvo.Where(a=>a.PlanejamentoID==id));
+        db.PlanejamentoItem.RemoveRange(db.PlanejamentoItem.Where(a=>a.PlanejamentoID==id));
+        db.PlanejamentoIntegrante.RemoveRange(db.PlanejamentoIntegrante.Where(a=>a.PlanejamentoID==id));
+        db.AnexoPlanejamento.RemoveRange(anexos);
+        db.Planejamento.Remove(p);
+        db.SaveChanges();transaction.Commit();
+        // Não há transação distribuída com o armazenamento: falhas ficam registradas para limpeza.
+        foreach(var caminho in caminhos)
+            try { armazenamento.Excluir(caminho); }
+            catch(Exception ex){System.Diagnostics.Trace.TraceError("Falha ao limpar anexo do planejamento excluído {0}: {1}. {2}",id,caminho,ex.Message);}
+    }
 
     public int Salvar(XPlanejamentoEntrada e, XAutorPlanejamento autor, IReadOnlyList<XAnexoAlvoEntrada> fotos, bool finalizar, IReadOnlyList<XArquivoPlanejamentoEntrada>? anexos=null)
     {

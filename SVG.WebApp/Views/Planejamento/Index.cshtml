@@ -1,9 +1,11 @@
-﻿@model IReadOnlyList<SVG.Domain.TiposEstruturados.Planejamento.XPlanejamentoResumo>
+﻿@inject SVG.WebApp.Configurations.IUserContext Usuario
+@model IReadOnlyList<SVG.Domain.TiposEstruturados.Planejamento.XPlanejamentoResumo>
 @{ ViewData["Title"]="Planejamento operacional"; var resultados=(IReadOnlyList<SVG.Domain.TiposEstruturados.Planejamento.XAlvoResumo>)ViewBag.Resultados; }
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4"><div><h1>Planejamento operacional</h1><p class="text-muted">Cadastre um planejamento ou consulte o histórico de um alvo.</p></div>
     <div class="d-flex gap-2"><a asp-action="Mapa" class="btn btn-outline-primary">Ver mapa</a>
     @if(User.IsInRole("Admin") || User.IsInRole("Operador")){<a asp-action="Criar" class="btn btn-primary">Novo planejamento</a>}</div></div>
+    @if(TempData["Sucesso"] is string sucesso){<div class="alert alert-success">@sucesso</div>}
     @if(TempData["Erro"] is string erro){<div class="alert alert-warning">@erro</div>}
     @if(ViewBag.Aviso is string aviso){<div class="alert alert-info">@aviso</div>}
     <div class="accordion mb-4" id="planejamento-filtros">
@@ -35,7 +37,29 @@
     }
     <h2 class="h4">Planejamentos recentes</h2>
     <p class="text-muted">Últimos 100 registros. A seção não restringe a consulta.</p>
-    <div class="table-responsive"><table class="table table-striped"><thead><tr><th>Planejamento</th><th>Data</th><th>Seção</th><th>Situação</th><th>Alvos</th></tr></thead><tbody>
-    @foreach(var p in Model){<tr><td><a asp-action="Detalhes" asp-route-id="@p.ID">@p.Titulo</a></td><td>@p.DataPrevista?.ToString("dd/MM/yyyy HH:mm")</td><td>@p.Secao</td><td>@p.Situacao</td><td>@p.QuantidadeAlvos</td></tr>}
+    <div class="table-responsive"><table class="table table-striped"><thead><tr><th>Planejamento</th><th>Data</th><th>Seção</th><th>Situação</th><th>Alvos</th><th class="text-center">PDF</th><th class="text-center">Ações</th></tr></thead><tbody>
+    @foreach(var p in Model){var podeAlterar=Usuario.OperadorId.HasValue && (User.IsInRole("Admin") || User.IsInRole("Operador")) && (Usuario.IsAdmin || p.CriadorOperadorID==Usuario.OperadorId);<tr><td><a asp-action="Detalhes" asp-route-id="@p.ID">@p.Titulo</a></td><td>@p.DataPrevista?.ToString("dd/MM/yyyy HH:mm")</td><td>@p.Secao</td><td>@p.Situacao</td><td>@p.QuantidadeAlvos</td><td class="text-center"><a class="btn btn-outline-danger btn-sm" asp-action="GerarPdf" asp-route-id="@p.ID" title="Gerar PDF" aria-label="Gerar PDF de @p.Titulo"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i></a></td><td class="text-center text-nowrap">
+    @if(podeAlterar && p.Situacao=="Rascunho"){
+        <a class="btn btn-outline-primary btn-sm" asp-action="Editar" asp-route-id="@p.ID" title="Editar" aria-label="Editar @p.Titulo"><i class="bi bi-pencil" aria-hidden="true"></i></a>
+    }else{
+        <button type="button" class="btn btn-outline-primary btn-sm" disabled title="Edição disponível apenas para rascunhos do autor ou administrador" aria-label="Editar indisponível"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+    }
+    @if(podeAlterar){
+        <form asp-action="Excluir" method="post" class="d-inline" data-excluir-planejamento data-titulo="@p.Titulo">
+            <input type="hidden" name="id" value="@p.ID"/><input type="hidden" name="versao" value="@p.Versao"/>
+            <button type="submit" class="btn btn-outline-danger btn-sm" title="Excluir" aria-label="Excluir @p.Titulo"><i class="bi bi-trash" aria-hidden="true"></i></button>
+        </form>
+    }else{
+        <button type="button" class="btn btn-outline-danger btn-sm" disabled title="Exclusão disponível apenas para o autor ou administrador" aria-label="Excluir indisponível"><i class="bi bi-trash" aria-hidden="true"></i></button>
+    }
+    </td></tr>}
     </tbody></table></div>
 </div>
+
+@section Scripts {
+<script>
+document.querySelectorAll('[data-excluir-planejamento]').forEach(form => form.addEventListener('submit', event => {
+    if (!confirm(`Excluir "${form.dataset.titulo}"? Serão removidos o planejamento, seus vínculos, itens, equipe e anexos próprios. Os cadastros e anexos dos alvos serão preservados. Esta ação não pode ser desfeita.`)) event.preventDefault();
+}));
+</script>
+}

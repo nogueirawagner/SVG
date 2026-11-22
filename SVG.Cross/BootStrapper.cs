@@ -25,6 +25,9 @@ namespace SVG.IoC
         container.GetInstance<SQLServerContext>(),
         Lifestyle.Scoped);
 
+      container.Register<IGeradorPlanejamentoPdf, SVG.Infra.Documentos.GeradorPlanejamentoPdf>(Lifestyle.Scoped);
+      container.Register<IPlanejamentoDocumentoAppService, PlanejamentoDocumentoAppService>(Lifestyle.Scoped);
+
       // Operador
       container.Register<IPlanejamentoRepository, PlanejamentoRepository>(Lifestyle.Scoped);
       container.Register<IPlanejamentoService, PlanejamentoService>(Lifestyle.Scoped);

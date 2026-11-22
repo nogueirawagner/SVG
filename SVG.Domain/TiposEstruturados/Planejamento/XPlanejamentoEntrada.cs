@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using SVG.Domain.TiposEstruturados.Enums;
 
 namespace SVG.Domain.TiposEstruturados.Planejamento;
@@ -90,4 +90,4 @@ public record XArquivoPlanejamentoEntrada(string NomeArquivo, byte[] Conteudo, X
 public record XAutorPlanejamento(int OperadorID, bool Administrador);
 public record XAlvoResumo(int ID, string Nome, string? Alcunha, string? CPF, int QuantidadePlanejamentos);
 public record XPlanejamentoResumo(int ID, string Titulo, DateTime? DataPrevista, string Situacao,
-    string Secao, string? Endereco, int QuantidadeAlvos);
+    string Secao, string? Endereco, int QuantidadeAlvos, int CriadorOperadorID=0, string? Versao=null);
